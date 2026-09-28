@@ -19,6 +19,16 @@ import seedu.address.testutil.PersonBuilder;
 public class PersonTest {
 
     @Test
+    public void remark_affectsEqualityButNotIdentity() {
+        Person withRemark = new PersonBuilder(ALICE).withRemark("Likes baseball").build();
+        assertTrue(ALICE.isSamePerson(withRemark));
+        assertFalse(ALICE.equals(withRemark));
+        Person copy = new PersonBuilder(withRemark).build();
+        assertEquals(withRemark, copy);
+        assertEquals(withRemark.hashCode(), copy.hashCode());
+    }
+
+    @Test
     public void asObservableList_modifyList_throwsUnsupportedOperationException() {
         Person person = new PersonBuilder().build();
         assertThrows(UnsupportedOperationException.class, () -> person.getTags().remove(0));
@@ -93,7 +103,8 @@ public class PersonTest {
     @Test
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
+                + ", remark=" + ALICE.getRemark() + ", tags=" + ALICE.getTags() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }
