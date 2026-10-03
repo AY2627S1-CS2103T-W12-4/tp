@@ -30,11 +30,11 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: To be determined
 
-### Johnny Doe
+### He Yue
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/heyue474.png" width="200px">
 
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](http://github.com/HeYue474)]
 
 * Role: Developer
 * Responsibilities: Data
