@@ -4,6 +4,7 @@ plugins {
     id 'com.gradleup.shadow' version '9.5.1'
     id 'application'
     id 'jacoco'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 application {
@@ -13,6 +14,11 @@ application {
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+}
+
+javafx {
+    version = '17.0.7'
+    modules = ['javafx.controls', 'javafx.fxml']
 }
 
 repositories {
@@ -45,22 +51,38 @@ task coverage(type: JacocoReport) {
     }
 }
 
+// Extra JavaFX native platforms, bundled into the shadow jar ONLY - not on the
+// normal run/test classpath. The javafx {} block above already puts the correct
+// host-platform javafx modules on the main classpath; adding every platform's
+// natives there too (win+mac+linux all at once) makes classpath resolution
+// non-deterministic about which platform's native library loads, which is what
+// caused "no suitable pipeline found" / wrong-platform .jar loaded errors when
+// running or debugging locally. One configuration per platform, since OpenJFX
+// marks same-module different-classifier artifacts as conflicting capabilities -
+// mixing them in a single configuration fails to resolve.
+def otherPlatforms = ['win', 'mac', 'mac-aarch64', 'linux']
+configurations {
+    otherPlatforms.each { platform ->
+        create("javafx${platform.capitalize().replace('-', '')}")
+    }
+}
+
 dependencies {
     String jUnitVersion = '5.14.4'
     String javaFxVersion = '17.0.7'
 
-    implementation "org.openjfx:javafx-base:${javaFxVersion}:win"
-    implementation "org.openjfx:javafx-base:${javaFxVersion}:mac"
-    implementation "org.openjfx:javafx-base:${javaFxVersion}:linux"
-    implementation "org.openjfx:javafx-controls:${javaFxVersion}:win"
-    implementation "org.openjfx:javafx-controls:${javaFxVersion}:mac"
-    implementation "org.openjfx:javafx-controls:${javaFxVersion}:linux"
-    implementation "org.openjfx:javafx-fxml:${javaFxVersion}:win"
-    implementation "org.openjfx:javafx-fxml:${javaFxVersion}:mac"
-    implementation "org.openjfx:javafx-fxml:${javaFxVersion}:linux"
-    implementation "org.openjfx:javafx-graphics:${javaFxVersion}:win"
-    implementation "org.openjfx:javafx-graphics:${javaFxVersion}:mac"
-    implementation "org.openjfx:javafx-graphics:${javaFxVersion}:linux"
+    otherPlatforms.each { platform ->
+        String configName = "javafx${platform.capitalize().replace('-', '')}"
+        ['javafx-base', 'javafx-controls', 'javafx-fxml', 'javafx-graphics'].each { module ->
+            // transitive = false: each module's own unclassified transitive request for
+            // javafx-base is ambiguous across our four platform configurations (OpenJFX's
+            // classified artifacts are mutually-exclusive capabilities). We already list
+            // every module explicitly per platform below, so nothing is lost by skipping it.
+            add(configName, "org.openjfx:${module}:${javaFxVersion}:${platform}") {
+                transitive = false
+            }
+        }
+    }
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.4'
@@ -73,6 +95,12 @@ dependencies {
 
 shadowJar {
     archiveFileName = 'addressbook.jar'
+    List<Configuration> shadowConfigurations = new ArrayList<>()
+    shadowConfigurations.add(project.configurations.runtimeClasspath)
+    otherPlatforms.each { platform ->
+        shadowConfigurations.add(project.configurations.getByName("javafx${platform.capitalize().replace('-', '')}"))
+    }
+    configurations = shadowConfigurations
 }
 
 defaultTasks 'clean', 'test'
