@@ -11,13 +11,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### alpacajc
 
 <img src="images/alpacajc.png" width="200px">
 
 [[github](https://github.com/alpacajc)]
 
-* Role: None
+* Role: to be determined
 
 ### Jane Doe
 
