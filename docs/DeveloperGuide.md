@@ -302,18 +302,49 @@ RecruitDex helps recruiters make more systematic, reviewable hiring decisions by
 
 ### User stories
 
-Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
+Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`.
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
+These stories describe the requirements backlog, including ideas considered for future development; they do not indicate which features are currently implemented. High-priority stories support the core applicant-management and comparison workflow. Medium-priority stories improve convenience or reviewability, while low-priority stories are optional extensions.
 
-*{More to be added}*
+An applicant record stores an applicant's details. The active comparison list is the set of applicants currently being ranked; removing an applicant from this list does not delete their record.
+
+| Priority | As a …                                          | I can …                                                                                      | So that I can …                                                                     |
+|----------|-------------------------------------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| `* * *`  | new recruiter using RecruitDex                  | view command usage instructions                                                              | learn the commands and refer to them when I forget the syntax                       |
+| `* * *`  | recruiter                                       | add an applicant record with their name and contact information                              | keep the applicant's details available throughout recruitment                       |
+| `* * *`  | recruiter                                       | list all applicant records                                                                   | review the applicants stored in RecruitDex                                          |
+| `* * *`  | recruiter                                       | view an applicant's details                                                                  | review the information I need to assess or contact them                             |
+| `* * *`  | recruiter                                       | edit an applicant's details                                                                  | keep their record accurate as new information becomes available                     |
+| `* * *`  | recruiter                                       | record and update interview notes for an applicant                                           | retain evidence to inform later comparisons                                         |
+| `* * *`  | recruiter                                       | delete an applicant record                                                                   | remove records that should no longer be retained                                    |
+| `* * *`  | recruiter with many applicants                  | find an applicant by name                                                                    | retrieve their record without scanning the entire list                              |
+| `* * *`  | recruiter                                       | add an applicant with an existing record to the active comparison list                       | include them in the ranking when I am ready to assess them                          |
+| `* * *`  | recruiter                                       | view the active comparison list                                                              | check which applicants are included in the ranking                                  |
+| `* * *`  | recruiter                                       | remove an applicant from the active comparison list while retaining their record             | exclude them from the current ranking and keep their details for future reference   |
+| `* * *`  | recruiter                                       | view the two applicants presented for comparison side by side                                | assess their relative strengths without switching between records                   |
+| `* * *`  | recruiter                                       | choose the stronger applicant in a presented pair                                            | contribute a decision to the applicant ranking                                      |
+| `* * *`  | recruiter                                       | see the updated ranking immediately after each comparison                                    | understand how my latest decision affects the applicants' positions                 |
+| `* * *`  | recruiter                                       | view a chosen number of top-ranked applicants                                                | review a shortlist of the size needed for the next hiring stage                     |
+| `* * *`  | recruiter                                       | retain applicant records, comparison-list membership, and ranking progress between sessions  | continue recruitment without re-entering data or repeating completed work           |
+| `* *`    | new recruiter using RecruitDex                  | view sample applicant records                                                                | understand how applicant information is organised before entering real data         |
+| `* *`    | new recruiter using RecruitDex                  | clear the sample data                                                                        | begin recruitment with my own applicant records                                     |
+| `* *`    | recruiter                                       | be warned when adding a duplicate applicant record                                           | avoid accidentally recording the same applicant more than once                      |
+| `* *`    | recruiter                                       | record an applicant's skills                                                                 | keep relevant qualifications available when assessing them                          |
+| `* *`    | recruiter with many applicants                  | filter applicants by their recorded skills                                                   | focus on applicants with skills relevant to the role                                |
+| `* *`    | recruiter                                       | undo an accidental deletion of an applicant record                                           | recover information that I still need                                               |
+| `* *`    | recruiter                                       | export the ranked applicant list                                                             | share the ranking with hiring managers for review                                   |
+| `* *`    | recruiter                                       | record each applicant's recruitment source, such as LinkedIn or the company website          | track which channels supplied the applicants                                        |
+| `* *`    | recruiter                                       | record and sort applicants by years of experience                                            | identify applicants whose experience matches the role's seniority                   |
+| `* *`    | recruiter                                       | copy an applicant's contact information                                                      | use it quickly in another communication tool                                        |
+| `* *`    | recruiter                                       | hide applicants' private contact details from the display                                    | reduce accidental exposure when showing the ranking to others                       |
+| `* *`    | recruitment manager                             | review the recorded applicant comparisons behind a ranking                                   | understand the decisions that led to a shortlist                                    |
+| `* *`    | recruitment manager                             | view how many comparisons each applicant has participated in                                 | identify applicants whose positions need more supporting evidence                   |
+| `* *`    | recruitment manager                             | specify a minimum number of comparisons per applicant and see which applicants fall below it | request further assessment before relying on the shortlist                          |
+| `*`      | recruiter hiring through other platforms        | import applicant records from a file                                                         | reduce manual entry when transferring existing applicant information                |
+| `*`      | recruiter with many applicants                  | sort applicant records alphabetically by name                                                | locate a record while browsing the applicant list                                   |
+| `*`      | recruiter                                       | save my preferred skills as reusable filter criteria                                         | focus on relevant applicants without re-entering the same criteria each session     |
+| `*`      | recruiter hiring for software engineering roles | view a summary of an applicant's GitHub activity                                             | consider their coding activity alongside interview notes without leaving RecruitDex |
+| `*`      | recruitment manager                             | compare decisions made by different recruiters about the same applicants                     | identify disagreements or possible anomalies that need further review               |
 
 ### Use cases
 
