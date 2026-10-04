@@ -13,7 +13,7 @@
 
 ## **Overview**
 
-RecruitDex helps recruiters rank applicants through a series of side-by-side comparisons. Instead of placing every applicant in a complete ranking at once, a recruiter chooses which of two applicants is stronger, and RecruitDex updates the ranking as decisions are made. Recruiters can review a chosen number of top-ranked applicants and use the ranking to inform hiring decisions.
+RecruitDex helps recruiters rank applicants through a series of side-by-side comparisons. Instead of placing every applicant in a complete ranking at once, a recruiter chooses which of two applicants is stronger, and RecruitDex updates the ranking as decisions are made. Recruiters can review the full ranking of applicants in the active comparison list and use it to inform hiring decisions.
 
 The workflow has three distinct parts:
 
@@ -324,7 +324,7 @@ An applicant record stores an applicant's details. The active comparison list is
 | `* * *`  | recruiter                                       | view the two applicants presented for comparison side by side                                | assess their relative strengths without switching between records                   |
 | `* * *`  | recruiter                                       | choose the stronger applicant in a presented pair                                            | contribute a decision to the applicant ranking                                      |
 | `* * *`  | recruiter                                       | see the updated ranking immediately after each comparison                                    | understand how my latest decision affects the applicants' positions                 |
-| `* * *`  | recruiter                                       | view a chosen number of top-ranked applicants                                                | review a shortlist of the size needed for the next hiring stage                     |
+| `* * *`  | recruiter                                       | view the full ranking of applicants in the active comparison list                            | review their relative positions to inform hiring decisions                          |
 | `* * *`  | recruiter                                       | retain applicant records, comparison-list membership, and ranking progress between sessions  | continue recruitment without re-entering data or repeating completed work           |
 | `* *`    | new recruiter using RecruitDex                  | view sample applicant records                                                                | understand how applicant information is organised before entering real data         |
 | `* *`    | new recruiter using RecruitDex                  | clear the sample data                                                                        | begin recruitment with my own applicant records                                     |
@@ -348,32 +348,154 @@ An applicant record stores an applicant's details. The active comparison list is
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+For all use cases below, the **System** is RecruitDex and the **Actor** is a recruiter. **MSS** means Main Success Scenario. These use cases describe intended product behaviour rather than the current implementation. Requests are entered as commands.
 
-**Use case: Delete a person**
+**UC01: Add an applicant record**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1. Recruiter requests to add an applicant, providing their name and contact information.
+2. RecruitDex validates the supplied details.
+3. RecruitDex stores the applicant record and displays a success message with the added details.
 
-    Use case ends.
+   Use case ends. The applicant is available for inclusion in the active comparison list through UC02.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 2a. Required details are missing or a supplied value is invalid.
+    * 2a1. RecruitDex explains the error without adding a record.
 
-  Use case ends.
+      Use case resumes at step 1.
 
-* 3a. The given index is invalid.
+* 2b. The supplied details match an existing applicant record.
+    * 2b1. RecruitDex warns the recruiter about the duplicate without adding another record.
 
-    * 3a1. AddressBook shows an error message.
+      Use case ends.
 
-      Use case resumes at step 2.
+**UC02: Add an existing applicant to the active comparison list**
 
-*{More to be added}*
+**MSS**
+
+1. Recruiter requests to list applicant records.
+2. RecruitDex displays the applicant records.
+3. Recruiter requests to add a selected applicant to the active comparison list.
+4. RecruitDex adds the applicant and displays the updated comparison list.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. No applicant records exist.
+    * 2a1. RecruitDex indicates that there are no applicant records to display.
+
+      Use case ends. The recruiter can create a record through UC01.
+
+* 3a. The selection does not identify an existing applicant record.
+    * 3a1. RecruitDex explains the error without changing the comparison list.
+
+      Use case resumes at step 3.
+
+* 3b. The selected applicant is already in the active comparison list.
+    * 3b1. RecruitDex informs the recruiter that the applicant is already included, leaving the list unchanged.
+
+      Use case resumes at step 3.
+
+**UC03: Remove an applicant from the active comparison list**
+
+**MSS**
+
+1. Recruiter requests to view the active comparison list.
+2. RecruitDex displays the applicants in the list.
+3. Recruiter requests to remove a selected applicant from the list.
+4. RecruitDex removes the applicant from the active comparison list and displays the ranking of the remaining applicants.
+
+   Use case ends. The applicant's record remains available.
+
+**Extensions**
+
+* 2a. The active comparison list is empty.
+    * 2a1. RecruitDex indicates that there are no applicants in the comparison list.
+
+      Use case ends.
+
+* 3a. The selection does not identify an applicant in the active comparison list.
+    * 3a1. RecruitDex explains the error without changing the list or applicant records.
+
+      Use case resumes at step 3.
+
+**UC04: Compare two applicants and update the ranking**
+
+**MSS**
+
+1. Recruiter requests to open the comparison view.
+2. RecruitDex presents two applicants from the active comparison list side by side, including their details and interview notes.
+3. Recruiter reviews the applicants and submits a choice of the stronger applicant.
+4. RecruitDex records the decision, updates the ranking, and immediately displays the updated ranking.
+
+   Use case ends. The recruiter can repeat this use case to make further comparisons.
+
+**Extensions**
+
+* 2a. Fewer than two applicants are in the active comparison list.
+    * 2a1. RecruitDex explains that at least two applicants are required for a comparison.
+
+      Use case ends. The recruiter can add applicants to the list through UC02.
+
+* 3a. The submitted choice does not identify either applicant in the presented pair.
+    * 3a1. RecruitDex explains the error without recording a decision or changing the ranking.
+
+      Use case resumes at step 3 with the same pair.
+
+**UC05: Review the full applicant ranking**
+
+**MSS**
+
+1. Recruiter requests to view the applicant ranking.
+2. RecruitDex displays all applicants in the active comparison list in ranking order, starting with the highest-ranked applicant.
+3. Recruiter selects an applicant from the displayed ranking to view their details.
+4. RecruitDex displays the selected applicant's details and interview notes.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The active comparison list is empty.
+    * 2a1. RecruitDex indicates that there are no applicants to rank.
+
+      Use case ends.
+
+* 3a. The selection does not identify an applicant in the displayed ranking.
+    * 3a1. RecruitDex explains the error and retains the displayed ranking.
+
+      Use case resumes at step 3.
+
+**UC06: Delete an applicant record**
+
+**MSS**
+
+1. Recruiter requests to list applicant records.
+2. RecruitDex displays the applicant records.
+3. Recruiter requests to delete a selected applicant record.
+4. RecruitDex deletes the record and displays a success message identifying the deleted applicant.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. No applicant records exist.
+    * 2a1. RecruitDex indicates that there are no applicant records to display.
+
+      Use case ends.
+
+* 3a. The selection does not identify an existing applicant record.
+    * 3a1. RecruitDex explains the error without deleting any records.
+
+      Use case resumes at step 3.
+
+* 4a. The applicant is in the active comparison list.
+    * 4a1. RecruitDex also removes the applicant from the comparison list and updates the ranking to include only the remaining applicants.
+
+      Use case ends. Unlike UC03, the applicant's record is deleted.
 
 ### Non-Functional Requirements
 
