@@ -4,10 +4,24 @@
   pageNav: 3
 ---
 
-# AB-3 Developer Guide
+# RecruitDex Developer Guide
 
 <!-- * Table of Contents -->
 <page-nav-print />
+
+--------------------------------------------------------------------------------------------------------------------
+
+## **Overview**
+
+RecruitDex helps recruiters rank applicants through a series of side-by-side comparisons. Instead of placing every applicant in a complete ranking at once, a recruiter chooses which of two applicants is stronger, and RecruitDex updates the ranking as decisions are made. Recruiters can review a chosen number of top-ranked applicants and use the ranking to inform hiring decisions.
+
+The workflow has three distinct parts:
+
+1. **Manage applicant records.** Add applicants and maintain details such as names, contact information, and interview notes. Records can be edited or deleted.
+2. **Manage the active comparison list.** Add or remove applicants from the set to be ranked. Adding an applicant record and adding that applicant to the comparison list are separate operations in the system, even if the interface offers them together.
+3. **Compare applicants.** Open the comparison view, review the two applicants RecruitDex presents, and choose the stronger one. The ranking updates immediately so the recruiter can see the effect of each decision.
+
+These parts can be revisited as recruitment progresses. An applicant must have a record before joining the comparison list and must join the list before being compared, but recruiters can compare existing applicants before adding more. RecruitDex is designed for command-line input, with a graphical interface primarily for displaying applicants, comparisons, and ranking changes.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -270,13 +284,20 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
+* recruits for software engineering roles and manages many applicants
+* needs to compare applicants and explain how a shortlist was reached
 * prefers desktop apps over other types of applications
 * can type fast
 * prefers typing to mouse interactions
 * is reasonably comfortable using CLI apps
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**:
+
+RecruitDex helps recruiters make more systematic, reviewable hiring decisions by building a ranking from individual applicant comparisons.
+
+* **Easier decisions:** Choosing between two applicants at a time is simpler than ordering the entire applicant pool in one sitting. Recruiters can make progress over multiple sessions and see the ranking evolve.
+* **Less impact from a mistaken judgment:** One comparison need not permanently fix an applicant's position; further comparisons can provide more evidence and change the ranking.
+* **Clearer oversight:** Recruitment managers can inspect the comparisons behind a ranking, require a minimum number of comparisons, and compare recruiters' decisions to identify possible anomalies.
 
 
 ### User stories
