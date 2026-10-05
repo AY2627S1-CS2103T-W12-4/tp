@@ -499,16 +499,82 @@ For all use cases below, the **System** is RecruitDex and the **Actor** is a rec
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+**Performance**
+1. CRUD operations such as adding, deleting and editing should be finished within 2 seconds, for up to 200 candidates.
+2. After all candidate comparisons have been completed the application should finish ranking the candidates within 10 seconds.
+3. RecruitDex should remain responsive while containing up to 1000 candidates.
+
+**Reliability**
+1. The application should not terminate and should show a clear error message if an invalid input is received, after which it should continue working normally.
+
+**Portability**
+1. The application should run on Linux, MacOS and Windows with Java 25 installed.
+2. The application should work without requiring an installer.
+
+**Persistence**
+1. All data stored in the address book, including rankings and attribute values should be stored in a file so that data persists between sessions.
+
+**Usability**
+1. A recruiter new to the app should be able to learn to perform the core functions of the app, such as adding and comparing applicants with minimal guidance.
+2. If the user changes candidate data by mistake, undoing the mistake should be quick, within 10 seconds, and easy.
+
+**Availability**
+1. All features of RecruitDex should be fully usable without an internet connection.
+2. All features of RecruitDex should be fully usable without requiring multiple users.
 
 *{More to be added}*
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+- **Active Comparison List:** The set of applicant records currently included in the ranking process. Removing an applicant from this list does not delete their applicant record.
+
+- **Applicant Record:** The stored information associated with an applicant, including their name, contact information, and interview notes.
+
+- **API (Application Programming Interface):** An interface that defines how other components can interact with a component without needing to know its internal implementation.
+
+- **Command:** An operation requested by the user through the command-line interface, such as adding, deleting, or comparing applicants.
+
+- **Command Parser:** A component that interprets a user's command input and converts it into the corresponding Command object.
+
+- **Command-Line Interface (CLI):** The text-based interface through which users enter commands to interact with RecruitDex.
+
+- **Command Result:** An object representing the outcome of executing a command. It is returned by the Logic component after a command has been processed.
+
+- **Comparison:** A decision made by a recruiter between two applicants presented by RecruitDex. The selected applicant is considered stronger for that comparison.
+
+- **Comparison View:** The part of the user interface that presents two applicants side by side for the recruiter to compare.
+
+- **Component:** A major architectural part of RecruitDex. The main components are UI, Logic, Model, and Storage, with Commons containing classes shared across components.
+
+- **Filtered List:** A list maintained by the Model containing applicants that satisfy the current filtering criteria. The UI observes this list to update the displayed applicants.
+
+- **JavaFX:** The Java framework used by RecruitDex to implement its graphical user interface.
+
+- **JSON (JavaScript Object Notation):** A text-based data format used by RecruitDex to store applicant data and user preferences.
+
+- **Logic:** The component responsible for interpreting and executing user commands.
+
+- **Mainstream OS:** Windows, Linux, Unix, or macOS
+
+- **Main Success Scenario (MSS):** The normal sequence of steps in a use case where the user achieves the intended outcome without encountering an error or exception.
+
+- **Model:** The component responsible for maintaining RecruitDex's application data in memory, including applicant records and user preferences.
+
+- **Ranking:** The ordered list of applicants in the active comparison list, based on the outcomes of comparisons.
+
+- **RecruitDex:** The application that helps recruiters manage applicants and produce a ranking through pairwise comparisons.
+
+- **Storage:** The component responsible for saving RecruitDex's data to persistent storage and loading it when the application starts.
+
+- **Use Case (UC):** A description of how a user interacts with RecruitDex to accomplish a particular goal, including the normal sequence of actions and possible extensions or errors.
+
+- **User Interface (UI):** The component responsible for displaying RecruitDex's graphical interface and receiving user commands.
+
+- **User Preferences:** Settings associated with the user, such as GUI-related settings, that are stored separately from applicant data.
+
+- **Versioned Address Book:** The mechanism described in the proposed undo/redo implementation for maintaining previous states of the application's data so that earlier states can be restored.
+
+- **Undo/Redo:** Functionality that allows a user to reverse a previous change or restore a change that was previously undone.
 
 --------------------------------------------------------------------------------------------------------------------
 
