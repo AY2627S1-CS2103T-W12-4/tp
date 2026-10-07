@@ -39,6 +39,12 @@ public class ApplicantCard extends UiPart<Region> {
     @FXML
     private Label email;
     @FXML
+    private Label yearsOfExperience;
+    @FXML
+    private Label source;
+    @FXML
+    private Label interviewNotes;
+    @FXML
     private FlowPane tags;
 
     /**
@@ -52,8 +58,21 @@ public class ApplicantCard extends UiPart<Region> {
         phone.setText(applicant.getPhone().value);
         address.setText(applicant.getAddress().value);
         email.setText(applicant.getEmail().value);
+        setOptionalLabel(yearsOfExperience, "Experience: ", applicant.getYearsOfExperience().value, " years");
+        setOptionalLabel(source, "Source: ", applicant.getSource().value, "");
+        setOptionalLabel(interviewNotes, "Notes: ", applicant.getInterviewNotes().value, "");
         applicant.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    /**
+     * Shows {@code prefix + value + suffix} in {@code label}, or hides the label if {@code value} is empty.
+     */
+    private static void setOptionalLabel(Label label, String prefix, String value, String suffix) {
+        boolean hasValue = !value.isEmpty();
+        label.setText(hasValue ? prefix + value + suffix : "");
+        label.setVisible(hasValue);
+        label.setManaged(hasValue);
     }
 }

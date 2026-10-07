@@ -25,11 +25,12 @@ public class TypicalApplicants {
 
     public static final Applicant ALICE = new ApplicantBuilder().withName("Alice Pauline")
             .withAddress("123, Jurong West Ave 6, #08-111").withEmail("alice@example.com")
-            .withPhone("94351253")
-            .withTags("friends").build();
+            .withPhone("94351253").withInterviewNotes("Strong in Java").withYearsOfExperience("5")
+            .withSource("LinkedIn").withTags("friends").build();
     public static final Applicant BENSON = new ApplicantBuilder().withName("Benson Meier")
             .withAddress("311, Clementi Ave 2, #02-25")
             .withEmail("johnd@example.com").withPhone("98765432")
+            .withInterviewNotes("Needs a follow-up call").withYearsOfExperience("12").withSource("Referral")
             .withTags("owesMoney", "friends").build();
     public static final Applicant CARL = new ApplicantBuilder().withName("Carl Kurz").withPhone("95352563")
             .withEmail("heinz@example.com").withAddress("wall street").build();
