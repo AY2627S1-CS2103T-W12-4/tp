@@ -12,6 +12,7 @@ Class AddressBook
 Class ModelManager
 Class UserPrefs
 
+Class ApplicantRegistry
 Class UniqueApplicantList
 Class Applicant
 Class Address
@@ -37,6 +38,8 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniqueApplicantList
 UniqueApplicantList --> "~* all" Applicant
+ApplicantRegistry -right-> "0..*" Applicant : registered by UUID
+
 Applicant *--> Name
 Applicant *--> Phone
 Applicant *--> Email
