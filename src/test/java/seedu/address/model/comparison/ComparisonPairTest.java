@@ -6,7 +6,6 @@ import static seedu.address.testutil.Assert.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.model.applicant.ApplicantId;
-import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 
 public class ComparisonPairTest {
 
@@ -14,22 +13,47 @@ public class ComparisonPairTest {
     private static final String SECOND_ID = "123e4567-e89b-12d3-a456-426614174001";
 
     @Test
-    public void init_validDistinctIds_returnsComparisonPair() {
-        ApplicantId firstApplicant = new ApplicantId(FIRST_ID);
-        ApplicantId secondApplicant = new ApplicantId(SECOND_ID);
+    public void constructor_validDistinctIds_preservesPresentationOrder() {
+        ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
+        ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
 
-        ComparisonPair pair = ComparisonPair.init(firstApplicant, secondApplicant);
+        ComparisonPair pair = new ComparisonPair(firstApplicantId, secondApplicantId);
 
-        assertEquals(firstApplicant, pair.getFirstApplicant());
-        assertEquals(secondApplicant, pair.getSecondApplicant());
+        assertEquals(firstApplicantId, pair.getFirstApplicantId());
+        assertEquals(secondApplicantId, pair.getSecondApplicantId());
+
+        ComparisonPair reversedPair = new ComparisonPair(secondApplicantId, firstApplicantId);
+        assertEquals(secondApplicantId, reversedPair.getFirstApplicantId());
+        assertEquals(firstApplicantId, reversedPair.getSecondApplicantId());
     }
 
     @Test
-    public void init_sameIds_throwsDuplicateApplicantException() {
-        ApplicantId firstApplicant = new ApplicantId(FIRST_ID);
-        ApplicantId secondApplicant = new ApplicantId(FIRST_ID);
+    public void constructor_equalIdValues_throwsIllegalArgumentException() {
+        ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
+        ApplicantId secondApplicantId = new ApplicantId(FIRST_ID);
 
-        assertThrows(DuplicateApplicantException.class, () ->
-                ComparisonPair.init(firstApplicant, secondApplicant));
+        assertThrows(IllegalArgumentException.class, "A comparison pair must contain two distinct applicants.", () ->
+                new ComparisonPair(firstApplicantId, secondApplicantId));
+    }
+
+    @Test
+    public void constructor_sameIdObject_throwsIllegalArgumentException() {
+        ApplicantId applicantId = new ApplicantId(FIRST_ID);
+
+        assertThrows(IllegalArgumentException.class, () -> new ComparisonPair(applicantId, applicantId));
+    }
+
+    @Test
+    public void constructor_nullFirstId_throwsNullPointerException() {
+        ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
+
+        assertThrows(NullPointerException.class, () -> new ComparisonPair(null, secondApplicantId));
+    }
+
+    @Test
+    public void constructor_nullSecondId_throwsNullPointerException() {
+        ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
+
+        assertThrows(NullPointerException.class, () -> new ComparisonPair(firstApplicantId, null));
     }
 }

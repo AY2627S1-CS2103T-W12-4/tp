@@ -18,10 +18,10 @@ public interface ComparisonDecision {
     UUID getDecisionId();
 
     /** Returns the first participant's stable ID, preserving the presented side. */
-    ApplicantId getFirstApplicant();
+    ApplicantId getFirstApplicantId();
 
     /** Returns the second participant's stable ID, preserving the presented side. */
-    ApplicantId getSecondApplicant();
+    ApplicantId getSecondApplicantId();
 
     /** Returns the winning participant's stable ID. */
     ApplicantId getWinnerId();
