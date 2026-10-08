@@ -133,16 +133,15 @@ How the parsing works:
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<puml src="diagrams/ModelClassDiagram.puml" width="450" />
+<puml src="diagrams/ModelClassDiagram.puml" width="650" />
 
 
 The `Model` component,
 
-* stores the address book data i.e., all `Applicant` objects (which are contained in a `UniqueApplicantList` object).
+* stores applicant records in `AddressBook` through a `UniqueApplicantList`. The model package also contains `ApplicantRegistry`, an in-memory collection where `add(Applicant)` registers an applicant under their existing `ApplicantId` and returns that ID, and `get(ApplicantId)` retrieves the corresponding applicant. The registry is not yet integrated with commands, the UI, or JSON storage.
 * stores the `Applicant` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Applicant>` that the UI can observe and bind to, so the UI updates when the list changes.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
-
 
 <box type="info" seamless>
 
