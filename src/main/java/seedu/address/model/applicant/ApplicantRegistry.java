@@ -63,13 +63,11 @@ public class ApplicantRegistry {
     public void edit(ApplicantId applicantId, Applicant editedApplicant) {
         requireAllNonNull(applicantId, editedApplicant);
 
-        if (!applicants.containsKey(applicantId)) {
-            throw new ApplicantNotFoundException();
-        }
+        Applicant target = this.get(applicantId);
         checkArgument(applicantId.equals(editedApplicant.getId()), "Editing an applicant must not change its ID.");
 
-        if (applicants.entrySet().stream().anyMatch(entry -> !entry.getKey().equals(applicantId)
-                && editedApplicant.isSameApplicant(entry.getValue()))) {
+        if (!target.isSameApplicant(editedApplicant)
+                && applicants.values().stream().anyMatch(editedApplicant::isSameApplicant)) {
             throw new DuplicateApplicantException();
         }
 
