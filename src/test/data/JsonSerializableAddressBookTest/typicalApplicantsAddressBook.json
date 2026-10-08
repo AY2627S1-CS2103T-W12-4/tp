@@ -1,16 +1,23 @@
 {
   "_comment": "AddressBook save file which contains the same Applicant values as in TypicalApplicants#getTypicalAddressBook()",
   "applicants" : [ {
+    "id" : "123e4567-e89b-12d3-a456-426614174000",
     "name" : "Alice Pauline",
     "phone" : "94351253",
     "email" : "alice@example.com",
     "address" : "123, Jurong West Ave 6, #08-111",
+    "interviewNotes" : "Strong in Java",
+    "yearsOfExperience" : "5",
+    "source" : "LinkedIn",
     "tags" : [ "friends" ]
   }, {
     "name" : "Benson Meier",
     "phone" : "98765432",
     "email" : "johnd@example.com",
     "address" : "311, Clementi Ave 2, #02-25",
+    "interviewNotes" : "Needs a follow-up call",
+    "yearsOfExperience" : "12",
+    "source" : "Referral",
     "tags" : [ "owesMoney", "friends" ]
   }, {
     "name" : "Carl Kurz",

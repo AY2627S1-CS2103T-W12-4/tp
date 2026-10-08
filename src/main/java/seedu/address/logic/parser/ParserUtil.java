@@ -11,8 +11,11 @@ import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Email;
+import seedu.address.model.applicant.InterviewNotes;
 import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
+import seedu.address.model.applicant.Source;
+import seedu.address.model.applicant.YearsOfExperience;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -78,6 +81,39 @@ public class ParserUtil {
             throw new ParseException(Address.MESSAGE_CONSTRAINTS);
         }
         return new Address(trimmedAddress);
+    }
+
+    /**
+     * Parses a {@code String interviewNotes} into an {@code InterviewNotes}.
+     * Leading and trailing whitespaces will be trimmed.
+     */
+    public static InterviewNotes parseInterviewNotes(String interviewNotes) {
+        requireNonNull(interviewNotes);
+        return new InterviewNotes(interviewNotes.trim());
+    }
+
+    /**
+     * Parses a {@code String yearsOfExperience} into a {@code YearsOfExperience}.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code yearsOfExperience} is invalid.
+     */
+    public static YearsOfExperience parseYearsOfExperience(String yearsOfExperience) throws ParseException {
+        requireNonNull(yearsOfExperience);
+        String trimmedYearsOfExperience = yearsOfExperience.trim();
+        if (!YearsOfExperience.isValidYearsOfExperience(trimmedYearsOfExperience)) {
+            throw new ParseException(YearsOfExperience.MESSAGE_CONSTRAINTS);
+        }
+        return new YearsOfExperience(trimmedYearsOfExperience);
+    }
+
+    /**
+     * Parses a {@code String source} into a {@code Source}.
+     * Leading and trailing whitespaces will be trimmed.
+     */
+    public static Source parseSource(String source) {
+        requireNonNull(source);
+        return new Source(source.trim());
     }
 
     /**

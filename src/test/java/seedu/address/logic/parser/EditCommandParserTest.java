@@ -5,27 +5,42 @@ import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.INTERVIEW_NOTES_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.INTERVIEW_NOTES_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_ADDRESS_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_EMAIL_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_NAME_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_PHONE_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.INVALID_TAG_DESC;
+import static seedu.address.logic.commands.CommandTestUtil.INVALID_YEARS_OF_EXPERIENCE_DESC;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.SOURCE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.SOURCE_DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.TAG_DESC_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.TAG_DESC_HUSBAND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.YEARS_OF_EXPERIENCE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.YEARS_OF_EXPERIENCE_DESC_BOB;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_INTERVIEW_NOTES;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SOURCE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_YEARS_OF_EXPERIENCE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
@@ -42,6 +57,7 @@ import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Email;
 import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
+import seedu.address.model.applicant.YearsOfExperience;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EditApplicantDescriptorBuilder;
 
@@ -78,7 +94,7 @@ public class EditCommandParserTest {
         assertParseFailure(parser, "1 some random string", MESSAGE_INVALID_FORMAT);
 
         // invalid prefix being parsed as preamble
-        assertParseFailure(parser, "1 i/ string", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "1 x/ string", MESSAGE_INVALID_FORMAT);
     }
 
     @Test
@@ -204,5 +220,95 @@ public class EditCommandParserTest {
         EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
 
         assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_optionalFieldsSpecified_success() {
+        Index targetIndex = INDEX_SECOND_APPLICANT;
+        String userInput = targetIndex.getOneBased() + SOURCE_DESC_BOB + INTERVIEW_NOTES_DESC_AMY
+                + YEARS_OF_EXPERIENCE_DESC_BOB;
+
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder()
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_AMY).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).build();
+
+        assertParseSuccess(parser, userInput, new EditCommand(targetIndex, descriptor));
+    }
+
+    @Test
+    public void parse_oneOptionalFieldSpecified_success() {
+        Index targetIndex = INDEX_THIRD_APPLICANT;
+
+        // interview notes
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder()
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_AMY).build();
+        assertParseSuccess(parser, targetIndex.getOneBased() + INTERVIEW_NOTES_DESC_AMY,
+                new EditCommand(targetIndex, descriptor));
+
+        // years of experience
+        descriptor = new EditApplicantDescriptorBuilder().withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_AMY)
+                .build();
+        assertParseSuccess(parser, targetIndex.getOneBased() + YEARS_OF_EXPERIENCE_DESC_AMY,
+                new EditCommand(targetIndex, descriptor));
+
+        // source
+        descriptor = new EditApplicantDescriptorBuilder().withSource(VALID_SOURCE_AMY).build();
+        assertParseSuccess(parser, targetIndex.getOneBased() + SOURCE_DESC_AMY,
+                new EditCommand(targetIndex, descriptor));
+    }
+
+    @Test
+    public void parse_clearOptionalFields_success() {
+        // an empty value is allowed, and clears the field
+        Index targetIndex = INDEX_FIRST_APPLICANT;
+        String userInput = targetIndex.getOneBased() + " " + PREFIX_INTERVIEW_NOTES + " "
+                + PREFIX_YEARS_OF_EXPERIENCE + " " + PREFIX_SOURCE;
+
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withInterviewNotes("")
+                .withYearsOfExperience("").withSource("").build();
+
+        assertParseSuccess(parser, userInput, new EditCommand(targetIndex, descriptor));
+    }
+
+    @Test
+    public void parse_optionalFieldsWithExtraWhitespace_trimmed() {
+        Index targetIndex = INDEX_FIRST_APPLICANT;
+        String userInput = targetIndex.getOneBased() + " i/   Strong in Java    y/  7   s/    LinkedIn   ";
+
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withInterviewNotes("Strong in Java")
+                .withYearsOfExperience("7").withSource("LinkedIn").build();
+
+        assertParseSuccess(parser, userInput, new EditCommand(targetIndex, descriptor));
+    }
+
+    @Test
+    public void parse_invalidYearsOfExperience_failure() {
+        assertParseFailure(parser, "1" + INVALID_YEARS_OF_EXPERIENCE_DESC, YearsOfExperience.MESSAGE_CONSTRAINTS);
+
+        String[] invalidYears = {"-1", "1.5", "abc", "5 5", "007", "100"};
+        for (String invalidYear : invalidYears) {
+            assertParseFailure(parser, "1 " + PREFIX_YEARS_OF_EXPERIENCE + invalidYear,
+                    YearsOfExperience.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_repeatedOptionalFields_failure() {
+        Index targetIndex = INDEX_FIRST_APPLICANT;
+
+        assertParseFailure(parser, targetIndex.getOneBased() + INTERVIEW_NOTES_DESC_AMY + INTERVIEW_NOTES_DESC_BOB,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_INTERVIEW_NOTES));
+
+        assertParseFailure(parser, targetIndex.getOneBased() + YEARS_OF_EXPERIENCE_DESC_AMY
+                + YEARS_OF_EXPERIENCE_DESC_BOB, Messages.getErrorMessageForDuplicatePrefixes(
+                PREFIX_YEARS_OF_EXPERIENCE));
+
+        assertParseFailure(parser, targetIndex.getOneBased() + SOURCE_DESC_AMY + SOURCE_DESC_BOB,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_SOURCE));
+
+        // repeating a field takes priority over its value being invalid
+        assertParseFailure(parser, targetIndex.getOneBased() + INVALID_YEARS_OF_EXPERIENCE_DESC
+                + YEARS_OF_EXPERIENCE_DESC_BOB, Messages.getErrorMessageForDuplicatePrefixes(
+                PREFIX_YEARS_OF_EXPERIENCE));
     }
 }

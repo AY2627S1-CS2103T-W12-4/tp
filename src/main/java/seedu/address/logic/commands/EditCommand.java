@@ -3,9 +3,12 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_INTERVIEW_NOTES;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SOURCE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_YEARS_OF_EXPERIENCE;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_APPLICANTS;
 
 import java.util.Collections;
@@ -24,8 +27,11 @@ import seedu.address.model.Model;
 import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.Email;
+import seedu.address.model.applicant.InterviewNotes;
 import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
+import seedu.address.model.applicant.Source;
+import seedu.address.model.applicant.YearsOfExperience;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -43,7 +49,10 @@ public class EditCommand extends Command {
             + "[" + PREFIX_PHONE + "PHONE] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
             + "[" + PREFIX_ADDRESS + "ADDRESS] "
-            + "[" + PREFIX_TAG + "TAG]...\n"
+            + "[" + PREFIX_INTERVIEW_NOTES + "INTERVIEW_NOTES] "
+            + "[" + PREFIX_YEARS_OF_EXPERIENCE + "YEARS_OF_EXPERIENCE] "
+            + "[" + PREFIX_SOURCE + "SOURCE] "
+            + "[" + PREFIX_TAG + "SKILL]...\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "johndoe@example.com";
@@ -100,9 +109,15 @@ public class EditCommand extends Command {
         Phone updatedPhone = editApplicantDescriptor.getPhone().orElse(applicantToEdit.getPhone());
         Email updatedEmail = editApplicantDescriptor.getEmail().orElse(applicantToEdit.getEmail());
         Address updatedAddress = editApplicantDescriptor.getAddress().orElse(applicantToEdit.getAddress());
+        InterviewNotes updatedInterviewNotes = editApplicantDescriptor.getInterviewNotes()
+                .orElse(applicantToEdit.getInterviewNotes());
+        YearsOfExperience updatedYearsOfExperience = editApplicantDescriptor.getYearsOfExperience()
+                .orElse(applicantToEdit.getYearsOfExperience());
+        Source updatedSource = editApplicantDescriptor.getSource().orElse(applicantToEdit.getSource());
         Set<Tag> updatedTags = editApplicantDescriptor.getTags().orElse(applicantToEdit.getTags());
 
-        return new Applicant(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags);
+        return new Applicant(applicantToEdit.getId(), updatedName, updatedPhone, updatedEmail, updatedAddress,
+                updatedInterviewNotes, updatedYearsOfExperience, updatedSource, updatedTags);
     }
 
     @Override
@@ -137,6 +152,9 @@ public class EditCommand extends Command {
         private Phone phone;
         private Email email;
         private Address address;
+        private InterviewNotes interviewNotes;
+        private YearsOfExperience yearsOfExperience;
+        private Source source;
         private Set<Tag> tags;
 
         public EditApplicantDescriptor() {}
@@ -150,6 +168,9 @@ public class EditCommand extends Command {
             setPhone(toCopy.phone);
             setEmail(toCopy.email);
             setAddress(toCopy.address);
+            setInterviewNotes(toCopy.interviewNotes);
+            setYearsOfExperience(toCopy.yearsOfExperience);
+            setSource(toCopy.source);
             setTags(toCopy.tags);
         }
 
@@ -157,7 +178,8 @@ public class EditCommand extends Command {
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(name, phone, email, address, tags);
+            return CollectionUtil.isAnyNonNull(name, phone, email, address, interviewNotes, yearsOfExperience,
+                    source, tags);
         }
 
         public void setName(Name name) {
@@ -192,6 +214,30 @@ public class EditCommand extends Command {
             return Optional.ofNullable(address);
         }
 
+        public void setInterviewNotes(InterviewNotes interviewNotes) {
+            this.interviewNotes = interviewNotes;
+        }
+
+        public Optional<InterviewNotes> getInterviewNotes() {
+            return Optional.ofNullable(interviewNotes);
+        }
+
+        public void setYearsOfExperience(YearsOfExperience yearsOfExperience) {
+            this.yearsOfExperience = yearsOfExperience;
+        }
+
+        public Optional<YearsOfExperience> getYearsOfExperience() {
+            return Optional.ofNullable(yearsOfExperience);
+        }
+
+        public void setSource(Source source) {
+            this.source = source;
+        }
+
+        public Optional<Source> getSource() {
+            return Optional.ofNullable(source);
+        }
+
         /**
          * Sets {@code tags} to this object's {@code tags}.
          * A defensive copy of {@code tags} is used internally.
@@ -224,6 +270,9 @@ public class EditCommand extends Command {
                     && Objects.equals(phone, otherEditApplicantDescriptor.phone)
                     && Objects.equals(email, otherEditApplicantDescriptor.email)
                     && Objects.equals(address, otherEditApplicantDescriptor.address)
+                    && Objects.equals(interviewNotes, otherEditApplicantDescriptor.interviewNotes)
+                    && Objects.equals(yearsOfExperience, otherEditApplicantDescriptor.yearsOfExperience)
+                    && Objects.equals(source, otherEditApplicantDescriptor.source)
                     && Objects.equals(tags, otherEditApplicantDescriptor.tags);
         }
 
@@ -234,6 +283,9 @@ public class EditCommand extends Command {
                     .add("phone", phone)
                     .add("email", email)
                     .add("address", address)
+                    .add("interviewNotes", interviewNotes)
+                    .add("yearsOfExperience", yearsOfExperience)
+                    .add("source", source)
                     .add("tags", tags)
                     .toString();
         }

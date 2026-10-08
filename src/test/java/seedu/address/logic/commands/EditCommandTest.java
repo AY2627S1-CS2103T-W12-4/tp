@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showApplicantAtIndex;
@@ -186,4 +189,53 @@ public class EditCommandTest {
         assertEquals(expected, editCommand.toString());
     }
 
+    @Test
+    public void execute_optionalFieldsSpecifiedUnfilteredList_success() {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        Applicant editedApplicant = new ApplicantBuilder(firstApplicant)
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).build();
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder()
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setApplicant(firstApplicant, editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_editApplicant_keepsApplicantId() throws Exception {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB)
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).build();
+
+        new EditCommand(INDEX_FIRST_APPLICANT, descriptor).execute(model);
+
+        Applicant editedApplicant = model.getFilteredApplicantList().get(0);
+        assertEquals(VALID_NAME_BOB, editedApplicant.getName().fullName);
+        assertEquals(firstApplicant.getId(), editedApplicant.getId());
+    }
+
+    @Test
+    public void execute_clearOptionalFields_success() {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        Applicant editedApplicant = new ApplicantBuilder(firstApplicant).withInterviewNotes("")
+                .withYearsOfExperience("").withSource("").build();
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withInterviewNotes("")
+                .withYearsOfExperience("").withSource("").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setApplicant(firstApplicant, editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+        assertEquals("", model.getFilteredApplicantList().get(0).getInterviewNotes().value);
+    }
 }
