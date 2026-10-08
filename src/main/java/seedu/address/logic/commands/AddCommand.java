@@ -9,12 +9,14 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SOURCE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_YEARS_OF_EXPERIENCE;
+import static seedu.address.model.Model.PREDICATE_SHOW_ALL_APPLICANTS;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 
 /**
  * Adds an applicant to RecruitDex.
@@ -60,11 +62,12 @@ public class AddCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
-        if (model.hasApplicant(toAdd)) {
-            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT);
+        try {
+            model.getApplicantRegistry().add(toAdd);
+        } catch (DuplicateApplicantException e) {
+            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT, e);
         }
-
-        model.addApplicant(toAdd);
+        model.updateFilteredApplicantList(PREDICATE_SHOW_ALL_APPLICANTS);
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
     }
 

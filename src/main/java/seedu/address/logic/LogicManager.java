@@ -66,11 +66,11 @@ public class LogicManager implements Logic {
 
     @Override
     public GuiSettings getGuiSettings() {
-        return model.getGuiSettings();
+        return model.getUserPrefs().getGuiSettings();
     }
 
     @Override
     public void setGuiSettings(GuiSettings guiSettings) {
-        model.setGuiSettings(guiSettings);
+        model.getUserPrefs().setGuiSettings(guiSettings);
     }
 }

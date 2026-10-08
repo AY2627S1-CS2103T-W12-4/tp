@@ -1,13 +1,21 @@
 package seedu.address.model.applicant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
 import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 import seedu.address.testutil.ApplicantBuilder;
@@ -15,6 +23,71 @@ import seedu.address.testutil.ApplicantBuilder;
 public class ApplicantRegistryTest {
 
     private final ApplicantRegistry registry = new ApplicantRegistry();
+
+    @Test
+    public void delete_editedRecord_usesStableIdAndKeepsOtherRecords() {
+        registry.add(ALICE);
+        registry.add(BENSON);
+        registry.edit(ALICE.getId(), new ApplicantBuilder(ALICE).withName("Alice Tan").build());
+
+        registry.delete(new ApplicantId(ALICE.getId().value));
+
+        assertFalse(registry.containsId(ALICE.getId()));
+        assertSame(BENSON, registry.get(BENSON.getId()));
+        assertEquals(List.of(BENSON), registry.getApplicantList());
+    }
+
+    @Test
+    public void delete_unknownOrNullId_doesNotChangeRecords() {
+        registry.add(ALICE);
+        assertThrows(NullPointerException.class, () -> registry.delete(null));
+        assertThrows(ApplicantNotFoundException.class, () -> registry.delete(BENSON.getId()));
+        assertEquals(List.of(ALICE), registry.getApplicantList());
+    }
+
+    @Test
+    public void setApplicants_invalidReplacement_preservesRecordsAndObservableView() {
+        registry.add(BENSON);
+        ObservableList<Applicant> view = registry.getApplicantList();
+        Applicant duplicateId = new ApplicantBuilder(ALICE).withName("Different name").build();
+        Applicant duplicateName = new ApplicantBuilder(ALICE).withId(BENSON.getId().value).build();
+
+        assertThrows(NullPointerException.class, () -> registry.setApplicants(null));
+        assertThrows(NullPointerException.class, () -> registry.setApplicants(Arrays.asList(ALICE, null)));
+        assertThrows(DuplicateApplicantException.class, () -> registry.setApplicants(List.of(ALICE, duplicateId)));
+        assertThrows(DuplicateApplicantException.class, () -> registry.setApplicants(List.of(ALICE, duplicateName)));
+        assertSame(view, registry.getApplicantList());
+        assertEquals(List.of(BENSON), view);
+    }
+
+    @Test
+    public void setApplicants_validReplacement_preservesOrderAndSupportsSelfReplacement() {
+        registry.add(ALICE);
+        ObservableList<Applicant> view = registry.getApplicantList();
+
+        registry.setApplicants(List.of(BENSON, ALICE));
+        registry.setApplicants(view);
+
+        assertSame(view, registry.getApplicantList());
+        assertEquals(List.of(BENSON, ALICE), view);
+        assertSame(BENSON, registry.get(BENSON.getId()));
+        assertSame(ALICE, registry.get(ALICE.getId()));
+    }
+
+    @Test
+    public void getApplicantList_mutations_areObservableAndCannotBypassRegistry() {
+        ObservableList<Applicant> view = registry.getApplicantList();
+        int[] changes = {0};
+        view.addListener((ListChangeListener<Applicant>) change -> changes[0]++);
+
+        registry.add(ALICE);
+        registry.edit(ALICE.getId(), new ApplicantBuilder(ALICE).withName("Alice Tan").build());
+        registry.delete(ALICE.getId());
+
+        assertEquals(3, changes[0]);
+        assertTrue(view.isEmpty());
+        assertThrows(UnsupportedOperationException.class, () -> view.add(BENSON));
+    }
 
     @Test
     public void add_applicant_returnsExistingIdForStoredApplicant() {

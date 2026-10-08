@@ -23,9 +23,9 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand.EditApplicantDescriptor;
-import seedu.address.model.RecruitDexData;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.testutil.ApplicantBuilder;
@@ -40,7 +40,8 @@ public class EditCommandTest {
 
     @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        Applicant editedApplicant = new ApplicantBuilder().build();
+        Applicant editedApplicant = new ApplicantBuilder()
+                .withId(model.getFilteredApplicantList().get(0).getId().value).build();
         EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder(editedApplicant).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
 
@@ -48,7 +49,7 @@ public class EditCommandTest {
                 Messages.format(editedApplicant));
 
         Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
-        expectedModel.setApplicant(model.getFilteredApplicantList().get(0), editedApplicant);
+        expectedModel.getApplicantRegistry().edit(model.getFilteredApplicantList().get(0).getId(), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -70,7 +71,7 @@ public class EditCommandTest {
                 Messages.format(editedApplicant));
 
         Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
-        expectedModel.setApplicant(lastApplicant, editedApplicant);
+        expectedModel.getApplicantRegistry().edit(lastApplicant.getId(), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -101,7 +102,7 @@ public class EditCommandTest {
                 Messages.format(editedApplicant));
 
         Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
-        expectedModel.setApplicant(model.getFilteredApplicantList().get(0), editedApplicant);
+        expectedModel.getApplicantRegistry().edit(model.getFilteredApplicantList().get(0).getId(), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -203,7 +204,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
         Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
-        expectedModel.setApplicant(firstApplicant, editedApplicant);
+        expectedModel.getApplicantRegistry().edit(firstApplicant.getId(), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -233,7 +234,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
         Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
-        expectedModel.setApplicant(firstApplicant, editedApplicant);
+        expectedModel.getApplicantRegistry().edit(firstApplicant.getId(), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
         assertEquals("", model.getFilteredApplicantList().get(0).getInterviewNotes().value);

@@ -24,7 +24,7 @@ public class RecruitDexDataBuilder {
      * Adds a new {@code Applicant} to the {@code RecruitDexData} that we are building.
      */
     public RecruitDexDataBuilder withApplicant(Applicant applicant) {
-        recruitDexData.addApplicant(applicant);
+        recruitDexData.getApplicantRegistry().add(applicant);
         return this;
     }
 

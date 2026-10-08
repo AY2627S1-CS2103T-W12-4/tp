@@ -36,7 +36,7 @@ public class DeleteCommandTest {
                 Messages.format(applicantToDelete));
 
         ModelManager expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
-        expectedModel.deleteApplicant(applicantToDelete);
+        expectedModel.getApplicantRegistry().delete(applicantToDelete.getId());
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
     }
@@ -60,7 +60,7 @@ public class DeleteCommandTest {
                 Messages.format(applicantToDelete));
 
         Model expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
-        expectedModel.deleteApplicant(applicantToDelete);
+        expectedModel.getApplicantRegistry().delete(applicantToDelete.getId());
         showNoApplicant(expectedModel);
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);

@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import seedu.address.model.RecruitDexData;
 import seedu.address.model.ReadOnlyRecruitDexData;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantId;
@@ -53,7 +53,7 @@ public class SampleDataUtil {
     public static ReadOnlyRecruitDexData getSampleRecruitDexData() {
         RecruitDexData sampleAb = new RecruitDexData();
         for (Applicant sampleApplicant : getSampleApplicants()) {
-            sampleAb.addApplicant(sampleApplicant);
+            sampleAb.getApplicantRegistry().add(sampleApplicant);
         }
         return sampleAb;
     }

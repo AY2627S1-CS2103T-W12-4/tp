@@ -11,13 +11,17 @@ import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
-import seedu.address.model.RecruitDexData;
+import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyRecruitDexData;
+import seedu.address.model.RecruitDexData;
+import seedu.address.model.applicant.Applicant;
+import seedu.address.testutil.ApplicantBuilder;
 
 public class JsonRecruitDexDataStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonRecruitDexDataStorageTest");
@@ -26,12 +30,41 @@ public class JsonRecruitDexDataStorageTest {
     public Path testFolder;
 
     @Test
+    public void readAndSaveRecruitDexData_editAndReload_preservesIdsAndOptionalDetails() throws Exception {
+        Path filePath = testFolder.resolve("recruitdex.json");
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+        RecruitDexData original = getTypicalRecruitDexData();
+        Applicant edited = new ApplicantBuilder(ALICE).withName("Alice Tan")
+                .withInterviewNotes("Strong interview").withYearsOfExperience("5").withSource("Referral").build();
+        original.getApplicantRegistry().edit(ALICE.getId(), edited);
+
+        storage.saveRecruitDexData(original);
+        RecruitDexData restored = new RecruitDexData(storage.readRecruitDexData().orElseThrow());
+
+        assertEquals(edited, restored.getApplicantRegistry().get(ALICE.getId()));
+        assertEquals(original.getApplicantList().stream().map(Applicant::getId).toList(),
+                restored.getApplicantList().stream().map(Applicant::getId).toList());
+    }
+
+    @Test
+    public void readRecruitDexData_duplicateIds_throwsDataLoadingException() throws Exception {
+        Path filePath = testFolder.resolve("duplicateIds.json");
+        Applicant duplicate = new ApplicantBuilder(ALICE).withName("Another applicant").build();
+        JsonUtil.saveJsonFile(new JsonSerializableRecruitDexData(
+                List.of(new JsonAdaptedApplicant(ALICE), new JsonAdaptedApplicant(duplicate))), filePath);
+
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+        assertThrows(DataLoadingException.class, storage::readRecruitDexData);
+    }
+
+    @Test
     public void readRecruitDexData_nullFilePath_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> readRecruitDexData(null));
     }
 
     private java.util.Optional<ReadOnlyRecruitDexData> readRecruitDexData(String filePath) throws Exception {
-        return new JsonRecruitDexDataStorage(Paths.get(filePath)).readRecruitDexData(addToTestDataPathIfNotNull(filePath));
+        return new JsonRecruitDexDataStorage(Paths.get(filePath))
+                .readRecruitDexData(addToTestDataPathIfNotNull(filePath));
     }
 
     private Path addToTestDataPathIfNotNull(String prefsFileInTestDataFolder) {
@@ -57,7 +90,8 @@ public class JsonRecruitDexDataStorageTest {
 
     @Test
     public void readRecruitDexData_invalidAndValidApplicantRecruitDexData_throwDataLoadingException() {
-        assertThrows(DataLoadingException.class, () -> readRecruitDexData("invalidAndValidApplicantRecruitDexData.json"));
+        assertThrows(DataLoadingException.class, () ->
+                readRecruitDexData("invalidAndValidApplicantRecruitDexData.json"));
     }
 
     @Test
@@ -72,14 +106,14 @@ public class JsonRecruitDexDataStorageTest {
         assertEquals(original, new RecruitDexData(readBack));
 
         // Modify data, overwrite existing file, and read back
-        original.addApplicant(HOON);
-        original.removeApplicant(ALICE);
+        original.getApplicantRegistry().add(HOON);
+        original.getApplicantRegistry().delete(ALICE.getId());
         jsonRecruitDexDataStorage.saveRecruitDexData(original, filePath);
         readBack = jsonRecruitDexDataStorage.readRecruitDexData(filePath).get();
         assertEquals(original, new RecruitDexData(readBack));
 
         // Save and read without specifying file path
-        original.addApplicant(IDA);
+        original.getApplicantRegistry().add(IDA);
         jsonRecruitDexDataStorage.saveRecruitDexData(original); // file path not specified
         readBack = jsonRecruitDexDataStorage.readRecruitDexData().get(); // file path not specified
         assertEquals(original, new RecruitDexData(readBack));

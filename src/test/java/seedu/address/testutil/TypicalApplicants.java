@@ -66,7 +66,7 @@ public class TypicalApplicants {
     public static RecruitDexData getTypicalRecruitDexData() {
         RecruitDexData ab = new RecruitDexData();
         for (Applicant applicant : getTypicalApplicants()) {
-            ab.addApplicant(applicant);
+            ab.getApplicantRegistry().add(applicant);
         }
         return ab;
     }

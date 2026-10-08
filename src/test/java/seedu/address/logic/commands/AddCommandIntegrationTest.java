@@ -31,7 +31,7 @@ public class AddCommandIntegrationTest {
         Applicant validApplicant = new ApplicantBuilder().build();
 
         Model expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
-        expectedModel.addApplicant(validApplicant);
+        expectedModel.getApplicantRegistry().add(validApplicant);
 
         assertCommandSuccess(new AddCommand(validApplicant), model,
                 String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validApplicant)),

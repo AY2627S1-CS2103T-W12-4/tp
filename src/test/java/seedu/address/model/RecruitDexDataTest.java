@@ -1,15 +1,13 @@
 package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
-import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
+import static seedu.address.testutil.TypicalApplicants.BENSON;
 import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 import seedu.address.testutil.ApplicantBuilder;
 
@@ -30,77 +29,62 @@ public class RecruitDexDataTest {
     }
 
     @Test
+    public void constructor_validData_copiesRegistryAndPreservesIds() {
+        RecruitDexData source = getTypicalRecruitDexData();
+        RecruitDexData copy = new RecruitDexData(source);
+
+        assertEquals(source, copy);
+        assertNotSame(source.getApplicantRegistry(), copy.getApplicantRegistry());
+        assertEquals(source.getApplicantList().get(0).getId(), copy.getApplicantList().get(0).getId());
+        copy.getApplicantRegistry().delete(ALICE.getId());
+        assertSame(ALICE, source.getApplicantRegistry().get(ALICE.getId()));
+    }
+
+    @Test
     public void resetData_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> recruitDexData.resetData(null));
     }
 
     @Test
-    public void resetData_withValidReadOnlyRecruitDexData_replacesData() {
+    public void resetData_validData_retainsRegistryAndObservableView() {
+        ApplicantRegistry registry = recruitDexData.getApplicantRegistry();
+        ObservableList<Applicant> view = recruitDexData.getApplicantList();
         RecruitDexData newData = getTypicalRecruitDexData();
+
         recruitDexData.resetData(newData);
+
         assertEquals(newData, recruitDexData);
+        assertSame(registry, recruitDexData.getApplicantRegistry());
+        assertSame(view, recruitDexData.getApplicantList());
+        assertEquals(newData.getApplicantList(), view);
     }
 
     @Test
-    public void resetData_withDuplicateApplicants_throwsDuplicateApplicantException() {
-        // Two applicants with the same identity fields
-        Applicant editedAlice = new ApplicantBuilder(ALICE).withAddress(VALID_ADDRESS_BOB).withTags(VALID_TAG_HUSBAND)
-                .build();
-        List<Applicant> newApplicants = List.of(ALICE, editedAlice);
-        RecruitDexDataStub newData = new RecruitDexDataStub(newApplicants);
+    public void resetData_duplicateIds_rejectsReplacementWithoutChangingRecords() {
+        recruitDexData.getApplicantRegistry().add(BENSON);
+        Applicant conflictingId = new ApplicantBuilder(ALICE).withName("Another applicant").build();
+        ReadOnlyRecruitDexData invalidData = () -> FXCollections.observableArrayList(ALICE, conflictingId);
 
-        assertThrows(DuplicateApplicantException.class, () -> recruitDexData.resetData(newData));
+        assertThrows(DuplicateApplicantException.class, () -> recruitDexData.resetData(invalidData));
+        assertEquals(List.of(BENSON), recruitDexData.getApplicantList());
     }
 
     @Test
-    public void hasApplicant_nullApplicant_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> recruitDexData.hasApplicant(null));
-    }
-
-    @Test
-    public void hasApplicant_applicantNotInRecruitDexData_returnsFalse() {
-        assertFalse(recruitDexData.hasApplicant(ALICE));
-    }
-
-    @Test
-    public void hasApplicant_applicantInRecruitDexData_returnsTrue() {
-        recruitDexData.addApplicant(ALICE);
-        assertTrue(recruitDexData.hasApplicant(ALICE));
-    }
-
-    @Test
-    public void hasApplicant_applicantWithSameIdentityFieldsInRecruitDexData_returnsTrue() {
-        recruitDexData.addApplicant(ALICE);
-        Applicant editedAlice = new ApplicantBuilder(ALICE).withAddress(VALID_ADDRESS_BOB).withTags(VALID_TAG_HUSBAND)
-                .build();
-        assertTrue(recruitDexData.hasApplicant(editedAlice));
+    public void resetData_ownData_preservesRecords() {
+        recruitDexData.getApplicantRegistry().add(ALICE);
+        recruitDexData.resetData(recruitDexData);
+        assertEquals(List.of(ALICE), recruitDexData.getApplicantList());
     }
 
     @Test
     public void getApplicantList_modifyList_throwsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () -> recruitDexData.getApplicantList().remove(0));
+        assertThrows(UnsupportedOperationException.class, () -> recruitDexData.getApplicantList().add(ALICE));
     }
 
     @Test
     public void toStringMethod() {
-        String expected = RecruitDexData.class.getCanonicalName() + "{applicants=" + recruitDexData.getApplicantList() + "}";
+        String expected = RecruitDexData.class.getCanonicalName()
+                + "{applicants=" + recruitDexData.getApplicantList() + "}";
         assertEquals(expected, recruitDexData.toString());
     }
-
-    /**
-     * A stub ReadOnlyRecruitDexData whose applicants list can violate interface constraints.
-     */
-    private static class RecruitDexDataStub implements ReadOnlyRecruitDexData {
-        private final ObservableList<Applicant> applicants = FXCollections.observableArrayList();
-
-        RecruitDexDataStub(Collection<Applicant> applicants) {
-            this.applicants.setAll(applicants);
-        }
-
-        @Override
-        public ObservableList<Applicant> getApplicantList() {
-            return applicants;
-        }
-    }
-
 }

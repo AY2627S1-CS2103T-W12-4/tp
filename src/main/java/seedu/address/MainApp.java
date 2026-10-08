@@ -13,11 +13,11 @@ import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.LogicManager;
-import seedu.address.model.RecruitDexData;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.ReadOnlyUserPrefs;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.util.SampleDataUtil;
 import seedu.address.storage.JsonRecruitDexDataStorage;
@@ -36,6 +36,7 @@ public class MainApp extends Application {
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
+    // Retain the existing location so the migration loads users' current applicant records.
     private static final Path RECRUIT_DEX_DATA_FILE_PATH = Paths.get("data", "addressbook.json");
 
     protected Ui ui;

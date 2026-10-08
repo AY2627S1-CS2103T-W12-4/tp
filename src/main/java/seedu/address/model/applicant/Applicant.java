@@ -99,7 +99,7 @@ public class Applicant {
 
     /**
      * Returns true if both applicants have the same name.
-     * This defines a weaker notion of equality between two applicants.
+     * This retains the legacy duplicate-record check, separately from the stable {@link #getId()}.
      */
     public boolean isSameApplicant(Applicant otherApplicant) {
         if (otherApplicant == this) {

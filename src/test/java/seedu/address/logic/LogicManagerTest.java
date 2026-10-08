@@ -168,7 +168,7 @@ public class LogicManagerTest {
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         Applicant expectedApplicant = new ApplicantBuilder(AMY).withTags().build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addApplicant(expectedApplicant);
+        expectedModel.getApplicantRegistry().add(expectedApplicant);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }

@@ -9,12 +9,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
 import seedu.address.commons.exceptions.IllegalValueException;
-import seedu.address.model.RecruitDexData;
 import seedu.address.model.ReadOnlyRecruitDexData;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 
 /**
- * An Immutable RecruitDexData that is serializable to JSON format.
+ * An immutable snapshot of RecruitDex application data for JSON storage.
+ * The legacy root name and applicants field are retained for existing data files.
  */
 @JsonRootName(value = "addressbook")
 class JsonSerializableRecruitDexData {
@@ -50,10 +52,11 @@ class JsonSerializableRecruitDexData {
         RecruitDexData recruitDexData = new RecruitDexData();
         for (JsonAdaptedApplicant jsonAdaptedApplicant : applicants) {
             Applicant applicant = jsonAdaptedApplicant.toModelType();
-            if (recruitDexData.hasApplicant(applicant)) {
-                throw new IllegalValueException(MESSAGE_DUPLICATE_APPLICANT);
+            try {
+                recruitDexData.getApplicantRegistry().add(applicant);
+            } catch (DuplicateApplicantException e) {
+                throw new IllegalValueException(MESSAGE_DUPLICATE_APPLICANT, e);
             }
-            recruitDexData.addApplicant(applicant);
         }
         return recruitDexData;
     }

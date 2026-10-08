@@ -32,6 +32,7 @@ import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
 import seedu.address.model.applicant.Source;
 import seedu.address.model.applicant.YearsOfExperience;
+import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -88,11 +89,11 @@ public class EditCommand extends Command {
         Applicant applicantToEdit = lastShownList.get(index.getZeroBased());
         Applicant editedApplicant = createEditedApplicant(applicantToEdit, editApplicantDescriptor);
 
-        if (!applicantToEdit.isSameApplicant(editedApplicant) && model.hasApplicant(editedApplicant)) {
-            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT);
+        try {
+            model.getApplicantRegistry().edit(applicantToEdit.getId(), editedApplicant);
+        } catch (DuplicateApplicantException e) {
+            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT, e);
         }
-
-        model.setApplicant(applicantToEdit, editedApplicant);
         model.updateFilteredApplicantList(PREDICATE_SHOW_ALL_APPLICANTS);
         return new CommandResult(String.format(MESSAGE_EDIT_APPLICANT_SUCCESS, Messages.format(editedApplicant)));
     }
