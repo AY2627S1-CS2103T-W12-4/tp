@@ -7,9 +7,15 @@ import static seedu.address.logic.commands.CommandTestUtil.DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_BOB;
 
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +62,19 @@ public class EditApplicantDescriptorTest {
         // different tags -> returns false
         editedAmy = new EditApplicantDescriptorBuilder(DESC_AMY).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(DESC_AMY.equals(editedAmy));
+
+        // different interview notes -> returns false
+        editedAmy = new EditApplicantDescriptorBuilder(DESC_AMY).withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).build();
+        assertFalse(DESC_AMY.equals(editedAmy));
+
+        // different years of experience -> returns false
+        editedAmy = new EditApplicantDescriptorBuilder(DESC_AMY)
+                .withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB).build();
+        assertFalse(DESC_AMY.equals(editedAmy));
+
+        // different source -> returns false
+        editedAmy = new EditApplicantDescriptorBuilder(DESC_AMY).withSource(VALID_SOURCE_BOB).build();
+        assertFalse(DESC_AMY.equals(editedAmy));
     }
 
     @Test
@@ -65,8 +84,33 @@ public class EditApplicantDescriptorTest {
                 + editApplicantDescriptor.getName().orElse(null) + ", phone="
                 + editApplicantDescriptor.getPhone().orElse(null) + ", email="
                 + editApplicantDescriptor.getEmail().orElse(null) + ", address="
-                + editApplicantDescriptor.getAddress().orElse(null) + ", tags="
+                + editApplicantDescriptor.getAddress().orElse(null) + ", interviewNotes="
+                + editApplicantDescriptor.getInterviewNotes().orElse(null) + ", yearsOfExperience="
+                + editApplicantDescriptor.getYearsOfExperience().orElse(null) + ", source="
+                + editApplicantDescriptor.getSource().orElse(null) + ", tags="
                 + editApplicantDescriptor.getTags().orElse(null) + "}";
         assertEquals(expected, editApplicantDescriptor.toString());
+    }
+
+    @Test
+    public void isAnyFieldEdited() {
+        // no fields -> false
+        assertFalse(new EditApplicantDescriptor().isAnyFieldEdited());
+
+        // each new field on its own -> true
+        assertTrue(new EditApplicantDescriptorBuilder().withInterviewNotes("").build().isAnyFieldEdited());
+        assertTrue(new EditApplicantDescriptorBuilder().withYearsOfExperience("").build().isAnyFieldEdited());
+        assertTrue(new EditApplicantDescriptorBuilder().withSource("").build().isAnyFieldEdited());
+    }
+
+    @Test
+    public void copyConstructor_copiesNewFields() {
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder()
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_AMY).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_AMY)
+                .withSource(VALID_SOURCE_AMY).build();
+        EditApplicantDescriptor copy = new EditApplicantDescriptor(descriptor);
+        assertEquals(descriptor.getInterviewNotes(), copy.getInterviewNotes());
+        assertEquals(descriptor.getYearsOfExperience(), copy.getYearsOfExperience());
+        assertEquals(descriptor.getSource(), copy.getSource());
     }
 }

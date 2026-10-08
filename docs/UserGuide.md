@@ -80,16 +80,18 @@ Format: `help`
 
 Adds an applicant to the address book.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
+Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
 
-<box type="tip" seamless>
-
-**Tip:** An applicant can have any number of tags, including zero.
-</box>
+* `INTERVIEW_NOTES` is free text, for example `Strong system design`.
+* `YEARS_OF_EXPERIENCE` is a whole number from 0 to 60.
+* `SOURCE` is free text saying where the applicant came from, for example `LinkedIn` or `Referral`.
+* `SKILL` is entered with the `t/` prefix. An applicant can have any number of skills, including zero. A skill can contain only letters and numbers, so `C++` is not accepted.
+* The optional fields can be left out, or given with nothing after the prefix (for example `i/`), which leaves them empty.
 
 Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/Jane Doe p/91234567 e/jane@example.com a/Blk 1 Clementi y/6 s/LinkedIn i/Great system design t/Java t/Kafka`
 
 ### Listing all applicants: `list`
 
@@ -101,17 +103,20 @@ Format: `list`
 
 Edits an existing applicant in the address book.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
 
 * Edits the applicant at the specified `INDEX`. The index refers to the index number shown in the displayed applicant list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* When editing tags, all of the applicant's existing tags are removed; adding tags is not cumulative.
-* To remove all of an applicant's tags, enter `t/` without a tag after it.
+* When editing skills (`t/`), all of the applicant's existing skills are removed; adding skills is not cumulative.
+* To remove all of an applicant's skills, enter `t/` without a skill after it.
+* To clear the interview notes, years of experience or source, enter its prefix with nothing after it, for example `i/`.
 
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st applicant to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd applicant to be `Betsy Crower` and clears all existing tags.
+*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd applicant to be `Betsy Crower` and clears all existing skills.
+*  `edit 1 y/7 s/Referral` Sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
+*  `edit 3 i/` Clears the interview notes of the 3rd applicant.
 
 ### Locating applicants by name: `find`
 

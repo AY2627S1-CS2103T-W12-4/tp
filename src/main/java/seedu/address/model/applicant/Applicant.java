@@ -17,24 +17,48 @@ import seedu.address.model.tag.Tag;
 public class Applicant {
 
     // Identity fields
+    private final ApplicantId id;
     private final Name name;
     private final Phone phone;
     private final Email email;
 
     // Data fields
     private final Address address;
+    private final InterviewNotes interviewNotes;
+    private final YearsOfExperience yearsOfExperience;
+    private final Source source;
     private final Set<Tag> tags = new HashSet<>();
+
+    /**
+     * Creates an applicant with a new {@code ApplicantId} and empty optional details.
+     * Every field must be present and not null.
+     */
+    public Applicant(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        this(new ApplicantId(), name, phone, email, address,
+                new InterviewNotes(InterviewNotes.DEFAULT_VALUE),
+                new YearsOfExperience(YearsOfExperience.DEFAULT_VALUE),
+                new Source(Source.DEFAULT_VALUE), tags);
+    }
 
     /**
      * Every field must be present and not null.
      */
-    public Applicant(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+    public Applicant(ApplicantId id, Name name, Phone phone, Email email, Address address,
+            InterviewNotes interviewNotes, YearsOfExperience yearsOfExperience, Source source, Set<Tag> tags) {
+        requireAllNonNull(id, name, phone, email, address, interviewNotes, yearsOfExperience, source, tags);
+        this.id = id;
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.interviewNotes = interviewNotes;
+        this.yearsOfExperience = yearsOfExperience;
+        this.source = source;
         this.tags.addAll(tags);
+    }
+
+    public ApplicantId getId() {
+        return id;
     }
 
     public Name getName() {
@@ -51,6 +75,18 @@ public class Applicant {
 
     public Address getAddress() {
         return address;
+    }
+
+    public InterviewNotes getInterviewNotes() {
+        return interviewNotes;
+    }
+
+    public YearsOfExperience getYearsOfExperience() {
+        return yearsOfExperience;
+    }
+
+    public Source getSource() {
+        return source;
     }
 
     /**
@@ -75,8 +111,9 @@ public class Applicant {
     }
 
     /**
-     * Returns true if both applicants have the same identity and data fields.
+     * Returns true if both applicants have the same data fields.
      * This defines a stronger notion of equality between two applicants.
+     * The {@code ApplicantId} is an internal identifier rather than applicant data, so it is not compared.
      */
     @Override
     public boolean equals(Object other) {
@@ -93,22 +130,29 @@ public class Applicant {
                 && phone.equals(otherApplicant.phone)
                 && email.equals(otherApplicant.email)
                 && address.equals(otherApplicant.address)
+                && interviewNotes.equals(otherApplicant.interviewNotes)
+                && yearsOfExperience.equals(otherApplicant.yearsOfExperience)
+                && source.equals(otherApplicant.source)
                 && tags.equals(otherApplicant.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, interviewNotes, yearsOfExperience, source, tags);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
+                .add("id", id)
                 .add("name", name)
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
+                .add("interviewNotes", interviewNotes)
+                .add("yearsOfExperience", yearsOfExperience)
+                .add("source", source)
                 .add("tags", tags)
                 .toString();
     }
