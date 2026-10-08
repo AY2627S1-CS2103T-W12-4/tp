@@ -3,69 +3,35 @@ package seedu.address.model;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
-import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.applicant.ApplicantRegistry;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
- * The API of the Model component.
+ * The API used by commands to access RecruitDex's model objects and shared applicant filter.
+ * Comparison and ranking contracts are intentionally not connected to the running app yet.
  */
 public interface Model {
-    /** {@code Predicate} that always evaluates to true */
+    /** {@code Predicate} that always evaluates to true. */
     Predicate<Applicant> PREDICATE_SHOW_ALL_APPLICANTS = unused -> true;
 
-    /**
-     * Returns the user prefs.
-     */
-    ReadOnlyUserPrefs getUserPrefs();
+    /** Returns the live user preferences, which are saved separately from application data. */
+    UserPrefs getUserPrefs();
 
-    /**
-     * Returns the user prefs' GUI settings.
-     */
-    GuiSettings getGuiSettings();
+    /** Replaces saved application data while retaining the shared applicant view. */
+    void setRecruitDexData(ReadOnlyRecruitDexData recruitDexData);
 
-    /**
-     * Sets the user prefs' GUI settings.
-     */
-    void setGuiSettings(GuiSettings guiSettings);
+    /** Returns a read-only view of the saved application data. */
+    ReadOnlyRecruitDexData getRecruitDexData();
 
-    /**
-     * Replaces address book data with the data in {@code addressBook}.
-     */
-    void setAddressBook(ReadOnlyAddressBook addressBook);
+    /** Returns the live registry responsible for applicant record operations. */
+    ApplicantRegistry getApplicantRegistry();
 
-    /** Returns the AddressBook */
-    ReadOnlyAddressBook getAddressBook();
-
-    /**
-     * Returns true if an applicant with the same identity as {@code applicant} exists in the address book.
-     */
-    boolean hasApplicant(Applicant applicant);
-
-    /**
-     * Deletes the given applicant.
-     * The applicant must exist in the address book.
-     */
-    void deleteApplicant(Applicant target);
-
-    /**
-     * Adds the given applicant.
-     * {@code applicant} must not already exist in the address book.
-     */
-    void addApplicant(Applicant applicant);
-
-    /**
-     * Replaces the given applicant {@code target} with {@code editedApplicant}.
-     * {@code target} must exist in the address book.
-     * The applicant identity of {@code editedApplicant} must not be the same as another existing applicant
-     * in the address book.
-     */
-    void setApplicant(Applicant target, Applicant editedApplicant);
-
-    /** Returns an unmodifiable view of the filtered applicant list */
+    /** Returns an unmodifiable observable view of the displayed applicants. */
     ObservableList<Applicant> getFilteredApplicantList();
 
     /**
-     * Updates the filter of the filtered applicant list to filter by the given {@code predicate}.
+     * Updates the display filter without changing saved applicant records.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredApplicantList(Predicate<Applicant> predicate);

@@ -17,8 +17,8 @@ import java.util.List;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.exceptions.CommandException;
-import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
 import seedu.address.testutil.EditApplicantDescriptorBuilder;
@@ -116,21 +116,21 @@ public class CommandTestUtil {
      * Executes the given {@code command}, confirms that <br>
      * - a {@code CommandException} is thrown <br>
      * - the CommandException message matches {@code expectedMessage} <br>
-     * - the address book, filtered applicant list and selected applicant in {@code actualModel} remain unchanged
+     * - RecruitDex, filtered applicant list and selected applicant in {@code actualModel} remain unchanged
      */
     public static void assertCommandFailure(Command command, Model actualModel, String expectedMessage) {
         // we are unable to defensively copy the model for comparison later, so we can
         // only do so by copying its components.
-        AddressBook expectedAddressBook = new AddressBook(actualModel.getAddressBook());
+        RecruitDexData expectedRecruitDexData = new RecruitDexData(actualModel.getRecruitDexData());
         List<Applicant> expectedFilteredList = new ArrayList<>(actualModel.getFilteredApplicantList());
 
         assertThrows(CommandException.class, expectedMessage, () -> command.execute(actualModel));
-        assertEquals(expectedAddressBook, actualModel.getAddressBook());
+        assertEquals(expectedRecruitDexData, actualModel.getRecruitDexData());
         assertEquals(expectedFilteredList, actualModel.getFilteredApplicantList());
     }
     /**
      * Updates {@code model}'s filtered list to show only the applicant at the given {@code targetIndex} in the
-     * {@code model}'s address book.
+     * {@code model}'s RecruitDex.
      */
     public static void showApplicantAtIndex(Model model, Index targetIndex) {
         assertTrue(targetIndex.getZeroBased() < model.getFilteredApplicantList().size());

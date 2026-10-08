@@ -2,7 +2,7 @@ package seedu.address.logic.commands;
 
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showApplicantAtIndex;
-import static seedu.address.testutil.TypicalApplicants.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for ListCommand.
@@ -22,8 +22,8 @@ public class ListCommandTest {
 
     @BeforeEach
     public void setUp() {
-        model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
-        expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        model = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
+        expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
     }
 
     @Test

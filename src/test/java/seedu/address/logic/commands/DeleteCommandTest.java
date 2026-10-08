@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showApplicantAtIndex;
-import static seedu.address.testutil.TypicalApplicants.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
 
@@ -16,8 +16,8 @@ import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for
@@ -25,7 +25,7 @@ import seedu.address.model.applicant.Applicant;
  */
 public class DeleteCommandTest {
 
-    private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+    private Model model = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
 
     @Test
     public void execute_validIndexUnfilteredList_success() {
@@ -35,8 +35,8 @@ public class DeleteCommandTest {
         String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_APPLICANT_SUCCESS,
                 Messages.format(applicantToDelete));
 
-        ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.deleteApplicant(applicantToDelete);
+        ModelManager expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
+        expectedModel.getApplicantRegistry().delete(applicantToDelete.getId());
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
     }
@@ -59,8 +59,8 @@ public class DeleteCommandTest {
         String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_APPLICANT_SUCCESS,
                 Messages.format(applicantToDelete));
 
-        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.deleteApplicant(applicantToDelete);
+        Model expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
+        expectedModel.getApplicantRegistry().delete(applicantToDelete.getId());
         showNoApplicant(expectedModel);
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
@@ -71,8 +71,8 @@ public class DeleteCommandTest {
         showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
 
         Index outOfBoundIndex = INDEX_SECOND_APPLICANT;
-        // ensures that outOfBoundIndex is still in bounds of address book list
-        assertTrue(outOfBoundIndex.getZeroBased() < model.getAddressBook().getApplicantList().size());
+        // ensures that outOfBoundIndex is still in bounds of RecruitDex list
+        assertTrue(outOfBoundIndex.getZeroBased() < model.getRecruitDexData().getApplicantList().size());
 
         DeleteCommand deleteCommand = new DeleteCommand(outOfBoundIndex);
 

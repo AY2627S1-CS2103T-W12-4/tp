@@ -6,8 +6,8 @@ import java.util.Optional;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.JsonUtil;
-import seedu.address.model.ReadOnlyUserPrefs;
-import seedu.address.model.UserPrefs;
+import seedu.address.model.userprefs.ReadOnlyUserPrefs;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * A class to access UserPrefs stored on the hard disk as a JSON file
@@ -44,7 +44,7 @@ public class JsonUserPrefsStorage {
     }
 
     /**
-     * Saves the given {@link seedu.address.model.ReadOnlyUserPrefs} to the storage.
+     * Saves the given {@link seedu.address.model.userprefs.ReadOnlyUserPrefs} to the storage.
      * @param userPrefs cannot be null.
      * @throws IOException if there was any problem writing to the file.
      */

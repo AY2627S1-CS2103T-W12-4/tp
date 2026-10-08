@@ -32,10 +32,11 @@ import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
 import seedu.address.model.applicant.Source;
 import seedu.address.model.applicant.YearsOfExperience;
+import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 import seedu.address.model.tag.Tag;
 
 /**
- * Edits the details of an existing applicant in the address book.
+ * Edits the details of an existing applicant in RecruitDex.
  */
 public class EditCommand extends Command {
 
@@ -59,7 +60,7 @@ public class EditCommand extends Command {
 
     public static final String MESSAGE_EDIT_APPLICANT_SUCCESS = "Edited applicant: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
-    public static final String MESSAGE_DUPLICATE_APPLICANT = "This applicant already exists in the address book.";
+    public static final String MESSAGE_DUPLICATE_APPLICANT = "This applicant already exists in RecruitDex.";
 
     private final Index index;
     private final EditApplicantDescriptor editApplicantDescriptor;
@@ -88,11 +89,11 @@ public class EditCommand extends Command {
         Applicant applicantToEdit = lastShownList.get(index.getZeroBased());
         Applicant editedApplicant = createEditedApplicant(applicantToEdit, editApplicantDescriptor);
 
-        if (!applicantToEdit.isSameApplicant(editedApplicant) && model.hasApplicant(editedApplicant)) {
-            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT);
+        try {
+            model.getApplicantRegistry().edit(applicantToEdit.getId(), editedApplicant);
+        } catch (DuplicateApplicantException e) {
+            throw new CommandException(MESSAGE_DUPLICATE_APPLICANT, e);
         }
-
-        model.setApplicant(applicantToEdit, editedApplicant);
         model.updateFilteredApplicantList(PREDICATE_SHOW_ALL_APPLICANTS);
         return new CommandResult(String.format(MESSAGE_EDIT_APPLICANT_SUCCESS, Messages.format(editedApplicant)));
     }

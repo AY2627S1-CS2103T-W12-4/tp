@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 /**
- * Represents an Applicant's years of work experience in the address book.
+ * Represents an Applicant's years of work experience in RecruitDex.
  * Guarantees: immutable; is valid as declared in {@link #isValidYearsOfExperience(String)}
  */
 public class YearsOfExperience {

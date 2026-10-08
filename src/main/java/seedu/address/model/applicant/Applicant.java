@@ -11,7 +11,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
 
 /**
- * Represents an Applicant in the address book.
+ * Represents an Applicant in RecruitDex.
  * Guarantees: details are present and not null, field values are validated, immutable.
  */
 public class Applicant {
@@ -99,7 +99,7 @@ public class Applicant {
 
     /**
      * Returns true if both applicants have the same name.
-     * This defines a weaker notion of equality between two applicants.
+     * This retains the legacy duplicate-record check, separately from the stable {@link #getId()}.
      */
     public boolean isSameApplicant(Applicant otherApplicant) {
         if (otherApplicant == this) {

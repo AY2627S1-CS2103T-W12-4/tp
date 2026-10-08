@@ -2,7 +2,7 @@ package seedu.address.logic.commands;
 
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
-import static seedu.address.testutil.TypicalApplicants.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.testutil.ApplicantBuilder;
 
 /**
@@ -23,15 +23,15 @@ public class AddCommandIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        model = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
     }
 
     @Test
     public void execute_newApplicant_success() {
         Applicant validApplicant = new ApplicantBuilder().build();
 
-        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.addApplicant(validApplicant);
+        Model expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
+        expectedModel.getApplicantRegistry().add(validApplicant);
 
         assertCommandSuccess(new AddCommand(validApplicant), model,
                 String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validApplicant)),
@@ -40,7 +40,7 @@ public class AddCommandIntegrationTest {
 
     @Test
     public void execute_duplicateApplicant_throwsCommandException() {
-        Applicant applicantInList = model.getAddressBook().getApplicantList().get(0);
+        Applicant applicantInList = model.getRecruitDexData().getApplicantList().get(0);
         assertCommandFailure(new AddCommand(applicantInList), model,
                 AddCommand.MESSAGE_DUPLICATE_APPLICANT);
     }

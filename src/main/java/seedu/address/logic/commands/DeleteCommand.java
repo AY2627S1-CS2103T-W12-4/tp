@@ -12,7 +12,7 @@ import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
 
 /**
- * Deletes an applicant identified using its displayed index from the address book.
+ * Deletes an applicant identified using its displayed index from RecruitDex.
  */
 public class DeleteCommand extends Command {
 
@@ -41,7 +41,7 @@ public class DeleteCommand extends Command {
         }
 
         Applicant applicantToDelete = lastShownList.get(targetIndex.getZeroBased());
-        model.deleteApplicant(applicantToDelete);
+        model.getApplicantRegistry().delete(applicantToDelete.getId());
         return new CommandResult(String.format(MESSAGE_DELETE_APPLICANT_SUCCESS, Messages.format(applicantToDelete)));
     }
 

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.tag.Tag;
 
@@ -68,18 +68,18 @@ public class SampleDataUtilTest {
     }
 
     @Test
-    public void getSampleAddressBook_containsAllSampleApplicants() {
-        ReadOnlyAddressBook sampleAddressBook = SampleDataUtil.getSampleAddressBook();
-        assertEquals(SAMPLE_APPLICANTS.length, sampleAddressBook.getApplicantList().size());
+    public void getSampleRecruitDexData_containsAllSampleApplicants() {
+        ReadOnlyRecruitDexData sampleRecruitDexData = SampleDataUtil.getSampleRecruitDexData();
+        assertEquals(SAMPLE_APPLICANTS.length, sampleRecruitDexData.getApplicantList().size());
         for (Applicant applicant : SAMPLE_APPLICANTS) {
-            assertTrue(sampleAddressBook.getApplicantList().contains(applicant));
+            assertTrue(sampleRecruitDexData.getApplicantList().contains(applicant));
         }
     }
 
     @Test
-    public void getSampleAddressBook_calledTwice_returnsEqualButSeparateBooks() {
-        ReadOnlyAddressBook first = SampleDataUtil.getSampleAddressBook();
-        ReadOnlyAddressBook second = SampleDataUtil.getSampleAddressBook();
+    public void getSampleRecruitDexData_calledTwice_returnsEqualButSeparateBooks() {
+        ReadOnlyRecruitDexData first = SampleDataUtil.getSampleRecruitDexData();
+        ReadOnlyRecruitDexData second = SampleDataUtil.getSampleRecruitDexData();
         assertEquals(first, second);
         assertNotSame(first, second);
     }

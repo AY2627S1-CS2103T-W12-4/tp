@@ -6,7 +6,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import java.util.UUID;
 
 /**
- * Represents an Applicant's unique identifier in the address book.
+ * Represents an Applicant's unique identifier in RecruitDex.
  * Guarantees: immutable; is valid as declared in {@link #isValidApplicantId(String)}
  */
 public class ApplicantId {
