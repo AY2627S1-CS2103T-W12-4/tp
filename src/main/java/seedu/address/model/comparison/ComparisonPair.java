@@ -1,5 +1,6 @@
-package seedu.address.model.applicant;
+package seedu.address.model.comparison;
 
+import seedu.address.model.applicant.ApplicantId;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
 import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 

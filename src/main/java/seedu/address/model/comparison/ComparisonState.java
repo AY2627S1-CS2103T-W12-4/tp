@@ -3,7 +3,6 @@ package seedu.address.model.comparison;
 import java.util.Optional;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
-import seedu.address.model.applicant.ComparisonPair;
 
 /**
  * Contract for the saved unanswered pair, preserving the order of the two presented sides.

@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import seedu.address.model.applicant.ApplicantId;
-import seedu.address.model.applicant.ComparisonPair;
 import seedu.address.model.ranking.RankingEntry;
 
 /**

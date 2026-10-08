@@ -1,10 +1,11 @@
-package seedu.address.model.applicant;
+package seedu.address.model.comparison;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.applicant.ApplicantId;
 import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 
 public class ComparisonPairTest {
