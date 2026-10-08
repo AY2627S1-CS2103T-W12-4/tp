@@ -28,7 +28,7 @@ public class ComparisonPairTest {
         ApplicantId firstApplicant = new ApplicantId(FIRST_ID);
         ApplicantId secondApplicant = new ApplicantId(FIRST_ID);
 
-        assertThrows(DuplicateApplicantException.class,
-                () -> ComparisonPair.init(firstApplicant, secondApplicant));
+        assertThrows(DuplicateApplicantException.class, () ->
+                ComparisonPair.init(firstApplicant, secondApplicant));
     }
 }

@@ -11,6 +11,17 @@ public class ComparisonPair {
     private final ApplicantId secondApplicant;
 
     /**
+     * Constructs a comparison pair with the specified applicant IDs.
+     *
+     * @param firstApplicant the ID of the first applicant
+     * @param secondApplicant the ID of the second applicant
+     */
+    private ComparisonPair(ApplicantId firstApplicant, ApplicantId secondApplicant) {
+        this.firstApplicant = firstApplicant;
+        this.secondApplicant = secondApplicant;
+    }
+
+    /**
      * Creates a comparison pair from two distinct applicant IDs.
      *
      * <p>Both IDs must be valid according to
@@ -33,17 +44,6 @@ public class ComparisonPair {
             throw new DuplicateApplicantException();
         }
         return new ComparisonPair(firstApplicant, secondApplicant);
-    }
-
-    /**
-     * Constructs a comparison pair with the specified applicant IDs.
-     *
-     * @param firstApplicant the ID of the first applicant
-     * @param secondApplicant the ID of the second applicant
-     */
-    private ComparisonPair(ApplicantId firstApplicant, ApplicantId secondApplicant) {
-        this.firstApplicant = firstApplicant;
-        this.secondApplicant = secondApplicant;
     }
 
     /**
