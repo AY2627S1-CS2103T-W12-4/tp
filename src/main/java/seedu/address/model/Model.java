@@ -29,35 +29,35 @@ public interface Model {
     void setGuiSettings(GuiSettings guiSettings);
 
     /**
-     * Replaces address book data with the data in {@code addressBook}.
+     * Replaces RecruitDex data with the data in {@code recruitDexData}.
      */
-    void setAddressBook(ReadOnlyAddressBook addressBook);
+    void setRecruitDexData(ReadOnlyRecruitDexData recruitDexData);
 
-    /** Returns the AddressBook */
-    ReadOnlyAddressBook getAddressBook();
+    /** Returns RecruitDexData */
+    ReadOnlyRecruitDexData getRecruitDexData();
 
     /**
-     * Returns true if an applicant with the same identity as {@code applicant} exists in the address book.
+     * Returns true if an applicant with the same identity as {@code applicant} exists in RecruitDex.
      */
     boolean hasApplicant(Applicant applicant);
 
     /**
      * Deletes the given applicant.
-     * The applicant must exist in the address book.
+     * The applicant must exist in RecruitDex.
      */
     void deleteApplicant(Applicant target);
 
     /**
      * Adds the given applicant.
-     * {@code applicant} must not already exist in the address book.
+     * {@code applicant} must not already exist in RecruitDex.
      */
     void addApplicant(Applicant applicant);
 
     /**
      * Replaces the given applicant {@code target} with {@code editedApplicant}.
-     * {@code target} must exist in the address book.
+     * {@code target} must exist in RecruitDex.
      * The applicant identity of {@code editedApplicant} must not be the same as another existing applicant
-     * in the address book.
+     * in RecruitDex.
      */
     void setApplicant(Applicant target, Applicant editedApplicant);
 

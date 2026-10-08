@@ -10,19 +10,19 @@ import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.UniqueApplicantList;
 
 /**
- * Wraps all data at the address-book level.
+ * Wraps all data at RecruitDex level.
  * Duplicates are not allowed (by .isSameApplicant comparison).
  */
-public class AddressBook implements ReadOnlyAddressBook {
+public class RecruitDexData implements ReadOnlyRecruitDexData {
 
     private final UniqueApplicantList applicants = new UniqueApplicantList();
 
-    public AddressBook() {}
+    public RecruitDexData() {}
 
     /**
-     * Creates an AddressBook using the Applicants in the {@code toBeCopied}
+     * Creates a RecruitDexData using the Applicants in the {@code toBeCopied}
      */
-    public AddressBook(ReadOnlyAddressBook toBeCopied) {
+    public RecruitDexData(ReadOnlyRecruitDexData toBeCopied) {
         this();
         resetData(toBeCopied);
     }
@@ -38,9 +38,9 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Resets the existing data of this {@code AddressBook} with {@code newData}.
+     * Resets the existing data of this {@code RecruitDexData} with {@code newData}.
      */
-    public void resetData(ReadOnlyAddressBook newData) {
+    public void resetData(ReadOnlyRecruitDexData newData) {
         requireNonNull(newData);
 
         setApplicants(newData.getApplicantList());
@@ -49,7 +49,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     //// applicant-level operations
 
     /**
-     * Returns true if an applicant with the same identity as {@code applicant} exists in the address book.
+     * Returns true if an applicant with the same identity as {@code applicant} exists in RecruitDex.
      */
     public boolean hasApplicant(Applicant applicant) {
         requireNonNull(applicant);
@@ -57,8 +57,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Adds an applicant to the address book.
-     * The applicant must not already exist in the address book.
+     * Adds an applicant to RecruitDex.
+     * The applicant must not already exist in RecruitDex.
      */
     public void addApplicant(Applicant p) {
         applicants.add(p);
@@ -66,9 +66,9 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     /**
      * Replaces the given applicant {@code target} in the list with {@code editedApplicant}.
-     * {@code target} must exist in the address book.
+     * {@code target} must exist in RecruitDex.
      * The applicant identity of {@code editedApplicant} must not be the same as another existing applicant
-     * in the address book.
+     * in RecruitDex.
      */
     public void setApplicant(Applicant target, Applicant editedApplicant) {
         requireNonNull(editedApplicant);
@@ -77,8 +77,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Removes {@code key} from this {@code AddressBook}.
-     * {@code key} must exist in the address book.
+     * Removes {@code key} from this {@code RecruitDexData}.
+     * {@code key} must exist in RecruitDex.
      */
     public void removeApplicant(Applicant key) {
         applicants.remove(key);
@@ -105,11 +105,11 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
 
         // instanceof handles nulls
-        if (!(other instanceof AddressBook otherAddressBook)) {
+        if (!(other instanceof RecruitDexData otherRecruitDexData)) {
             return false;
         }
 
-        return applicants.equals(otherAddressBook.applicants);
+        return applicants.equals(otherRecruitDexData.applicants);
     }
 
     @Override

@@ -14,7 +14,7 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERI
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showApplicantAtIndex;
-import static seedu.address.testutil.TypicalApplicants.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
 
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand.EditApplicantDescriptor;
-import seedu.address.model.AddressBook;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -36,7 +36,7 @@ import seedu.address.testutil.EditApplicantDescriptorBuilder;
  */
 public class EditCommandTest {
 
-    private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+    private Model model = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
 
     @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
@@ -47,7 +47,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
 
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
         expectedModel.setApplicant(model.getFilteredApplicantList().get(0), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
@@ -69,7 +69,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
 
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
         expectedModel.setApplicant(lastApplicant, editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
@@ -83,7 +83,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
 
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
@@ -100,7 +100,7 @@ public class EditCommandTest {
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
 
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
         expectedModel.setApplicant(model.getFilteredApplicantList().get(0), editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
@@ -119,8 +119,8 @@ public class EditCommandTest {
     public void execute_duplicateApplicantFilteredList_failure() {
         showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
 
-        // edit applicant in filtered list into a duplicate in address book
-        Applicant applicantInList = model.getAddressBook().getApplicantList()
+        // edit applicant in filtered list into a duplicate in RecruitDex
+        Applicant applicantInList = model.getRecruitDexData().getApplicantList()
                 .get(INDEX_SECOND_APPLICANT.getZeroBased());
         EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT,
                 new EditApplicantDescriptorBuilder(applicantInList).build());
@@ -139,14 +139,14 @@ public class EditCommandTest {
 
     /**
      * Edit filtered list where index is larger than size of filtered list,
-     * but smaller than size of address book
+     * but smaller than size of RecruitDex
      */
     @Test
     public void execute_invalidApplicantIndexFilteredList_failure() {
         showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
         Index outOfBoundIndex = INDEX_SECOND_APPLICANT;
-        // ensures that outOfBoundIndex is still in bounds of address book list
-        assertTrue(outOfBoundIndex.getZeroBased() < model.getAddressBook().getApplicantList().size());
+        // ensures that outOfBoundIndex is still in bounds of RecruitDex list
+        assertTrue(outOfBoundIndex.getZeroBased() < model.getRecruitDexData().getApplicantList().size());
 
         EditCommand editCommand = new EditCommand(outOfBoundIndex,
                 new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB).build());
@@ -202,7 +202,7 @@ public class EditCommandTest {
 
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
         expectedModel.setApplicant(firstApplicant, editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
@@ -232,7 +232,7 @@ public class EditCommandTest {
 
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
                 Messages.format(editedApplicant));
-        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
         expectedModel.setApplicant(firstApplicant, editedApplicant);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);

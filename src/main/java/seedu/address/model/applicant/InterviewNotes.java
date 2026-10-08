@@ -3,7 +3,7 @@ package seedu.address.model.applicant;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Represents an Applicant's interview notes in the address book.
+ * Represents an Applicant's interview notes in RecruitDex.
  * Guarantees: immutable; notes are free text and may be empty.
  */
 public class InterviewNotes {

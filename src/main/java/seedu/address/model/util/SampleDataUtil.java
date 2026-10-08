@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import seedu.address.model.AddressBook;
-import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.RecruitDexData;
+import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantId;
@@ -18,7 +18,7 @@ import seedu.address.model.applicant.YearsOfExperience;
 import seedu.address.model.tag.Tag;
 
 /**
- * Contains utility methods for populating {@code AddressBook} with sample data.
+ * Contains utility methods for populating {@code RecruitDexData} with sample data.
  */
 public class SampleDataUtil {
     public static Applicant[] getSampleApplicants() {
@@ -50,8 +50,8 @@ public class SampleDataUtil {
         };
     }
 
-    public static ReadOnlyAddressBook getSampleAddressBook() {
-        AddressBook sampleAb = new AddressBook();
+    public static ReadOnlyRecruitDexData getSampleRecruitDexData() {
+        RecruitDexData sampleAb = new RecruitDexData();
         for (Applicant sampleApplicant : getSampleApplicants()) {
             sampleAb.addApplicant(sampleApplicant);
         }

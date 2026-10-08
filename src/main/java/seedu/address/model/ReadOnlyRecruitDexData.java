@@ -4,9 +4,9 @@ import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
 
 /**
- * Unmodifiable view of an address book
+ * Unmodifiable view of an RecruitDex
  */
-public interface ReadOnlyAddressBook {
+public interface ReadOnlyRecruitDexData {
 
     /**
      * Returns an unmodifiable view of the applicants list.

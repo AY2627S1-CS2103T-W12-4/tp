@@ -28,9 +28,9 @@ import seedu.address.testutil.ApplicantBuilder;
 import seedu.address.testutil.ApplicantUtil;
 import seedu.address.testutil.EditApplicantDescriptorBuilder;
 
-public class AddressBookParserTest {
+public class RecruitDexParserTest {
 
-    private final AddressBookParser parser = new AddressBookParser();
+    private final RecruitDexParser parser = new RecruitDexParser();
 
     @Test
     public void parseCommand_add() throws Exception {

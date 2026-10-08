@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
-import seedu.address.testutil.AddressBookBuilder;
+import seedu.address.testutil.RecruitDexDataBuilder;
 
 public class ModelManagerTest {
 
@@ -24,14 +24,14 @@ public class ModelManagerTest {
     public void constructor() {
         assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());
-        assertEquals(new AddressBook(), new AddressBook(modelManager.getAddressBook()));
+        assertEquals(new RecruitDexData(), new RecruitDexData(modelManager.getRecruitDexData()));
     }
 
     @Test
     public void constructor_validUserPrefs_copiesUserPrefs() {
         UserPrefs userPrefs = new UserPrefs();
         userPrefs.setGuiSettings(new GuiSettings(1, 2, 3, 4));
-        modelManager = new ModelManager(new AddressBook(), userPrefs);
+        modelManager = new ModelManager(new RecruitDexData(), userPrefs);
         assertEquals(userPrefs, modelManager.getUserPrefs());
 
         // Modifying userPrefs should not modify modelManager's userPrefs
@@ -58,12 +58,12 @@ public class ModelManagerTest {
     }
 
     @Test
-    public void hasApplicant_applicantNotInAddressBook_returnsFalse() {
+    public void hasApplicant_applicantNotInRecruitDexData_returnsFalse() {
         assertFalse(modelManager.hasApplicant(ALICE));
     }
 
     @Test
-    public void hasApplicant_applicantInAddressBook_returnsTrue() {
+    public void hasApplicant_applicantInRecruitDexData_returnsTrue() {
         modelManager.addApplicant(ALICE);
         assertTrue(modelManager.hasApplicant(ALICE));
     }
@@ -75,13 +75,13 @@ public class ModelManagerTest {
 
     @Test
     public void equals() {
-        AddressBook addressBook = new AddressBookBuilder().withApplicant(ALICE).withApplicant(BENSON).build();
-        AddressBook differentAddressBook = new AddressBook();
+        RecruitDexData recruitDexData = new RecruitDexDataBuilder().withApplicant(ALICE).withApplicant(BENSON).build();
+        RecruitDexData differentRecruitDexData = new RecruitDexData();
         UserPrefs userPrefs = new UserPrefs();
 
         // same values -> returns true
-        modelManager = new ModelManager(addressBook, userPrefs);
-        ModelManager modelManagerCopy = new ModelManager(addressBook, userPrefs);
+        modelManager = new ModelManager(recruitDexData, userPrefs);
+        ModelManager modelManagerCopy = new ModelManager(recruitDexData, userPrefs);
         assertTrue(modelManager.equals(modelManagerCopy));
 
         // same object -> returns true
@@ -93,13 +93,13 @@ public class ModelManagerTest {
         // different types -> returns false
         assertFalse(modelManager.equals(5));
 
-        // different addressBook -> returns false
-        assertFalse(modelManager.equals(new ModelManager(differentAddressBook, userPrefs)));
+        // different recruitDexData -> returns false
+        assertFalse(modelManager.equals(new ModelManager(differentRecruitDexData, userPrefs)));
 
         // different filteredList -> returns false
         String[] keywords = ALICE.getName().fullName.split("\\s+");
         modelManager.updateFilteredApplicantList(new NameContainsKeywordsPredicate(List.of(keywords)));
-        assertFalse(modelManager.equals(new ModelManager(addressBook, userPrefs)));
+        assertFalse(modelManager.equals(new ModelManager(recruitDexData, userPrefs)));
 
         // resets modelManager to initial state for upcoming tests
         modelManager.updateFilteredApplicantList(PREDICATE_SHOW_ALL_APPLICANTS);
@@ -107,6 +107,6 @@ public class ModelManagerTest {
         // different userPrefs -> returns false
         UserPrefs differentUserPrefs = new UserPrefs();
         differentUserPrefs.setGuiSettings(new GuiSettings(1, 2, 3, 4));
-        assertFalse(modelManager.equals(new ModelManager(addressBook, differentUserPrefs)));
+        assertFalse(modelManager.equals(new ModelManager(recruitDexData, differentUserPrefs)));
     }
 }

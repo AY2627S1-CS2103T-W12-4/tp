@@ -6,7 +6,7 @@ import static seedu.address.model.Model.PREDICATE_SHOW_ALL_APPLICANTS;
 import seedu.address.model.Model;
 
 /**
- * Lists all applicants in the address book to the user.
+ * Lists all applicants in RecruitDex to the user.
  */
 public class ListCommand extends Command {
 

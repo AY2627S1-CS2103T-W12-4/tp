@@ -12,7 +12,7 @@ import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
 
 /**
- * Deletes an applicant identified using its displayed index from the address book.
+ * Deletes an applicant identified using its displayed index from RecruitDex.
  */
 public class DeleteCommand extends Command {
 

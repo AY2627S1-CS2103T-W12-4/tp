@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import seedu.address.model.AddressBook;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Applicant;
 
 /**
@@ -61,10 +61,10 @@ public class TypicalApplicants {
     private TypicalApplicants() {} // prevents instantiation
 
     /**
-     * Returns an {@code AddressBook} with all the typical applicants.
+     * Returns an {@code RecruitDexData} with all the typical applicants.
      */
-    public static AddressBook getTypicalAddressBook() {
-        AddressBook ab = new AddressBook();
+    public static RecruitDexData getTypicalRecruitDexData() {
+        RecruitDexData ab = new RecruitDexData();
         for (Applicant applicant : getTypicalApplicants()) {
             ab.addApplicant(applicant);
         }

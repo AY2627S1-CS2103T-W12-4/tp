@@ -13,30 +13,30 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.applicant.Applicant;
 
 /**
- * Represents the in-memory model of the address book data.
+ * Represents the in-memory model of RecruitDex data.
  */
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
-    private final AddressBook addressBook;
+    private final RecruitDexData recruitDexData;
     private final UserPrefs userPrefs;
     private final FilteredList<Applicant> filteredApplicants;
 
     /**
-     * Initializes a ModelManager with the given addressBook and userPrefs.
+     * Initializes a ModelManager with the given recruitDexData and userPrefs.
      */
-    public ModelManager(ReadOnlyAddressBook addressBook, ReadOnlyUserPrefs userPrefs) {
-        requireAllNonNull(addressBook, userPrefs);
+    public ModelManager(ReadOnlyRecruitDexData recruitDexData, ReadOnlyUserPrefs userPrefs) {
+        requireAllNonNull(recruitDexData, userPrefs);
 
-        logger.fine("Initializing with address book: " + addressBook + " and user prefs " + userPrefs);
+        logger.fine("Initializing with RecruitDex: " + recruitDexData + " and user prefs " + userPrefs);
 
-        this.addressBook = new AddressBook(addressBook);
+        this.recruitDexData = new RecruitDexData(recruitDexData);
         this.userPrefs = new UserPrefs(userPrefs);
-        filteredApplicants = new FilteredList<>(this.addressBook.getApplicantList());
+        filteredApplicants = new FilteredList<>(this.recruitDexData.getApplicantList());
     }
 
     public ModelManager() {
-        this(new AddressBook(), new UserPrefs());
+        this(new RecruitDexData(), new UserPrefs());
     }
 
     //=========== UserPrefs ==================================================================================
@@ -57,32 +57,32 @@ public class ModelManager implements Model {
         userPrefs.setGuiSettings(guiSettings);
     }
 
-    //=========== AddressBook ================================================================================
+    //=========== RecruitDexData ================================================================================
 
     @Override
-    public void setAddressBook(ReadOnlyAddressBook addressBook) {
-        this.addressBook.resetData(addressBook);
+    public void setRecruitDexData(ReadOnlyRecruitDexData recruitDexData) {
+        this.recruitDexData.resetData(recruitDexData);
     }
 
     @Override
-    public ReadOnlyAddressBook getAddressBook() {
-        return addressBook;
+    public ReadOnlyRecruitDexData getRecruitDexData() {
+        return recruitDexData;
     }
 
     @Override
     public boolean hasApplicant(Applicant applicant) {
         requireNonNull(applicant);
-        return addressBook.hasApplicant(applicant);
+        return recruitDexData.hasApplicant(applicant);
     }
 
     @Override
     public void deleteApplicant(Applicant target) {
-        addressBook.removeApplicant(target);
+        recruitDexData.removeApplicant(target);
     }
 
     @Override
     public void addApplicant(Applicant applicant) {
-        addressBook.addApplicant(applicant);
+        recruitDexData.addApplicant(applicant);
         updateFilteredApplicantList(PREDICATE_SHOW_ALL_APPLICANTS);
     }
 
@@ -90,14 +90,14 @@ public class ModelManager implements Model {
     public void setApplicant(Applicant target, Applicant editedApplicant) {
         requireAllNonNull(target, editedApplicant);
 
-        addressBook.setApplicant(target, editedApplicant);
+        recruitDexData.setApplicant(target, editedApplicant);
     }
 
     //=========== Filtered Applicant List Accessors =============================================================
 
     /**
      * Returns an unmodifiable view of the list of {@code Applicant} backed by the internal list of
-     * {@code addressBook}
+     * {@code recruitDexData}
      */
     @Override
     public ObservableList<Applicant> getFilteredApplicantList() {
@@ -121,7 +121,7 @@ public class ModelManager implements Model {
             return false;
         }
 
-        return addressBook.equals(otherModelManager.addressBook)
+        return recruitDexData.equals(otherModelManager.recruitDexData)
                 && userPrefs.equals(otherModelManager.userPrefs)
                 && filteredApplicants.equals(otherModelManager.filteredApplicants);
     }
