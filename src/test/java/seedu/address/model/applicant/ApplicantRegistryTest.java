@@ -103,6 +103,121 @@ public class ApplicantRegistryTest {
     }
 
     @Test
+    public void edit_nullId_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> registry.edit(null, ALICE));
+    }
+
+    @Test
+    public void edit_nullEditedApplicant_throwsNullPointerException() {
+        ApplicantId aliceId = registry.add(ALICE);
+
+        assertThrows(NullPointerException.class, () -> registry.edit(aliceId, null));
+        assertSame(ALICE, registry.get(aliceId));
+    }
+
+    @Test
+    public void edit_unregisteredId_throwsApplicantNotFoundException() {
+        ApplicantId aliceId = registry.add(ALICE);
+        Applicant unregisteredApplicant = new ApplicantBuilder().withName("Carol Tan").build();
+
+        assertThrows(ApplicantNotFoundException.class, () ->
+                registry.edit(unregisteredApplicant.getId(), unregisteredApplicant));
+        assertThrows(ApplicantNotFoundException.class, () -> registry.get(unregisteredApplicant.getId()));
+        assertSame(ALICE, registry.get(aliceId));
+    }
+
+    @Test
+    public void edit_sameApplicant_success() {
+        ApplicantId aliceId = registry.add(ALICE);
+
+        registry.edit(aliceId, ALICE);
+
+        assertSame(ALICE, registry.get(aliceId));
+    }
+
+    @Test
+    public void edit_sameNameWithDifferentDetails_replacesApplicant() {
+        ApplicantId aliceId = registry.add(ALICE);
+        ApplicantId bensonId = registry.add(BENSON);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withEmail("other.alice@example.com")
+                .withPhone("91234567").withInterviewNotes("Available next week")
+                .withYearsOfExperience("5").withSource("Referral").build();
+
+        registry.edit(aliceId, editedAlice);
+
+        assertSame(editedAlice, registry.get(aliceId));
+        assertSame(aliceId, registry.get(aliceId).getId());
+        assertSame(BENSON, registry.get(bensonId));
+    }
+
+    @Test
+    public void edit_newName_preservesIdAndAllowsOriginalNameToBeRegistered() {
+        ApplicantId aliceId = registry.add(ALICE);
+        ApplicantId bensonId = registry.add(BENSON);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withName("Alice Tan").build();
+        Applicant anotherAlice = new ApplicantBuilder(ALICE).withId("00000000-0000-0000-0000-000000000002")
+                .build();
+
+        registry.edit(aliceId, editedAlice);
+        ApplicantId anotherAliceId = registry.add(anotherAlice);
+
+        assertSame(editedAlice, registry.get(aliceId));
+        assertSame(aliceId, registry.get(aliceId).getId());
+        assertSame(anotherAlice, registry.get(anotherAliceId));
+        assertSame(BENSON, registry.get(bensonId));
+        assertThrows(DuplicateApplicantException.class, () -> registry.add(editedAlice));
+    }
+
+    @Test
+    public void edit_duplicateName_throwsDuplicateApplicantException() {
+        ApplicantId aliceId = registry.add(ALICE);
+        ApplicantId bensonId = registry.add(BENSON);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withName(BENSON.getName().fullName).build();
+
+        assertThrows(DuplicateApplicantException.class, () -> registry.edit(aliceId, editedAlice));
+        assertSame(ALICE, registry.get(aliceId));
+        assertSame(BENSON, registry.get(bensonId));
+
+        Applicant validEdit = new ApplicantBuilder(ALICE).withName("Alice Tan").build();
+        registry.edit(aliceId, validEdit);
+        assertSame(validEdit, registry.get(aliceId));
+    }
+
+    @Test
+    public void edit_differentId_throwsIllegalArgumentException() {
+        ApplicantId aliceId = registry.add(ALICE);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withId("00000000-0000-0000-0000-000000000002")
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> registry.edit(aliceId, editedAlice));
+        assertSame(ALICE, registry.get(aliceId));
+        assertThrows(ApplicantNotFoundException.class, () -> registry.get(editedAlice.getId()));
+    }
+
+    @Test
+    public void edit_anotherRegisteredId_throwsIllegalArgumentException() {
+        ApplicantId aliceId = registry.add(ALICE);
+        ApplicantId bensonId = registry.add(BENSON);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withId(bensonId.value).build();
+
+        assertThrows(IllegalArgumentException.class, () -> registry.edit(aliceId, editedAlice));
+        assertSame(ALICE, registry.get(aliceId));
+        assertSame(BENSON, registry.get(bensonId));
+    }
+
+    @Test
+    public void edit_equalIdValue_replacesApplicant() {
+        ApplicantId aliceId = registry.add(ALICE);
+        ApplicantId copiedId = new ApplicantId(aliceId.value);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withId(aliceId.value).withName("Alice Tan").build();
+
+        registry.edit(copiedId, editedAlice);
+
+        assertSame(editedAlice, registry.get(aliceId));
+        assertSame(editedAlice, registry.get(copiedId));
+    }
+
+    @Test
     public void get_nullId_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> registry.get(null));
     }

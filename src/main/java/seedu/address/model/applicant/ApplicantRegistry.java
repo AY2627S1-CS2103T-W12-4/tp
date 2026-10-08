@@ -1,6 +1,8 @@
 package seedu.address.model.applicant;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -44,6 +46,34 @@ public class ApplicantRegistry {
 
         applicants.put(applicantId, applicant);
         return applicantId;
+    }
+
+    /**
+     * Replaces the applicant registered under {@code applicantId} with {@code editedApplicant}.
+     * The edited applicant must retain the same ID and must not duplicate another registered applicant.
+     * Validation failures leave existing records unchanged.
+     *
+     * @param applicantId The ID of the applicant to edit.
+     * @param editedApplicant The replacement applicant, with the same ID.
+     * @throws NullPointerException if either argument is null.
+     * @throws ApplicantNotFoundException if {@code applicantId} is not registered.
+     * @throws IllegalArgumentException if the edited applicant has a different ID.
+     * @throws DuplicateApplicantException if another registered applicant has the same identity.
+     */
+    public void edit(ApplicantId applicantId, Applicant editedApplicant) {
+        requireAllNonNull(applicantId, editedApplicant);
+
+        if (!applicants.containsKey(applicantId)) {
+            throw new ApplicantNotFoundException();
+        }
+        checkArgument(applicantId.equals(editedApplicant.getId()), "Editing an applicant must not change its ID.");
+
+        if (applicants.entrySet().stream().anyMatch(entry -> !entry.getKey().equals(applicantId)
+                && editedApplicant.isSameApplicant(entry.getValue()))) {
+            throw new DuplicateApplicantException();
+        }
+
+        applicants.put(applicantId, editedApplicant);
     }
 
     /**
