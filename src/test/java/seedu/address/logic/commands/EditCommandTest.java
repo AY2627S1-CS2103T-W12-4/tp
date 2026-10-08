@@ -26,8 +26,8 @@ import seedu.address.logic.commands.EditCommand.EditApplicantDescriptor;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.RecruitDexData;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.testutil.ApplicantBuilder;
 import seedu.address.testutil.EditApplicantDescriptorBuilder;
 

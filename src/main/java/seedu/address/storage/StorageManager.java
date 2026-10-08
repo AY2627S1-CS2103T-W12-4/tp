@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.ReadOnlyRecruitDexData;
-import seedu.address.model.ReadOnlyUserPrefs;
-import seedu.address.model.UserPrefs;
+import seedu.address.model.userprefs.ReadOnlyUserPrefs;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * Manages storage of RecruitDexData data in local storage.

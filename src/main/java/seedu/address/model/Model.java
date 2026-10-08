@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
+import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * The API used by commands to access RecruitDex's model objects and shared applicant filter.
