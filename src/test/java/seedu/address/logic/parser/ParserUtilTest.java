@@ -14,8 +14,11 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Address;
 import seedu.address.model.applicant.Email;
+import seedu.address.model.applicant.InterviewNotes;
 import seedu.address.model.applicant.Name;
 import seedu.address.model.applicant.Phone;
+import seedu.address.model.applicant.Source;
+import seedu.address.model.applicant.YearsOfExperience;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -190,5 +193,56 @@ public class ParserUtilTest {
         Set<Tag> expectedTagSet = Set.of(new Tag(VALID_TAG_1), new Tag(VALID_TAG_2));
 
         assertEquals(expectedTagSet, actualTagSet);
+    }
+
+    @Test
+    public void parseInterviewNotes_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseInterviewNotes(null));
+    }
+
+    @Test
+    public void parseInterviewNotes_anyText_returnsTrimmedInterviewNotes() {
+        assertEquals(new InterviewNotes("Strong in Java"), ParserUtil.parseInterviewNotes("Strong in Java"));
+        assertEquals(new InterviewNotes("Strong in Java"),
+                ParserUtil.parseInterviewNotes(WHITESPACE + "Strong in Java" + WHITESPACE));
+        assertEquals(new InterviewNotes(""), ParserUtil.parseInterviewNotes(""));
+        assertEquals(new InterviewNotes(""), ParserUtil.parseInterviewNotes(WHITESPACE));
+    }
+
+    @Test
+    public void parseYearsOfExperience_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseYearsOfExperience(null));
+    }
+
+    @Test
+    public void parseYearsOfExperience_invalidValue_throwsParseException() {
+        String[] invalidValues = {"61", "-1", "1.5", "five", "5 5", "007"};
+        for (String invalidValue : invalidValues) {
+            assertThrows(ParseException.class, YearsOfExperience.MESSAGE_CONSTRAINTS, () ->
+                    ParserUtil.parseYearsOfExperience(invalidValue));
+        }
+    }
+
+    @Test
+    public void parseYearsOfExperience_validValue_returnsTrimmedYearsOfExperience() throws Exception {
+        assertEquals(new YearsOfExperience("7"), ParserUtil.parseYearsOfExperience("7"));
+        assertEquals(new YearsOfExperience("7"), ParserUtil.parseYearsOfExperience(WHITESPACE + "7" + WHITESPACE));
+        assertEquals(new YearsOfExperience("0"), ParserUtil.parseYearsOfExperience("0"));
+        assertEquals(new YearsOfExperience("60"), ParserUtil.parseYearsOfExperience("60"));
+        assertEquals(new YearsOfExperience(""), ParserUtil.parseYearsOfExperience(""));
+        assertEquals(new YearsOfExperience(""), ParserUtil.parseYearsOfExperience(WHITESPACE));
+    }
+
+    @Test
+    public void parseSource_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseSource(null));
+    }
+
+    @Test
+    public void parseSource_anyText_returnsTrimmedSource() {
+        assertEquals(new Source("LinkedIn"), ParserUtil.parseSource("LinkedIn"));
+        assertEquals(new Source("LinkedIn"), ParserUtil.parseSource(WHITESPACE + "LinkedIn" + WHITESPACE));
+        assertEquals(new Source(""), ParserUtil.parseSource(""));
+        assertEquals(new Source(""), ParserUtil.parseSource(WHITESPACE));
     }
 }

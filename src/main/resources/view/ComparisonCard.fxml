@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="comparison-card"
+      spacing="4">
+  <HBox alignment="CENTER_LEFT">
+    <Label fx:id="name" styleClass="comparison-name" wrapText="true" maxWidth="Infinity">
+      <HBox.hgrow>
+        <Priority fx:constant="ALWAYS" />
+      </HBox.hgrow>
+    </Label>
+    <Label fx:id="badge" styleClass="comparison-badge" />
+  </HBox>
+  <FlowPane fx:id="skills" hgap="5" vgap="3" />
+  <Label fx:id="contact" styleClass="comparison-contact" />
+  <VBox fx:id="details" spacing="2" styleClass="comparison-details" />
+</VBox>

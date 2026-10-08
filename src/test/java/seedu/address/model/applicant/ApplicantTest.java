@@ -2,12 +2,16 @@ package seedu.address.model.applicant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_SOURCE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_BOB;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BOB;
@@ -88,13 +92,100 @@ public class ApplicantTest {
         // different tags -> returns false
         editedAlice = new ApplicantBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+
+        // different interview notes -> returns false
+        editedAlice = new ApplicantBuilder(ALICE).withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).build();
+        assertFalse(ALICE.equals(editedAlice));
+
+        // different years of experience -> returns false
+        editedAlice = new ApplicantBuilder(ALICE).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB).build();
+        assertFalse(ALICE.equals(editedAlice));
+
+        // different source -> returns false
+        editedAlice = new ApplicantBuilder(ALICE).withSource(VALID_SOURCE_BOB).build();
+        assertFalse(ALICE.equals(editedAlice));
     }
 
     @Test
     public void toStringMethod() {
-        String expected = Applicant.class.getCanonicalName() + "{name=" + ALICE.getName()
+        String expected = Applicant.class.getCanonicalName() + "{id=" + ALICE.getId() + ", name=" + ALICE.getName()
                 + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
+                + ", interviewNotes=" + ALICE.getInterviewNotes()
+                + ", yearsOfExperience=" + ALICE.getYearsOfExperience()
+                + ", source=" + ALICE.getSource() + ", tags=" + ALICE.getTags() + "}";
         assertEquals(expected, ALICE.toString());
+    }
+
+    /**
+     * Returns an applicant with ALICE's details, except for the given id and optional fields.
+     */
+    private static Applicant aliceWith(ApplicantId id, InterviewNotes interviewNotes,
+            YearsOfExperience yearsOfExperience, Source source) {
+        return new Applicant(id, ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(), ALICE.getAddress(),
+                interviewNotes, yearsOfExperience, source, ALICE.getTags());
+    }
+
+    @Test
+    public void constructor_nullNewField_throwsNullPointerException() {
+        InterviewNotes notes = ALICE.getInterviewNotes();
+        YearsOfExperience years = ALICE.getYearsOfExperience();
+        Source source = ALICE.getSource();
+
+        assertThrows(NullPointerException.class, () -> aliceWith(null, notes, years, source));
+        assertThrows(NullPointerException.class, () -> aliceWith(ALICE.getId(), null, years, source));
+        assertThrows(NullPointerException.class, () -> aliceWith(ALICE.getId(), notes, null, source));
+        assertThrows(NullPointerException.class, () -> aliceWith(ALICE.getId(), notes, years, null));
+    }
+
+    @Test
+    public void constructor_withoutNewFields_usesEmptyDefaults() {
+        Applicant applicant = new Applicant(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getAddress(), ALICE.getTags());
+        assertEquals("", applicant.getInterviewNotes().value);
+        assertEquals("", applicant.getYearsOfExperience().value);
+        assertEquals("", applicant.getSource().value);
+    }
+
+    @Test
+    public void constructor_withoutId_generatesDifferentIdEachTime() {
+        Applicant first = new Applicant(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getAddress(), ALICE.getTags());
+        Applicant second = new Applicant(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getAddress(), ALICE.getTags());
+        assertNotEquals(first.getId(), second.getId());
+    }
+
+    @Test
+    public void getters_returnConstructorValues() {
+        ApplicantId id = new ApplicantId();
+        Applicant applicant = aliceWith(id, new InterviewNotes("notes"), new YearsOfExperience("3"),
+                new Source("Referral"));
+        assertEquals(id, applicant.getId());
+        assertEquals(new InterviewNotes("notes"), applicant.getInterviewNotes());
+        assertEquals(new YearsOfExperience("3"), applicant.getYearsOfExperience());
+        assertEquals(new Source("Referral"), applicant.getSource());
+    }
+
+    @Test
+    public void equalsAndHashCode_differentIdOnly_treatedAsEqual() {
+        // the id is an internal identifier, so it is not part of the applicant's data
+        Applicant sameDataDifferentId = new ApplicantBuilder(ALICE).withId("123e4567-e89b-12d3-a456-426614174999")
+                .build();
+        assertNotEquals(ALICE.getId(), sameDataDifferentId.getId());
+        assertEquals(ALICE, sameDataDifferentId);
+        assertEquals(ALICE.hashCode(), sameDataDifferentId.hashCode());
+    }
+
+    @Test
+    public void copyViaBuilder_keepsId() {
+        assertEquals(ALICE.getId(), new ApplicantBuilder(ALICE).build().getId());
+    }
+
+    @Test
+    public void isSameApplicant_differentOptionalFields_returnsTrue() {
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withInterviewNotes(VALID_INTERVIEW_NOTES_BOB)
+                .withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB).withSource(VALID_SOURCE_BOB).build();
+        assertTrue(ALICE.isSameApplicant(editedAlice));
     }
 }
