@@ -38,7 +38,7 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniqueApplicantList
 UniqueApplicantList --> "~* all" Applicant
-ApplicantRegistry -right-> "0..*" Applicant : registered by UUID
+ApplicantRegistry -right-> "0..*" Applicant : registered by ApplicantId
 
 Applicant *--> Name
 Applicant *--> Phone
