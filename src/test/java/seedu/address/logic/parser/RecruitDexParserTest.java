@@ -22,6 +22,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
@@ -51,6 +52,19 @@ public class RecruitDexParserTest {
         assertThrows(ParseException.class,
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddToComparisonCommand.MESSAGE_USAGE), () ->
                 parser.parseCommand(AddToComparisonCommand.COMMAND_WORD));
+    }
+
+    @Test
+    public void parseCommand_removeFromComparison() throws Exception {
+        assertEquals(new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT), parser.parseCommand(
+                RemoveFromComparisonCommand.COMMAND_WORD + " " + INDEX_FIRST_APPLICANT.getOneBased()));
+    }
+
+    @Test
+    public void parseCommand_removeFromComparisonMissingIndex_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, RemoveFromComparisonCommand.MESSAGE_USAGE), () ->
+                parser.parseCommand(RemoveFromComparisonCommand.COMMAND_WORD));
     }
 
     @Test
