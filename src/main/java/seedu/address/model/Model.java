@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
+import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
@@ -26,6 +27,12 @@ public interface Model {
 
     /** Returns the live registry responsible for applicant record operations. */
     ApplicantRegistry getApplicantRegistry();
+
+    /**
+     * Returns the live comparison list responsible for membership and decision operations.
+     * @throws UnsupportedOperationException if comparison models have not been connected yet.
+     */
+    ComparisonList getComparisonList();
 
     /** Returns an unmodifiable observable view of the displayed applicants. */
     ObservableList<Applicant> getFilteredApplicantList();
