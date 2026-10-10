@@ -3,6 +3,8 @@ package seedu.address.model.comparison;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import seedu.address.model.applicant.ApplicantId;
+import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
+import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 
 /**
  * Contract for one active pool of applicant IDs and its ordered decision history.
@@ -24,6 +26,9 @@ public interface ComparisonList {
      * Adds an existing applicant to the pool, without adding or copying a record.
      * Refreshes the ranking, making retained decisions eligible when both participants are active.
      * Rejected membership changes leave all model state unchanged.
+     * @throws NullPointerException if {@code applicantId} is null.
+     * @throws ApplicantNotFoundException if the applicant has no record in the registry.
+     * @throws DuplicateComparisonMemberException if the applicant is already an active member.
      */
     void add(ApplicantId applicantId);
 
