@@ -93,6 +93,50 @@ Examples:
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 * `add n/Jane Doe p/91234567 e/jane@example.com a/Blk 1 Clementi y/6 s/LinkedIn i/Great system design t/Java t/Kafka`
 
+### Adding an applicant to the comparison list: `compare-add`
+
+Adds an existing applicant to the active comparison list.
+
+Format: `compare-add INDEX`
+
+* `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
+* After `find`, the index refers to the filtered results.
+* The applicant must already have a record and must not already be in the comparison list.
+* This command keeps applicant records and the current search filter unchanged.
+
+Examples:
+
+* `list` followed by `compare-add 2` selects the second applicant in the displayed list.
+* `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
+
+Comparison-list membership is not available in the current application.
+Until this feature is enabled, a valid applicant selection reports
+`The comparison list is not available yet.` and makes no changes.
+
+### Removing an applicant from the comparison list: `compare-remove`
+
+Removes an existing applicant from the active comparison list while keeping their record and comparison history.
+
+Format: `compare-remove INDEX`
+
+* `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
+* After `find`, the index refers to the filtered results.
+* The current search filter is kept unchanged.
+* Removing an applicant who is not in the comparison list reports
+  `This applicant is not in the comparison list.` and makes no changes.
+* Decisions involving the removed applicant are retained but excluded from the current ranking.
+  Adding the applicant back makes those decisions eligible again when both participants are active.
+* An unanswered comparison involving the removed applicant is cleared or replaced.
+
+Examples:
+
+* `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
+* `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
+
+Comparison-list membership is not available in the current application.
+Until this feature is enabled, a valid applicant selection reports
+`The comparison list is not available yet.` and makes no changes.
+
 ### Listing all applicants: `list`
 
 Shows a list of all applicants in the address book.
@@ -202,6 +246,8 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
+**Add to comparison list (not yet available)** | `compare-add INDEX`<br> e.g., `compare-add 2`
+**Remove from comparison list (not yet available)** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

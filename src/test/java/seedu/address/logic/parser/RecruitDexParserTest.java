@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
@@ -21,6 +22,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
@@ -37,6 +39,32 @@ public class RecruitDexParserTest {
         Applicant applicant = new ApplicantBuilder().build();
         AddCommand command = (AddCommand) parser.parseCommand(ApplicantUtil.getAddCommand(applicant));
         assertEquals(new AddCommand(applicant), command);
+    }
+
+    @Test
+    public void parseCommand_addToComparison() throws Exception {
+        assertEquals(new AddToComparisonCommand(INDEX_FIRST_APPLICANT), parser.parseCommand(
+                AddToComparisonCommand.COMMAND_WORD + " " + INDEX_FIRST_APPLICANT.getOneBased()));
+    }
+
+    @Test
+    public void parseCommand_addToComparisonMissingIndex_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddToComparisonCommand.MESSAGE_USAGE), () ->
+                parser.parseCommand(AddToComparisonCommand.COMMAND_WORD));
+    }
+
+    @Test
+    public void parseCommand_removeFromComparison() throws Exception {
+        assertEquals(new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT), parser.parseCommand(
+                RemoveFromComparisonCommand.COMMAND_WORD + " " + INDEX_FIRST_APPLICANT.getOneBased()));
+    }
+
+    @Test
+    public void parseCommand_removeFromComparisonMissingIndex_throwsParseException() {
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, RemoveFromComparisonCommand.MESSAGE_USAGE), () ->
+                parser.parseCommand(RemoveFromComparisonCommand.COMMAND_WORD));
     }
 
     @Test
