@@ -13,8 +13,10 @@ import java.util.Set;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
