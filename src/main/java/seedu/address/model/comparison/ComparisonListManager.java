@@ -15,7 +15,6 @@ import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
 import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 import seedu.address.model.ranking.RankingEngine;
-import seedu.address.model.ranking.RankingEntry;
 
 /**
  * Manages active comparison membership and the ordered history of decisions.
@@ -49,7 +48,9 @@ public class ComparisonListManager implements ComparisonList {
      * @throws NullPointerException if any collaborator is null
      */
     public ComparisonListManager(ApplicantRegistry applicantRegistry,
-                                 ComparisonState comparisonState, RankingEngine rankingEngine, PairSelector pairSelector) {
+                                 ComparisonState comparisonState,
+                                 RankingEngine rankingEngine,
+                                 PairSelector pairSelector) {
         this.applicantRegistry = requireNonNull(applicantRegistry);
         this.comparisonState = requireNonNull(comparisonState);
         this.rankingEngine = requireNonNull(rankingEngine);

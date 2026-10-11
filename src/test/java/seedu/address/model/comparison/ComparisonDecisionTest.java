@@ -70,8 +70,8 @@ public class ComparisonDecisionTest {
         ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
         ApplicantId secondApplicantId = new ApplicantId(FIRST_ID);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComparisonDecisionManager(
+        assertThrows(IllegalArgumentException.class, () ->
+                new ComparisonDecisionManager(
                         firstApplicantId, secondApplicantId, firstApplicantId));
     }
 
@@ -81,8 +81,8 @@ public class ComparisonDecisionTest {
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
         ApplicantId thirdApplicantId = new ApplicantId(THIRD_ID);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> new ComparisonDecisionManager(
+        assertThrows(IllegalArgumentException.class, () ->
+                new ComparisonDecisionManager(
                         firstApplicantId, secondApplicantId, thirdApplicantId));
     }
 
@@ -91,8 +91,8 @@ public class ComparisonDecisionTest {
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
         ApplicantId winnerId = new ApplicantId(FIRST_ID);
 
-        assertThrows(NullPointerException.class,
-                () -> new ComparisonDecisionManager(null, secondApplicantId, winnerId));
+        assertThrows(NullPointerException.class, () ->
+                new ComparisonDecisionManager(null, secondApplicantId, winnerId));
     }
 
     @Test
@@ -100,8 +100,8 @@ public class ComparisonDecisionTest {
         ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
         ApplicantId winnerId = new ApplicantId(FIRST_ID);
 
-        assertThrows(NullPointerException.class,
-                () -> new ComparisonDecisionManager(firstApplicantId, null, winnerId));
+        assertThrows(NullPointerException.class, () ->
+                new ComparisonDecisionManager(firstApplicantId, null, winnerId));
     }
 
     @Test
@@ -109,8 +109,8 @@ public class ComparisonDecisionTest {
         ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
 
-        assertThrows(NullPointerException.class,
-                () -> new ComparisonDecisionManager(firstApplicantId, secondApplicantId, null));
+        assertThrows(NullPointerException.class, () ->
+                new ComparisonDecisionManager(firstApplicantId, secondApplicantId, null));
     }
 
     @Test
