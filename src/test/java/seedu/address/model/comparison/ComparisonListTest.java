@@ -11,15 +11,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import seedu.address.model.applicant.ApplicantId;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
