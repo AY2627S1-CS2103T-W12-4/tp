@@ -25,7 +25,7 @@ public class ComparisonDecisionTest {
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
         Instant timestampBeforeConstruction = Instant.now();
 
-        ComparisonDecisionManager decision = new ComparisonDecisionManager(
+        ComparisonDecision decision = new ComparisonDecision(
                 firstApplicantId, secondApplicantId, firstApplicantId);
 
         Instant timestampAfterConstruction = Instant.now();
@@ -44,7 +44,7 @@ public class ComparisonDecisionTest {
         ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
 
-        ComparisonDecisionManager decision = new ComparisonDecisionManager(
+        ComparisonDecision decision = new ComparisonDecision(
                 firstApplicantId, secondApplicantId, secondApplicantId);
 
         assertEquals(firstApplicantId, decision.getFirstApplicantId());
@@ -57,9 +57,9 @@ public class ComparisonDecisionTest {
         ApplicantId firstApplicantId = new ApplicantId(FIRST_ID);
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
 
-        ComparisonDecisionManager firstDecision = new ComparisonDecisionManager(
+        ComparisonDecision firstDecision = new ComparisonDecision(
                 firstApplicantId, secondApplicantId, firstApplicantId);
-        ComparisonDecisionManager secondDecision = new ComparisonDecisionManager(
+        ComparisonDecision secondDecision = new ComparisonDecision(
                 firstApplicantId, secondApplicantId, firstApplicantId);
 
         assertNotEquals(firstDecision.getDecisionId(), secondDecision.getDecisionId());
@@ -71,7 +71,7 @@ public class ComparisonDecisionTest {
         ApplicantId secondApplicantId = new ApplicantId(FIRST_ID);
 
         assertThrows(IllegalArgumentException.class, () ->
-                new ComparisonDecisionManager(
+                new ComparisonDecision(
                         firstApplicantId, secondApplicantId, firstApplicantId));
     }
 
@@ -82,7 +82,7 @@ public class ComparisonDecisionTest {
         ApplicantId thirdApplicantId = new ApplicantId(THIRD_ID);
 
         assertThrows(IllegalArgumentException.class, () ->
-                new ComparisonDecisionManager(
+                new ComparisonDecision(
                         firstApplicantId, secondApplicantId, thirdApplicantId));
     }
 
@@ -92,7 +92,7 @@ public class ComparisonDecisionTest {
         ApplicantId winnerId = new ApplicantId(FIRST_ID);
 
         assertThrows(NullPointerException.class, () ->
-                new ComparisonDecisionManager(null, secondApplicantId, winnerId));
+                new ComparisonDecision(null, secondApplicantId, winnerId));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class ComparisonDecisionTest {
         ApplicantId winnerId = new ApplicantId(FIRST_ID);
 
         assertThrows(NullPointerException.class, () ->
-                new ComparisonDecisionManager(firstApplicantId, null, winnerId));
+                new ComparisonDecision(firstApplicantId, null, winnerId));
     }
 
     @Test
@@ -110,12 +110,12 @@ public class ComparisonDecisionTest {
         ApplicantId secondApplicantId = new ApplicantId(SECOND_ID);
 
         assertThrows(NullPointerException.class, () ->
-                new ComparisonDecisionManager(firstApplicantId, secondApplicantId, null));
+                new ComparisonDecision(firstApplicantId, secondApplicantId, null));
     }
 
     @Test
     public void getDecisionId_returnsUuid() {
-        ComparisonDecisionManager decision = new ComparisonDecisionManager(
+        ComparisonDecision decision = new ComparisonDecision(
                 new ApplicantId(FIRST_ID),
                 new ApplicantId(SECOND_ID),
                 new ApplicantId(FIRST_ID));

@@ -31,7 +31,7 @@ public class ComparisonListTest {
     private FakeComparisonState comparisonState;
     private FakeRankingEngine rankingEngine;
     private FakePairSelector pairSelector;
-    private ComparisonListManager comparisonList;
+    private ComparisonList comparisonList;
 
     @BeforeEach
     public void setUp() {
@@ -43,7 +43,7 @@ public class ComparisonListTest {
         comparisonState = new FakeComparisonState();
         rankingEngine = new FakeRankingEngine();
         pairSelector = new FakePairSelector();
-        comparisonList = new ComparisonListManager(
+        comparisonList = new ComparisonList(
                 applicantRegistry, comparisonState, rankingEngine, pairSelector);
     }
 
@@ -98,7 +98,7 @@ public class ComparisonListTest {
     public void getDecisionHistory_unmodifiableView_rejectsMutation() {
         assertThrows(UnsupportedOperationException.class, () ->
                 comparisonList.getDecisionHistory().add(
-                        new ComparisonDecisionManager(
+                        new ComparisonDecision(
                                 ALICE.getId(), BENSON.getId(), ALICE.getId())));
     }
 
