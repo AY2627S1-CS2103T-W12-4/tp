@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
+import seedu.address.model.comparison.ComparisonState;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
@@ -33,6 +34,9 @@ public interface Model {
      * @throws UnsupportedOperationException if comparison models have not been connected yet.
      */
     ComparisonList getComparisonList();
+
+    /** Returns the live state holding the pending comparison pair. */
+    ComparisonState getComparisonState();
 
     /** Returns an unmodifiable observable view of the displayed applicants. */
     ObservableList<Applicant> getFilteredApplicantList();

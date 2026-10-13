@@ -13,6 +13,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
+import seedu.address.model.comparison.ComparisonState;
 import seedu.address.model.userprefs.ReadOnlyUserPrefs;
 import seedu.address.model.userprefs.UserPrefs;
 
@@ -70,6 +71,11 @@ public class ModelManager implements Model {
     public ComparisonList getComparisonList() {
         // Replace this with the live data object's comparison list when model wiring is implemented.
         throw new UnsupportedOperationException("Comparison models have not been connected yet.");
+    }
+
+    @Override
+    public ComparisonState getComparisonState() {
+        return recruitDexData.getComparisonState();
     }
 
     @Override
