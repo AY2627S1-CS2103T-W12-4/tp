@@ -10,6 +10,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.comparison.ComparisonPair;
+import seedu.address.model.ranking.RankingEntry;
 
 /**
  * API of the Logic component
@@ -29,12 +30,18 @@ public interface Logic {
 
     /**
      * Returns an unmodifiable view of every applicant record, whatever the search filter shows.
-     * Used to look up the applicants of the current comparison pair by ID.
+     * Used to look up applicants in the comparison pair and leaderboard by ID.
      */
     ObservableList<Applicant> getApplicantList();
 
     /** Returns a read-only observable property holding the pending comparison pair, if any. */
     ReadOnlyObjectProperty<Optional<ComparisonPair>> getCurrentPairProperty();
+
+    /**
+     * Returns the same live, unmodifiable observable view of the complete current ranking.
+     * The applicant search filter does not affect this view.
+     */
+    ObservableList<RankingEntry> getRanking();
 
     /**
      * Returns the user prefs' GUI settings.

@@ -39,6 +39,8 @@ Refer to the guide [_Setting up and getting started_](SettingUp.md).
 
 ## **Design**
 
+Some diagrams still show legacy AB3 class names.
+
 ### Architecture
 
 <puml src="diagrams/ArchitectureDiagram.puml" width="280" />
@@ -85,7 +87,7 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/se-
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, `ComparisonPanel`, `RankingPanel`, and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
 
@@ -94,7 +96,7 @@ The `UI` component,
 * executes user commands using the `Logic` component.
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
-* depends on some classes in the `Model` component because it displays `Applicant` objects from the model.
+* displays model objects such as `Applicant` and `RankingEntry`. The leaderboard observes `Logic.getRanking()` and resolves current applicant names from `Logic.getApplicantList()`.
 
 ### Logic component
 
@@ -116,7 +118,7 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 
 How the `Logic` component works:
 
-1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
+1. When `Logic` is called upon to execute a command, the command is passed to a `RecruitDexParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
 1. The command can communicate with the `Model` when it is executed (e.g. to delete an applicant).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
@@ -127,7 +129,7 @@ Here are the other classes in `Logic` (omitted from the class diagram above) tha
 <puml src="diagrams/ParserClasses.puml" width="600"/>
 
 How the parsing works:
-* When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
+* When called upon to parse a user command, the `RecruitDexParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `RecruitDexParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
@@ -138,9 +140,10 @@ How the parsing works:
 
 The `Model` component,
 
-* stores applicant records in `AddressBook` through a `UniqueApplicantList`. The model package also contains `ApplicantRegistry`, an in-memory collection where `add(Applicant)` registers an applicant under their existing `ApplicantId` and returns that ID, and `get(ApplicantId)` retrieves the corresponding applicant. The registry is not yet integrated with commands, the UI, or JSON storage.
+* stores applicant records in `RecruitDexData` through `ApplicantRegistry`, accessed through `Model.getApplicantRegistry()`. The registry is shared by commands, UI views, and JSON storage.
+* holds pending comparison state in `RecruitDexData` and a shared runtime `RankingEngine` in `ModelManager`.
 * stores the `Applicant` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Applicant>` that the UI can observe and bind to, so the UI updates when the list changes.
-* stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
+* stores GUI preferences in `UserPrefs`, accessed through `Model.getUserPrefs()` and saved separately.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
 <box type="info" seamless>
@@ -158,8 +161,8 @@ The `Model` component,
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
 The `Storage` component,
-* can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
-* is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
+* saves applicant records and user preferences in JSON format. Comparison membership, decisions, pending pairs, and rankings are not persisted yet.
+* is implemented by `StorageManager`, which delegates JSON file access to `JsonRecruitDexDataStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
 ### Common classes
@@ -171,6 +174,21 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Applicant ranking
+
+`RankingEntry` is an immutable result containing an applicant ID, a positive position, an optional finite score, and a non-negative comparison count. Equality and hashing use all four fields.
+
+`RankingEngine.recalculate(activeMembers, decisions)` uses a regularized Bradley-Terry model with Gamma priors of shape 2 and rate 1.
+
+* All active applicants appear. Unassessed applicants have strength 1 and score 0.
+* Decisions contribute when both participants are active. Repeated decisions with distinct IDs have equal weight.
+* Scores are natural logarithms of strengths, rounded to six decimal places. Equal scores share positions such as `1, 1, 3`; applicant IDs order tied rows.
+* The engine publishes completed results through a live, unmodifiable observable list. Invalid input or fitting failure preserves the previous ranking.
+
+`ModelManager` owns the shared engine. `Logic.getRanking()` exposes its view to `RankingPanel`, which refreshes names from the full applicant list independently of search filtering. UI-bound observable updates must run on the JavaFX application thread.
+
+**Current scope:** Comparison-list and decision commands are not connected to the running app yet. The leaderboard starts empty, and ranking progress is not persisted. Replacing application data clears the ranking while retaining its observable view.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -594,7 +612,7 @@ testers are expected to do more *exploratory* testing.
    1. Download the JAR file and copy it into an empty folder.
 
    1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+      Expected: The GUI opens with sample applicants and an empty ranking panel showing **No applicants in the comparison list.** The window size may not be optimal.
 
 1. Saving window preferences
 

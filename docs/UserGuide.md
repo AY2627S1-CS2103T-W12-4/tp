@@ -4,9 +4,9 @@
   pageNav: 3
 ---
 
-# AB-3 User Guide
+# RecruitDex User Guide
 
-AddressBook Level 3 (AB3) is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, AB3 can help you manage contacts faster than traditional GUI applications.
+RecruitDex is a desktop application for managing applicant records through commands, with a graphical interface for reviewing applicants, comparisons, and rankings.
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -18,9 +18,9 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest `.jar` file from the [RecruitDex releases page](https://github.com/AY2627S1-CS2103T-W12-4/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as the _home folder_ for RecruitDex.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
@@ -29,13 +29,13 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `list` : Lists all contacts.
+   * `list` : Lists all applicants.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds an applicant named `John Doe`.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+   * `delete 3` : Deletes the 3rd applicant shown in the current list.
 
-   * `clear` : Deletes all contacts.
+   * `clear` : Deletes all applicant records.
 
    * `exit` : Exits the app.
 
@@ -67,6 +67,21 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
 
+### Ranking leaderboard
+
+The **RANKING** panel displays applicants in the active comparison list.
+
+* **Position:** Tied applicants share a position, for example `1, 1, 3`.
+* **Score:** Higher scores rank earlier. Scores are shown to six decimal places; an unavailable score appears as `—`.
+* **Comparisons:** The number of comparisons used for that applicant's ranking. Zero comparisons is marked **Unassessed**.
+
+Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
+Commands such as `edit` and `delete` use indices from the **All applicants** list.
+
+**Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
+Comparison-list and decision commands are not connected yet, so adding applicant records leaves the leaderboard empty.
+Ranking progress is not saved between sessions.
+
 ### Viewing help: `help`
 
 Shows a message explaining how to access the help page.
@@ -78,7 +93,7 @@ Format: `help`
 
 ### Adding an applicant: `add`
 
-Adds an applicant to the address book.
+Adds an applicant record to RecruitDex.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
 
@@ -95,13 +110,13 @@ Examples:
 
 ### Listing all applicants: `list`
 
-Shows a list of all applicants in the address book.
+Shows all applicant records.
 
 Format: `list`
 
 ### Editing an applicant: `edit`
 
-Edits an existing applicant in the address book.
+Edits an existing applicant record.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
 
@@ -137,7 +152,7 @@ Examples:
 
 ### Deleting an applicant: `delete`
 
-Deletes the specified applicant from the address book.
+Deletes the specified applicant record.
 
 Format: `delete INDEX`
 
@@ -146,12 +161,12 @@ Format: `delete INDEX`
 * The index **must be a positive integer** 1, 2, 3, ...
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd applicant in the address book.
+* `list` followed by `delete 2` deletes the 2nd applicant in the displayed list.
 * `find Betsy` followed by `delete 1` deletes the 1st applicant in the results of the `find` command.
 
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Clears all applicant records and the runtime ranking.
 
 Format: `clear`
 
@@ -163,17 +178,17 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+RecruitDex automatically saves applicant records after every successful command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+Applicant records are saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that data file.
 
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+If your changes make the data file invalid, RecruitDex starts with an empty applicant list at the next run. The invalid file remains on disk until you run a successful command that saves records. We recommend backing up the file before editing it.<br>
+Certain edits can cause RecruitDex to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Edit the data file only if you are confident that you can update it correctly.
 </box>
 
 ### Archiving data files `[coming in v2.0]`
@@ -185,7 +200,7 @@ _Details coming soon ..._
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous RecruitDex home folder.
 
 --------------------------------------------------------------------------------------------------------------------
 
