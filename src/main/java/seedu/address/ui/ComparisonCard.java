@@ -54,8 +54,8 @@ public class ComparisonCard extends UiPart<Region> {
     public ComparisonCard(String slotLabel) {
         super(FXML);
         styleForSlot(slotLabel);
-        name.setText("No applicant yet");
-        contact.setText("Add applicants with the add command.");
+        name.setText("No comparison yet");
+        contact.setText("Add at least two applicants to the comparison list to start comparing.");
     }
 
     private void styleForSlot(String slotLabel) {

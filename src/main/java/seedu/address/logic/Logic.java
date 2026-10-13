@@ -1,11 +1,15 @@
 package seedu.address.logic;
 
+import java.util.Optional;
+
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.comparison.ComparisonPair;
 
 /**
  * API of the Logic component
@@ -22,6 +26,15 @@ public interface Logic {
 
     /** Returns an unmodifiable view of the filtered list of applicants */
     ObservableList<Applicant> getFilteredApplicantList();
+
+    /**
+     * Returns an unmodifiable view of every applicant record, whatever the search filter shows.
+     * Used to look up the applicants of the current comparison pair by ID.
+     */
+    ObservableList<Applicant> getApplicantList();
+
+    /** Returns a read-only observable property holding the pending comparison pair, if any. */
+    ReadOnlyObjectProperty<Optional<ComparisonPair>> getCurrentPairProperty();
 
     /**
      * Returns the user prefs' GUI settings.
