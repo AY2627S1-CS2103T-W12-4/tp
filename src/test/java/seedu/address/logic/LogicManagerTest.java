@@ -8,11 +8,16 @@ import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.AMY;
+import static seedu.address.testutil.TypicalApplicants.BENSON;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +32,8 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.applicant.NameContainsKeywordsPredicate;
+import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.storage.JsonRecruitDexDataStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -170,5 +177,56 @@ public class LogicManagerTest {
         ModelManager expectedModel = new ModelManager();
         expectedModel.getApplicantRegistry().add(expectedApplicant);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void getApplicantList_modifyList_throwsUnsupportedOperationException() {
+        model.getApplicantRegistry().add(ALICE);
+        assertThrows(UnsupportedOperationException.class, () -> logic.getApplicantList().remove(0));
+    }
+
+    @Test
+    public void getApplicantList_includesApplicantsHiddenByTheSearchFilter() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+
+        model.updateFilteredApplicantList(new NameContainsKeywordsPredicate(List.of("Alice")));
+
+        assertEquals(1, logic.getFilteredApplicantList().size());
+        assertEquals(List.of(ALICE, BENSON), logic.getApplicantList());
+    }
+
+    @Test
+    public void getApplicantList_isLive() {
+        assertEquals(List.of(), logic.getApplicantList());
+        model.getApplicantRegistry().add(ALICE);
+        assertEquals(List.of(ALICE), logic.getApplicantList());
+    }
+
+    @Test
+    public void getCurrentPairProperty_followsTheModelState() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
+
+        model.getComparisonState().setCurrentPair(pair);
+        assertEquals(Optional.of(pair), logic.getCurrentPairProperty().get());
+
+        model.getComparisonState().clearCurrentPair();
+        assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
+    }
+
+    @Test
+    public void getCurrentPairProperty_notifiesListeners() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        List<Optional<ComparisonPair>> seen = new ArrayList<>();
+        logic.getCurrentPairProperty().addListener((observable, oldValue, newValue) -> seen.add(newValue));
+        ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
+
+        model.getComparisonState().setCurrentPair(pair);
+
+        assertEquals(List.of(Optional.of(pair)), seen);
     }
 }

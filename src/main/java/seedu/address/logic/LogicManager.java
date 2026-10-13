@@ -2,8 +2,10 @@ package seedu.address.logic;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.Optional;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -14,6 +16,7 @@ import seedu.address.logic.parser.RecruitDexParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.storage.Storage;
 
 /**
@@ -62,6 +65,16 @@ public class LogicManager implements Logic {
     @Override
     public ObservableList<Applicant> getFilteredApplicantList() {
         return model.getFilteredApplicantList();
+    }
+
+    @Override
+    public ObservableList<Applicant> getApplicantList() {
+        return model.getApplicantRegistry().getApplicantList();
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Optional<ComparisonPair>> getCurrentPairProperty() {
+        return model.getComparisonState().currentPairProperty();
     }
 
     @Override

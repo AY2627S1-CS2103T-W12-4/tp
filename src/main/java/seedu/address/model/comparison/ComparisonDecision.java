@@ -1,31 +1,79 @@
 package seedu.address.model.comparison;
 
+import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+
 import java.time.Instant;
 import java.util.UUID;
 
 import seedu.address.model.applicant.ApplicantId;
 
 /**
- * Contract for an immutable completed comparison, separate from an unanswered pair.
- * Participants must be distinct registered applicants and the winner must be one of them.
- * Repeating a comparison creates a new decision ID. History order is execution order,
- * even when timestamps are equal.
- * This contract has no implementation or connection to the running application yet.
+ * Represents an immutable record of a completed comparison decision.
+ *
+ * <p>The participant order preserves the sides on which the applicants were
+ * presented. This class validates the structure of a decision; the coordinating
+ * comparison model is responsible for ensuring that both applicants are
+ * registered and that the decision is valid for the current comparison state.
  */
-public interface ComparisonDecision {
+public class ComparisonDecision {
+    private final UUID decisionId;
+    private final ApplicantId firstApplicantId;
+    private final ApplicantId secondApplicantId;
+    private final ApplicantId winnerId;
+    private final Instant timestamp;
+
+    /**
+     * Constructs a decision for a pair of distinct applicants.
+     *
+     * <p>A new decision ID and timestamp are assigned when this object is
+     * created. Repeating a comparison creates a separate decision with its own
+     * ID and timestamp.
+     *
+     * @param firstApplicantId the ID of the first applicant in the presented pair
+     * @param secondApplicantId the ID of the second applicant in the presented pair
+     * @param winnerId the ID of the applicant selected as the winner
+     * @throws NullPointerException if any applicant ID is null
+     * @throws IllegalArgumentException if the participants are the same or the
+     *         winner is not one of the participants
+     */
+    public ComparisonDecision(ApplicantId firstApplicantId,
+                              ApplicantId secondApplicantId, ApplicantId winnerId) {
+        requireAllNonNull(firstApplicantId, secondApplicantId, winnerId);
+        checkArgument(!firstApplicantId.equals(secondApplicantId),
+                "A comparison decision must contain two distinct applicants.");
+        checkArgument(winnerId.equals(firstApplicantId) || winnerId.equals(secondApplicantId),
+                "The winner must be one of the applicants in the comparison.");
+
+        this.decisionId = UUID.randomUUID();
+        this.firstApplicantId = firstApplicantId;
+        this.secondApplicantId = secondApplicantId;
+        this.winnerId = winnerId;
+        this.timestamp = Instant.now();
+    }
 
     /** Returns the unique ID of this judgment. */
-    UUID getDecisionId();
+    public UUID getDecisionId() {
+        return decisionId;
+    }
 
     /** Returns the first participant's stable ID, preserving the presented side. */
-    ApplicantId getFirstApplicantId();
+    public ApplicantId getFirstApplicantId() {
+        return firstApplicantId;
+    }
 
     /** Returns the second participant's stable ID, preserving the presented side. */
-    ApplicantId getSecondApplicantId();
+    public ApplicantId getSecondApplicantId() {
+        return secondApplicantId;
+    }
 
     /** Returns the winning participant's stable ID. */
-    ApplicantId getWinnerId();
+    public ApplicantId getWinnerId() {
+        return winnerId;
+    }
 
     /** Returns the time this judgment was recorded. */
-    Instant getTimestamp();
+    public Instant getTimestamp() {
+        return timestamp;
+    }
 }
