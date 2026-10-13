@@ -14,8 +14,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.model.applicant.ApplicantId;
@@ -28,7 +26,7 @@ import seedu.address.model.ranking.RankingEntry;
 public class ComparisonListTest {
 
     private ApplicantRegistry applicantRegistry;
-    private FakeComparisonState comparisonState;
+    private ComparisonState comparisonState;
     private FakeRankingEngine rankingEngine;
     private FakePairSelector pairSelector;
     private ComparisonList comparisonList;
@@ -40,7 +38,7 @@ public class ComparisonListTest {
         applicantRegistry.add(BENSON);
         applicantRegistry.add(CARL);
 
-        comparisonState = new FakeComparisonState();
+        comparisonState = new ComparisonState(applicantRegistry);
         rankingEngine = new FakeRankingEngine();
         pairSelector = new FakePairSelector();
         comparisonList = new ComparisonList(
@@ -168,6 +166,7 @@ public class ComparisonListTest {
     public void recordDecision_validWinner_recordsDecisionAndSelectsNextPair() {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
+        comparisonList.add(CARL.getId());
 
         ComparisonPair currentPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
         comparisonState.setCurrentPair(currentPair);
@@ -182,6 +181,8 @@ public class ComparisonListTest {
         assertEquals(ALICE.getId(), decision.getFirstApplicantId());
         assertEquals(BENSON.getId(), decision.getSecondApplicantId());
         assertEquals(List.of(decision), rankingEngine.lastDecisions);
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), pairSelector.lastActiveMembers);
+        assertEquals(List.of(decision), pairSelector.lastDecisions);
         assertEquals(Optional.of(nextPair), comparisonState.getCurrentPair());
     }
 
@@ -252,31 +253,6 @@ public class ComparisonListTest {
 
         assertTrue(comparisonList.getMemberIds().isEmpty());
         assertEquals(0, rankingEngine.recalculationCount);
-    }
-
-    private static class FakeComparisonState implements ComparisonState {
-        private final ReadOnlyObjectWrapper<Optional<ComparisonPair>> currentPair =
-                new ReadOnlyObjectWrapper<>(Optional.empty());
-
-        @Override
-        public Optional<ComparisonPair> getCurrentPair() {
-            return currentPair.get();
-        }
-
-        @Override
-        public ReadOnlyObjectProperty<Optional<ComparisonPair>> currentPairProperty() {
-            return currentPair.getReadOnlyProperty();
-        }
-
-        @Override
-        public void setCurrentPair(ComparisonPair pair) {
-            currentPair.set(Optional.of(pair));
-        }
-
-        @Override
-        public void clearCurrentPair() {
-            currentPair.set(Optional.empty());
-        }
     }
 
     private static class FakeRankingEngine implements RankingEngine {
