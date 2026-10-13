@@ -10,6 +10,7 @@ import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,8 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
+import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
+import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.testutil.ApplicantBuilder;
 import seedu.address.testutil.RecruitDexDataBuilder;
@@ -151,5 +154,46 @@ public class ModelManagerTest {
         UserPrefs differentUserPrefs = new UserPrefs();
         differentUserPrefs.setGuiSettings(new GuiSettings(1, 2, 3, 4));
         assertFalse(modelManager.equals(new ModelManager(recruitDexData, differentUserPrefs)));
+    }
+
+    @Test
+    public void getComparisonState_isTheSameObjectAsTheDataState() {
+        RecruitDexData data = (RecruitDexData) modelManager.getRecruitDexData();
+        assertSame(modelManager.getComparisonState(), data.getComparisonState());
+    }
+
+    @Test
+    public void getComparisonState_validatesAgainstTheModelRegistry() {
+        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        assertThrows(ApplicantNotFoundException.class, () -> modelManager.getComparisonState().setCurrentPair(pair));
+
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        modelManager.getComparisonState().setCurrentPair(pair);
+
+        assertEquals(Optional.of(pair), modelManager.getComparisonState().getCurrentPair());
+    }
+
+    @Test
+    public void getComparisonState_ignoresTheSearchFilter() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        modelManager.getComparisonState().setCurrentPair(pair);
+
+        modelManager.updateFilteredApplicantList(new NameContainsKeywordsPredicate(List.of("Alice")));
+
+        assertEquals(Optional.of(pair), modelManager.getComparisonState().getCurrentPair());
+    }
+
+    @Test
+    public void setRecruitDexData_clearsPendingPair() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        modelManager.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+
+        modelManager.setRecruitDexData(new RecruitDexData());
+
+        assertEquals(Optional.empty(), modelManager.getComparisonState().getCurrentPair());
     }
 }

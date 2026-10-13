@@ -12,6 +12,7 @@ import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
+import seedu.address.model.comparison.ComparisonState;
 import seedu.address.model.userprefs.ReadOnlyUserPrefs;
 import seedu.address.model.userprefs.UserPrefs;
 
@@ -63,6 +64,11 @@ public class ModelManager implements Model {
     @Override
     public ApplicantRegistry getApplicantRegistry() {
         return recruitDexData.getApplicantRegistry();
+    }
+
+    @Override
+    public ComparisonState getComparisonState() {
+        return recruitDexData.getComparisonState();
     }
 
     @Override
