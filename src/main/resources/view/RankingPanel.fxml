@@ -7,5 +7,11 @@
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="ranking-panel" spacing="4">
   <Label text="RANKING" styleClass="ranking-title" />
   <Label fx:id="subtitle" styleClass="ranking-subtitle" />
-  <ListView fx:id="rankingListView" styleClass="ranking-list-view" VBox.vgrow="ALWAYS" />
+  <Label text="Ties share a rank. Applicant commands use the All applicants list."
+         styleClass="ranking-note" wrapText="true" />
+  <ListView fx:id="rankingListView" styleClass="ranking-list-view" VBox.vgrow="ALWAYS">
+    <placeholder>
+      <Label text="No applicants in the comparison list." styleClass="ranking-empty-message" wrapText="true" />
+    </placeholder>
+  </ListView>
 </VBox>

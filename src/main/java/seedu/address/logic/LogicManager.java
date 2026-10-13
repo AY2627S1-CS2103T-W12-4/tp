@@ -17,6 +17,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.comparison.ComparisonPair;
+import seedu.address.model.ranking.RankingEntry;
 import seedu.address.storage.Storage;
 
 /**
@@ -75,6 +76,11 @@ public class LogicManager implements Logic {
     @Override
     public ReadOnlyObjectProperty<Optional<ComparisonPair>> getCurrentPairProperty() {
         return model.getComparisonState().currentPairProperty();
+    }
+
+    @Override
+    public ObservableList<RankingEntry> getRanking() {
+        return model.getRankingEngine().getRanking();
     }
 
     @Override
