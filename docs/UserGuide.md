@@ -122,8 +122,8 @@ Format: `compare-remove INDEX`
 * `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
 * After `find`, the index refers to the filtered results.
 * The current search filter is kept unchanged.
-* Removing an applicant who is not in the comparison list reports
-  `This applicant is not in the comparison list.` and makes no changes.
+* Removing an applicant who is already outside the comparison list succeeds without changing membership
+  and reports `This applicant is not in the comparison list.`
 * Decisions involving the removed applicant are retained but excluded from the current ranking.
   Adding the applicant back makes those decisions eligible again when both participants are active.
 * An unanswered comparison involving the removed applicant is cleared or replaced.

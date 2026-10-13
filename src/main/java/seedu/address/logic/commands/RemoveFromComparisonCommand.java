@@ -10,13 +10,13 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
-import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
 import seedu.address.model.comparison.ComparisonList;
 
 /**
  * Removes an applicant identified by its displayed index from the active comparison list.
  * The model retains the applicant record and decision history and coordinates ranking and pair updates.
- * An {@link ApplicantNotFoundException} from removal is reported as missing comparison membership.
+ * Removing a non-member succeeds without changing membership. The command observes membership
+ * only to describe the outcome; the model owns removal behavior in both cases.
  */
 public class RemoveFromComparisonCommand extends Command {
     public static final String COMMAND_WORD = "compare-remove";
@@ -55,10 +55,10 @@ public class RemoveFromComparisonCommand extends Command {
             throw new CommandException(MESSAGE_COMPARISON_UNAVAILABLE, e);
         }
 
-        try {
-            comparisonList.remove(applicant.getId());
-        } catch (ApplicantNotFoundException e) {
-            throw new CommandException(MESSAGE_NOT_A_MEMBER, e);
+        boolean wasMember = comparisonList.getMemberIds().contains(applicant.getId());
+        comparisonList.remove(applicant.getId());
+        if (!wasMember) {
+            return new CommandResult(MESSAGE_NOT_A_MEMBER);
         }
 
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(applicant)));
