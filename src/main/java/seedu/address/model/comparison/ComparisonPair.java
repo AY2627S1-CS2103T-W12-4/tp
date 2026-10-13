@@ -3,6 +3,9 @@ package seedu.address.model.comparison;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Objects;
+
+import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.applicant.ApplicantId;
 
 /**
@@ -46,5 +49,37 @@ public class ComparisonPair {
      */
     public ApplicantId getSecondApplicantId() {
         return secondApplicantId;
+    }
+
+    /**
+     * Returns true if both pairs hold the same applicants on the same sides.
+     * The order matters, because it decides which applicant is presented first.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+
+        // instanceof handles nulls
+        if (!(other instanceof ComparisonPair otherPair)) {
+            return false;
+        }
+
+        return firstApplicantId.equals(otherPair.firstApplicantId)
+                && secondApplicantId.equals(otherPair.secondApplicantId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstApplicantId, secondApplicantId);
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .add("firstApplicantId", firstApplicantId)
+                .add("secondApplicantId", secondApplicantId)
+                .toString();
     }
 }
