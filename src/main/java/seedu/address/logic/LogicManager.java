@@ -75,7 +75,7 @@ public class LogicManager implements Logic {
 
     @Override
     public ReadOnlyObjectProperty<Optional<ComparisonPair>> getCurrentPairProperty() {
-        return model.getComparisonState().currentPairProperty();
+        return model.getComparisonList().getComparisonState().currentPairProperty();
     }
 
     @Override

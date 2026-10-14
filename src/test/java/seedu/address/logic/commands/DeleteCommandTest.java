@@ -95,9 +95,9 @@ public class DeleteCommandTest {
         model.getComparisonList().add(ALICE.getId());
         model.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         model.getComparisonList().recordDecision(ALICE.getId());
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         int recordCountBefore = model.getApplicantRegistry().getApplicantList().size();
 
@@ -110,7 +110,7 @@ public class DeleteCommandTest {
         assertEquals(ALICE, model.getApplicantRegistry().get(ALICE.getId()));
         assertEquals(Set.of(ALICE.getId()), model.getComparisonList().getMemberIds());
         assertTrue(model.getComparisonList().getDecisionHistory().isEmpty());
-        assertTrue(model.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(model.getComparisonList().getCurrentPair().isEmpty());
         assertEquals(1, model.getRankingEngine().getRanking().size());
         assertEquals(ALICE.getId(), model.getRankingEngine().getRanking().get(0).getApplicantId());
         assertEquals(0, model.getRankingEngine().getRanking().get(0).getComparisonCount());
@@ -125,9 +125,9 @@ public class DeleteCommandTest {
         model.getComparisonList().add(ALICE.getId());
         model.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         List<Applicant> recordsBefore = List.copyOf(model.getApplicantRegistry().getApplicantList());
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
@@ -138,7 +138,7 @@ public class DeleteCommandTest {
         assertEquals(recordsBefore, model.getApplicantRegistry().getApplicantList());
         assertEquals(Set.of(ALICE.getId(), BENSON.getId()), model.getComparisonList().getMemberIds());
         assertEquals(List.of(decision), model.getComparisonList().getDecisionHistory());
-        assertEquals(Optional.of(pair), model.getComparisonState().getCurrentPair());
+        assertEquals(Optional.of(pair), model.getComparisonList().getCurrentPair());
         assertEquals(rankingBefore, model.getRankingEngine().getRanking());
         assertEquals(List.of(BENSON), model.getFilteredApplicantList());
     }

@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_APPLICANT_DISPLAYED_INDEX;
@@ -31,6 +32,7 @@ import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ComparisonCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -87,7 +89,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_compareAdd_updatesRankingAndKeepsMembershipSessionOnly() throws Exception {
+    public void execute_compareAdd_updatesRankingAndPersistsMembership() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
         logic.execute("find Benson");
@@ -105,8 +107,117 @@ public class LogicManagerTest {
         ModelManager reopenedModel =
                 new ModelManager(savedRecords.readRecruitDexData().orElseThrow(), new UserPrefs());
         assertEquals(List.of(ALICE, BENSON), reopenedModel.getApplicantRegistry().getApplicantList());
-        assertTrue(reopenedModel.getComparisonList().getMemberIds().isEmpty());
-        assertTrue(reopenedModel.getRankingEngine().getRanking().isEmpty());
+        assertEquals(Set.of(BENSON.getId()), reopenedModel.getComparisonList().getMemberIds());
+        assertEquals(model.getRankingEngine().getRanking(), reopenedModel.getRankingEngine().getRanking());
+    }
+
+    @Test
+    public void execute_secondComparisonMember_populatesObservablePairAndPersistsPresentedSides() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        var pairProperty = logic.getCurrentPairProperty();
+        logic.execute("compare-add 1");
+        assertTrue(pairProperty.get().isEmpty());
+
+        logic.execute("compare-add 2");
+
+        ComparisonPair selectedPair = pairProperty.get().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(selectedPair.getFirstApplicantId(), selectedPair.getSecondApplicantId()));
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(saved.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(Optional.of(selectedPair), reopened.getComparisonList().getCurrentPair());
+        assertTrue(reopened.getComparisonList().getDecisionHistory().isEmpty());
+        assertEquals(model.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
+    }
+
+    @Test
+    public void execute_choose_recordsDisplayedSideAndPersistsHistoryRankingAndNextPair() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute("compare-add 1");
+        logic.execute("compare-add 2");
+        logic.execute("find Alice");
+        ComparisonPair presentedPair = logic.getCurrentPairProperty().get().orElseThrow();
+        Applicant winner = model.getApplicantRegistry().get(presentedPair.getFirstApplicantId());
+        Applicant loser = model.getApplicantRegistry().get(presentedPair.getSecondApplicantId());
+        ObservableList<RankingEntry> ranking = logic.getRanking();
+
+        CommandResult result = logic.execute("choose a");
+
+        assertEquals(String.format(ComparisonCommand.MESSAGE_SUCCESS, winner.getName(), loser.getName()),
+                result.getFeedbackToUser());
+        ComparisonDecision firstDecision = model.getComparisonList().getDecisionHistory().get(0);
+        assertEquals(presentedPair.getFirstApplicantId(), firstDecision.getFirstApplicantId());
+        assertEquals(presentedPair.getSecondApplicantId(), firstDecision.getSecondApplicantId());
+        assertEquals(winner.getId(), firstDecision.getWinnerId());
+        assertSame(ranking, logic.getRanking());
+        assertEquals(winner.getId(), ranking.get(0).getApplicantId());
+        assertEquals(List.of(ALICE), logic.getFilteredApplicantList());
+
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(saved.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(List.of(firstDecision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(logic.getCurrentPairProperty().get(), reopened.getComparisonList().getCurrentPair());
+        assertEquals(ranking, reopened.getRankingEngine().getRanking());
+
+        ComparisonPair nextPair = logic.getCurrentPairProperty().get().orElseThrow();
+        logic.execute("choose B");
+        ComparisonDecision secondDecision = model.getComparisonList().getDecisionHistory().get(1);
+        assertEquals(nextPair.getSecondApplicantId(), secondDecision.getWinnerId());
+        assertNotEquals(firstDecision.getDecisionId(), secondDecision.getDecisionId());
+        reopened.setRecruitDexData(saved.readRecruitDexData().orElseThrow());
+        assertEquals(List.of(firstDecision, secondDecision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(ranking, reopened.getRankingEngine().getRanking());
+    }
+
+    @Test
+    public void execute_chooseWithoutPair_rejectsCommandAndPreservesSavedData() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        logic.execute("compare-add 1");
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ReadOnlyRecruitDexData savedBefore = saved.readRecruitDexData().orElseThrow();
+
+        assertCommandException("choose a", ComparisonCommand.MESSAGE_NO_PENDING_PAIR);
+
+        assertEquals(savedBefore, saved.readRecruitDexData().orElseThrow());
+        assertTrue(model.getComparisonList().getDecisionHistory().isEmpty());
+    }
+
+    @Test
+    public void execute_savesCurrentHistoryAndPendingPairAfterEveryCommand() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+
+        logic.execute("find Alice");
+
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(saved.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(List.of(decision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.of(pair), reopened.getComparisonList().getCurrentPair());
+        assertEquals(model.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
+        assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
+
+        logic.execute("clear");
+        reopened.setRecruitDexData(saved.readRecruitDexData().orElseThrow());
+        assertTrue(reopened.getApplicantRegistry().getApplicantList().isEmpty());
+        assertTrue(reopened.getComparisonList().getMemberIds().isEmpty());
+        assertTrue(reopened.getComparisonList().getDecisionHistory().isEmpty());
+        assertTrue(reopened.getComparisonList().getCurrentPair().isEmpty());
+        assertTrue(reopened.getRankingEngine().getRanking().isEmpty());
     }
 
     @Test
@@ -274,10 +385,10 @@ public class LogicManagerTest {
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
 
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         assertEquals(Optional.of(pair), logic.getCurrentPairProperty().get());
 
-        model.getComparisonState().clearCurrentPair();
+        model.getComparisonList().getComparisonState().clearCurrentPair();
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
     }
 
@@ -289,7 +400,7 @@ public class LogicManagerTest {
         logic.getCurrentPairProperty().addListener((observable, oldValue, newValue) -> seen.add(newValue));
         ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
 
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
 
         assertEquals(List.of(Optional.of(pair)), seen);
     }

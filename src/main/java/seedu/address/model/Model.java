@@ -6,13 +6,12 @@ import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
-import seedu.address.model.comparison.ComparisonState;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * The API used to access RecruitDex's model objects, runtime ranking engine, and shared applicant filter.
- * Comparison membership is session-only while comparison storage and automatic pair selection remain deferred.
+ * Comparison data is persisted with applicant records, and comparison pairs are selected automatically.
  */
 public interface Model {
     /** {@code Predicate} that always evaluates to true. */
@@ -31,12 +30,9 @@ public interface Model {
     ApplicantRegistry getApplicantRegistry();
 
     /**
-     * Returns the current session's comparison list, which is replaced when application data is reset.
+     * Returns the live comparison list, retained when application data is reset.
      */
     ComparisonList getComparisonList();
-
-    /** Returns the live state holding the pending comparison pair. */
-    ComparisonState getComparisonState();
 
     /**
      * Returns the live engine responsible for derived runtime rankings.

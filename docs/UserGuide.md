@@ -80,8 +80,8 @@ Commands such as `edit` and `delete` use indices from the **All applicants** lis
 
 **Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
-Adding applicant records alone leaves the leaderboard empty. Decision commands are not connected yet.
-Ranking progress is not saved between sessions.
+Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
+Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
 ### Viewing help: `help`
 
@@ -125,9 +125,10 @@ Examples:
 * `list` followed by `compare-add 2` selects the second applicant in the displayed list.
 * `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
 
-Adding an applicant updates the ranking immediately. Membership and comparison decisions are kept only
-for the current session and are lost when the application closes. Using `clear` also resets membership.
-Automatic selection of comparison pairs is not available yet.
+Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
+with the applicant records and restored when the application reopens. Using `clear` also resets membership.
+Once two applicants are in the comparison list, a random pair appears in the comparison panel.
+Adding more applicants keeps the current pair. Applicants can be compared repeatedly.
 
 ### Removing an applicant from the comparison list: `compare-remove`
 
@@ -149,9 +150,28 @@ Examples:
 * `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
 * `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
-Removing an applicant updates the ranking immediately. Membership and comparison decisions are kept
-only for the current session. Automatic selection of a replacement comparison pair is not available yet,
-so an unanswered comparison involving the removed applicant is cleared.
+Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
+with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
+The pair is cleared when fewer than two comparison-list members remain.
+
+### Choosing the stronger applicant: `choose`
+
+Records your choice between the two applicants currently shown in the comparison panel.
+
+Format: `choose a` or `choose b`
+
+* `a` selects the applicant labelled **A**; `b` selects the applicant labelled **B**.
+  Uppercase `A` and `B` are also accepted.
+* These labels refer to the current comparison pair. Searching the applicant list does not change their meaning.
+* A pending pair is required. Add at least two applicants using `compare-add INDEX` to start comparisons.
+* The decision is added to the history, the ranking updates immediately, and a random next pair appears.
+  The next pair may contain the same applicants, and their sides may change.
+* Each repeated choice records a separate decision. Applicant records, membership, and the search filter are retained.
+* The decision history and the new pending pair are saved automatically after a successful command.
+* Missing or invalid sides, extra arguments, and choices without a valid pending pair are rejected.
+
+For example, run `list`, `compare-add 1`, and `compare-add 2`, review the pair in the comparison panel, then enter
+`choose a` to choose the applicant currently labelled **A**. Review the next pair before choosing again.
 
 ### Listing all applicants: `list`
 
@@ -204,7 +224,8 @@ Format: `delete INDEX`
 * Deletes the applicant at the specified `INDEX`.
 * The index refers to the index number shown in the displayed applicant list.
 * The index **must be a positive integer** 1, 2, 3, ...
-* The ranking updates immediately. An unanswered comparison involving the deleted applicant is cleared.
+* The ranking updates immediately. An unanswered comparison involving the deleted applicant is replaced,
+  or cleared when fewer than two comparison-list members remain.
 * Use `compare-remove` to remove an applicant from the ranking while keeping their record and comparison history.
 
 Examples:
@@ -225,11 +246,16 @@ Format: `exit`
 
 ### Saving the data
 
-RecruitDex automatically saves applicant records after every successful command. You do not need to save manually.
+RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
+comparison after every successful command. Reopening RecruitDex restores this data and rebuilds the ranking.
+You do not need to save manually.
 
 ### Editing the data file
 
-Applicant records are saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that data file.
+Applicant records and comparison data are saved automatically as a JSON file
+`[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that
+data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
+comparison-list members. Existing files without comparison data load with an empty comparison list.
 
 <box type="warning" seamless>
 
@@ -266,6 +292,7 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
+**Choose stronger applicant** | `choose a` or `choose b`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

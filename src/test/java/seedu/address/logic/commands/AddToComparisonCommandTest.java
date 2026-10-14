@@ -35,7 +35,6 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.comparison.ComparisonState;
-import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
@@ -180,7 +179,7 @@ public class AddToComparisonCommandTest {
         assertEquals(Set.of(BENSON.getId()), rankingEngine.lastActiveMembers);
         assertTrue(rankingEngine.lastDecisions.isEmpty());
         assertTrue(realComparisonList.getDecisionHistory().isEmpty());
-        assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
         assertEquals(recordsBefore, connectedModel.getApplicantRegistry().getApplicantList());
         assertEquals(List.of(BENSON), connectedModel.getFilteredApplicantList());
     }
@@ -200,7 +199,7 @@ public class AddToComparisonCommandTest {
         assertEquals(Set.of(ALICE.getId()), rankingEngine.lastActiveMembers);
         assertTrue(rankingEngine.lastDecisions.isEmpty());
         assertTrue(realComparisonList.getDecisionHistory().isEmpty());
-        assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
     }
 
     @Test
@@ -211,9 +210,9 @@ public class AddToComparisonCommandTest {
         realComparisonList.add(ALICE.getId());
         realComparisonList.add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        connectedModel.getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
         ComparisonDecision decision = realComparisonList.recordDecision(ALICE.getId());
-        connectedModel.getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
         connectedModel.updateFilteredApplicantList(applicant -> applicant.getId().equals(CARL.getId()));
         List<Applicant> recordsBefore = List.copyOf(connectedModel.getApplicantRegistry().getApplicantList());
         int recalculationsBefore = rankingEngine.recalculationCount;
@@ -222,7 +221,7 @@ public class AddToComparisonCommandTest {
 
         assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), realComparisonList.getMemberIds());
         assertEquals(List.of(decision), realComparisonList.getDecisionHistory());
-        assertEquals(Optional.of(pair), connectedModel.getComparisonState().getCurrentPair());
+        assertEquals(Optional.of(pair), connectedModel.getComparisonList().getCurrentPair());
         assertEquals(recalculationsBefore + 1, rankingEngine.recalculationCount);
         assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), rankingEngine.lastActiveMembers);
         assertEquals(List.of(decision), rankingEngine.lastDecisions);
@@ -263,8 +262,8 @@ public class AddToComparisonCommandTest {
 
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
-            comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
-                    rankingEngine, new PairSelector());
+            comparisonList = new ComparisonList(getApplicantRegistry(), super.getComparisonList().getComparisonState(),
+                    rankingEngine);
         }
 
         @Override
@@ -288,7 +287,7 @@ public class AddToComparisonCommandTest {
 
         private ComparisonListStub(ApplicantRegistry registry) {
             super(registry, new ComparisonState(registry),
-                    new RankingEngineStub(), new PairSelector());
+                    new RankingEngineStub());
         }
 
         @Override

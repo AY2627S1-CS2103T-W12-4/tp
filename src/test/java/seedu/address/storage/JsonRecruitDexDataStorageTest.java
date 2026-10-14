@@ -2,8 +2,11 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
+import static seedu.address.testutil.TypicalApplicants.BENSON;
+import static seedu.address.testutil.TypicalApplicants.CARL;
 import static seedu.address.testutil.TypicalApplicants.HOON;
 import static seedu.address.testutil.TypicalApplicants.IDA;
 import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
@@ -11,16 +14,24 @@ import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.JsonUtil;
+import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.comparison.ComparisonDecision;
+import seedu.address.model.comparison.ComparisonPair;
+import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.testutil.ApplicantBuilder;
 
 public class JsonRecruitDexDataStorageTest {
@@ -28,6 +39,47 @@ public class JsonRecruitDexDataStorageTest {
 
     @TempDir
     public Path testFolder;
+
+    @Test
+    public void readAndSave_comparisons_preservesHistoryPendingSidesAndRebuildsRanking() throws Exception {
+        Path filePath = testFolder.resolve("comparisons.json");
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+        RecruitDexData original = getTypicalRecruitDexData();
+        ComparisonDecision first = new ComparisonDecision(UUID.randomUUID(), BENSON.getId(), ALICE.getId(),
+                ALICE.getId(), Instant.parse("2026-10-14T12:00:00.123456789Z"));
+        ComparisonDecision second = new ComparisonDecision(UUID.randomUUID(), ALICE.getId(), BENSON.getId(),
+                BENSON.getId(), Instant.parse("2026-10-13T12:00:00Z"));
+        ComparisonPair pendingPair = new ComparisonPair(CARL.getId(), ALICE.getId());
+        original.getComparisonList().resetData(Set.of(ALICE.getId(), CARL.getId()), List.of(first, second),
+                Optional.of(pendingPair));
+        ModelManager beforeSave = new ModelManager(original, new UserPrefs());
+
+        storage.saveRecruitDexData(beforeSave.getRecruitDexData());
+        ModelManager reopened = new ModelManager(storage.readRecruitDexData().orElseThrow(), new UserPrefs());
+
+        assertEquals(beforeSave.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(Set.of(ALICE.getId(), CARL.getId()), reopened.getComparisonList().getMemberIds());
+        assertEquals(List.of(first, second), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.of(pendingPair), reopened.getComparisonList().getCurrentPair());
+        assertEquals(beforeSave.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
+        assertTrue(reopened.getRankingEngine().getRanking().stream()
+                .allMatch(entry -> entry.getComparisonCount() == 0));
+
+        // Retained decisions become eligible when both participants are active again.
+        reopened.getComparisonList().add(BENSON.getId());
+        assertEquals(2, reopened.getRankingEngine().getRanking().stream()
+                .filter(entry -> entry.getApplicantId().equals(ALICE.getId())).findFirst().orElseThrow()
+                .getComparisonCount());
+
+        // Removing a member replaces an affected pair and overwrites the previous saved state too.
+        reopened.getComparisonList().remove(CARL.getId());
+        storage.saveRecruitDexData(reopened.getRecruitDexData());
+        RecruitDexData savedAgain = new RecruitDexData(storage.readRecruitDexData().orElseThrow());
+        assertEquals(reopened.getRecruitDexData(), savedAgain);
+        var replacementPair = savedAgain.getComparisonList().getCurrentPair().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(replacementPair.getFirstApplicantId(), replacementPair.getSecondApplicantId()));
+    }
 
     @Test
     public void readAndSaveRecruitDexData_editAndReload_preservesIdsAndOptionalDetails() throws Exception {

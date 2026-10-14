@@ -5,25 +5,36 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import seedu.address.model.applicant.ApplicantId;
 import seedu.address.model.ranking.RankingEntry;
 
 /**
- * Placeholder for selecting useful comparisons independently of the ranking algorithm.
+ * Selects a random ordered pair of distinct active applicants independently of the ranking algorithm.
  * Selection does not mutate membership, history, ranking, or the saved pending pair.
- * The selection strategy remains to be implemented. For now, no next pair is selected,
- * even when two or more applicants are active.
+ * Every ordered pair is equally likely. Previously compared pairs may be selected again.
  */
 public class PairSelector {
 
     /**
-     * Returns no pair until a selection strategy is implemented.
-     * Inputs describe the current pool, ordered history, and derived ranking.
+     * Returns a random pair, or empty when fewer than two applicants are active.
+     * History and ranking are accepted for future selection strategies; this strategy uses membership only.
      */
     public Optional<ComparisonPair> selectPair(Set<ApplicantId> activeMembers,
             List<ComparisonDecision> decisions, List<RankingEntry> ranking) {
         requireAllNonNull(activeMembers, decisions, ranking);
-        return Optional.empty();
+        List<ApplicantId> members = List.copyOf(activeMembers);
+        if (members.size() < 2) {
+            return Optional.empty();
+        }
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int firstIndex = random.nextInt(members.size());
+        int secondIndex = random.nextInt(members.size() - 1);
+        if (secondIndex >= firstIndex) {
+            secondIndex++;
+        }
+        return Optional.of(new ComparisonPair(members.get(firstIndex), members.get(secondIndex)));
     }
 }

@@ -1,15 +1,19 @@
 package seedu.address.model.comparison;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.applicant.ApplicantId;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
@@ -24,7 +28,7 @@ import seedu.address.model.ranking.RankingEngine;
  * It stores applicant IDs and decision records, rather than copies of applicant
  * records. The observable collections exposed by this class are unmodifiable views.
  */
-public class ComparisonList {
+public class ComparisonList implements ReadOnlyComparisonList {
     private final ApplicantRegistry applicantRegistry;
     private final ComparisonState comparisonState;
     private final RankingEngine rankingEngine;
@@ -44,32 +48,84 @@ public class ComparisonList {
      * @param applicantRegistry the registry used to verify applicant records
      * @param comparisonState the state containing the pending pair
      * @param rankingEngine the engine used to recalculate the ranking
-     * @param pairSelector the selector used to choose a subsequent pair
      * @throws NullPointerException if any collaborator is null
      */
     public ComparisonList(ApplicantRegistry applicantRegistry,
                           ComparisonState comparisonState,
-                          RankingEngine rankingEngine,
-                          PairSelector pairSelector) {
+                          RankingEngine rankingEngine) {
         this.applicantRegistry = requireNonNull(applicantRegistry);
         this.comparisonState = requireNonNull(comparisonState);
         this.rankingEngine = requireNonNull(rankingEngine);
-        this.pairSelector = requireNonNull(pairSelector);
+        pairSelector = new PairSelector();
     }
 
     /** Returns a live, unmodifiable observable set of unique active applicant IDs. */
+    @Override
     public ObservableSet<ApplicantId> getMemberIds() {
         return unmodifiableMemberIds;
     }
 
     /** Returns a live, unmodifiable observable history in decision execution order. */
+    @Override
     public ObservableList<ComparisonDecision> getDecisionHistory() {
         return unmodifiableDecisionHistory;
+    }
+
+    /** Returns the live state holding the pending comparison pair. */
+    public ComparisonState getComparisonState() {
+        return comparisonState;
+    }
+
+    @Override
+    public Optional<ComparisonPair> getCurrentPair() {
+        return comparisonState.getCurrentPair();
+    }
+
+    /**
+     * Restores comparison data after validating all references against the registry.
+     * Retains this object and its observable views, and rebuilds the runtime ranking.
+     * Decisions involving inactive applicants are retained. A pending pair must contain active members.
+     * Restoring does not record a decision or select a replacement pair.
+     */
+    public void resetData(Set<ApplicantId> members, List<ComparisonDecision> decisions,
+            Optional<ComparisonPair> pendingPair) {
+        requireAllNonNull(members, decisions, pendingPair);
+        Set<ApplicantId> memberSnapshot = Set.copyOf(members);
+        List<ComparisonDecision> decisionSnapshot = List.copyOf(decisions);
+        for (ApplicantId member : memberSnapshot) {
+            requireRegisteredApplicant(member);
+        }
+        for (ComparisonDecision decision : decisionSnapshot) {
+            requireRegisteredApplicant(decision.getFirstApplicantId());
+            requireRegisteredApplicant(decision.getSecondApplicantId());
+        }
+        pendingPair.ifPresent(pair -> checkArgument(
+                memberSnapshot.contains(pair.getFirstApplicantId())
+                        && memberSnapshot.contains(pair.getSecondApplicantId()),
+                "A pending comparison pair must contain two active members."));
+
+        // RankingEngine validates decision structure and IDs before publishing a complete ranking.
+        rankingEngine.recalculate(memberSnapshot, decisionSnapshot);
+        memberIds.clear();
+        memberIds.addAll(memberSnapshot);
+        decisionHistory.setAll(decisionSnapshot);
+        if (pendingPair.isPresent()) {
+            comparisonState.setCurrentPair(pendingPair.get());
+        } else {
+            comparisonState.clearCurrentPair();
+        }
+    }
+
+    private void requireRegisteredApplicant(ApplicantId applicantId) {
+        if (!applicantRegistry.containsId(applicantId)) {
+            throw new ApplicantNotFoundException();
+        }
     }
 
     /**
      * Adds an existing applicant to the pool, without adding or copying a record.
      * Refreshes the ranking, making retained decisions eligible when both participants are active.
+     * Selects an initial pair when none is pending, and preserves an existing pending pair.
      * Rejected membership changes leave all model state unchanged.
      * @throws NullPointerException if {@code applicantId} is null.
      * @throws ApplicantNotFoundException if the applicant has no record in the registry.
@@ -87,6 +143,9 @@ public class ComparisonList {
 
         memberIds.add(applicantId);
         recalculateRanking(decisionHistory);
+        if (comparisonState.getCurrentPair().isEmpty()) {
+            setNextPairOrClear();
+        }
     }
 
     /**
@@ -217,5 +276,27 @@ public class ComparisonList {
         } else {
             comparisonState.clearCurrentPair();
         }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other == this || other instanceof ComparisonList otherList
+                && memberIds.equals(otherList.memberIds)
+                && decisionHistory.equals(otherList.decisionHistory)
+                && getCurrentPair().equals(otherList.getCurrentPair());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(memberIds, decisionHistory, getCurrentPair());
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .add("memberIds", memberIds)
+                .add("decisionHistory", decisionHistory)
+                .add("currentPair", getCurrentPair())
+                .toString();
     }
 }

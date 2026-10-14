@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import javafx.collections.ObservableList;
 import seedu.address.model.applicant.Applicant;
+import seedu.address.model.comparison.ReadOnlyComparisonList;
 
 /**
  * Read-only access to the application data saved together in one file.
@@ -13,5 +14,8 @@ public interface ReadOnlyRecruitDexData {
      * Records have unique IDs and satisfy the registry's duplicate-record policy.
      */
     ObservableList<Applicant> getApplicantList();
+
+    /** Returns read-only access to all comparison data saved with the applicant records. */
+    ReadOnlyComparisonList getComparisonList();
 
 }
