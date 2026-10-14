@@ -9,6 +9,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,6 +44,55 @@ public class ApplicantRegistryTest {
         assertThrows(NullPointerException.class, () -> registry.delete(null));
         assertThrows(ApplicantNotFoundException.class, () -> registry.delete(BENSON.getId()));
         assertEquals(List.of(ALICE), registry.getApplicantList());
+    }
+
+    @Test
+    public void delete_registeredId_runsCleanupBeforePublishingRecordRemoval() {
+        registry.add(ALICE);
+        List<ApplicantId> cleanedIds = new ArrayList<>();
+        registry.setDeletionHandler(applicantId -> {
+            assertSame(ALICE, registry.get(applicantId));
+            cleanedIds.add(applicantId);
+        });
+        registry.getApplicantList().addListener((ListChangeListener<Applicant>) change -> {
+            assertEquals(List.of(ALICE.getId()), cleanedIds);
+            assertTrue(registry.getApplicantList().isEmpty());
+        });
+
+        registry.delete(ALICE.getId());
+
+        assertEquals(List.of(ALICE.getId()), cleanedIds);
+        assertTrue(registry.getApplicantList().isEmpty());
+    }
+
+    @Test
+    public void delete_invalidId_doesNotInvokeCleanup() {
+        registry.add(ALICE);
+        List<ApplicantId> cleanedIds = new ArrayList<>();
+        registry.setDeletionHandler(cleanedIds::add);
+
+        assertThrows(NullPointerException.class, () -> registry.delete(null));
+        assertThrows(ApplicantNotFoundException.class, () -> registry.delete(BENSON.getId()));
+
+        assertTrue(cleanedIds.isEmpty());
+        assertEquals(List.of(ALICE), registry.getApplicantList());
+    }
+
+    @Test
+    public void delete_cleanupFails_preservesRecord() {
+        registry.add(ALICE);
+        registry.setDeletionHandler(applicantId -> {
+            throw new IllegalStateException("Cleanup failed");
+        });
+
+        assertThrows(IllegalStateException.class, "Cleanup failed", () -> registry.delete(ALICE.getId()));
+
+        assertEquals(List.of(ALICE), registry.getApplicantList());
+    }
+
+    @Test
+    public void setDeletionHandler_nullHandler_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> registry.setDeletionHandler(null));
     }
 
     @Test

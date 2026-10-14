@@ -47,6 +47,9 @@ public class ModelManager implements Model {
         rankingEngine = new RankingEngine();
         comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
                 rankingEngine, new PairSelector());
+        // Resolve the current list on deletion because resetting application data replaces it.
+        getApplicantRegistry().setDeletionHandler(
+                applicantId -> getComparisonList().deleteApplicantReferences(applicantId));
         filteredApplicants = new FilteredList<>(getApplicantRegistry().getApplicantList());
         unmodifiableFilteredApplicants = FXCollections.unmodifiableObservableList(filteredApplicants);
     }

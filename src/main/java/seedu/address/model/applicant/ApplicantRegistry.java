@@ -5,6 +5,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,6 +22,7 @@ public class ApplicantRegistry {
     private final ObservableList<Applicant> applicants = FXCollections.observableArrayList();
     private final ObservableList<Applicant> unmodifiableApplicants =
             FXCollections.unmodifiableObservableList(applicants);
+    private Consumer<ApplicantId> deletionHandler = unused -> {};
 
     public ApplicantRegistry() {}
 
@@ -86,13 +88,27 @@ public class ApplicantRegistry {
     }
 
     /**
+     * Connects cleanup of dependent model data to permanent record deletion.
+     * A callback avoids a direct dependency on ComparisonList, which already depends on this registry.
+     * The handler runs after ID validation and before the record is removed, and must not modify this registry.
+     * Standalone registries have no dependent data to clean up and use a no-op handler by default.
+     * @throws NullPointerException if {@code deletionHandler} is null.
+     */
+    public void setDeletionHandler(Consumer<ApplicantId> deletionHandler) {
+        this.deletionHandler = requireNonNull(deletionHandler);
+    }
+
+    /**
      * Permanently deletes the record identified by the given ID.
-     * Comparison references will be coordinated here when comparison models are implemented.
+     * Coordinating cleanup here gives every caller the same behavior without relying on command-specific steps.
+     * Cleans up dependent model references before publishing record removal.
      * @throws ApplicantNotFoundException if the ID is not registered.
      */
     public void delete(ApplicantId applicantId) {
         requireNonNull(applicantId);
-        applicants.remove(indexOf(applicantId));
+        int index = indexOf(applicantId);
+        deletionHandler.accept(applicantId);
+        applicants.remove(index);
     }
 
     /**
