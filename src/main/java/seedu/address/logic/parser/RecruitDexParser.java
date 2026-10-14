@@ -12,6 +12,7 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.ComparisonCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
@@ -57,6 +58,7 @@ public class RecruitDexParser {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case AddToComparisonCommand.COMMAND_WORD -> new AddToComparisonCommandParser().parse(arguments);
             case RemoveFromComparisonCommand.COMMAND_WORD -> new RemoveFromComparisonCommandParser().parse(arguments);
+            case ComparisonCommand.COMMAND_WORD -> new ComparisonCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();

@@ -80,7 +80,7 @@ Commands such as `edit` and `delete` use indices from the **All applicants** lis
 
 **Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
-Adding applicant records alone leaves the leaderboard empty. Decision commands are not connected yet.
+Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
 Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
 ### Viewing help: `help`
@@ -153,6 +153,25 @@ Examples:
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
 The pair is cleared when fewer than two comparison-list members remain.
+
+### Choosing the stronger applicant: `choose`
+
+Records your choice between the two applicants currently shown in the comparison panel.
+
+Format: `choose a` or `choose b`
+
+* `a` selects the applicant labelled **A**; `b` selects the applicant labelled **B**.
+  Uppercase `A` and `B` are also accepted.
+* These labels refer to the current comparison pair. Searching the applicant list does not change their meaning.
+* A pending pair is required. Add at least two applicants using `compare-add INDEX` to start comparisons.
+* The decision is added to the history, the ranking updates immediately, and a random next pair appears.
+  The next pair may contain the same applicants, and their sides may change.
+* Each repeated choice records a separate decision. Applicant records, membership, and the search filter are retained.
+* The decision history and the new pending pair are saved automatically after a successful command.
+* Missing or invalid sides, extra arguments, and choices without a valid pending pair are rejected.
+
+For example, run `list`, `compare-add 1`, and `compare-add 2`, review the pair in the comparison panel, then enter
+`choose a` to choose the applicant currently labelled **A**. Review the next pair before choosing again.
 
 ### Listing all applicants: `list`
 
@@ -273,6 +292,7 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
+**Choose stronger applicant** | `choose a` or `choose b`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

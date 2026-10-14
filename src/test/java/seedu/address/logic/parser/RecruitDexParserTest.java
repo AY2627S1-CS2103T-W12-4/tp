@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.ClearCommand;
+import seedu.address.logic.commands.ComparisonCommand;
+import seedu.address.logic.commands.ComparisonCommand.Side;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditApplicantDescriptor;
@@ -45,6 +47,20 @@ public class RecruitDexParserTest {
     public void parseCommand_addToComparison() throws Exception {
         assertEquals(new AddToComparisonCommand(INDEX_FIRST_APPLICANT), parser.parseCommand(
                 AddToComparisonCommand.COMMAND_WORD + " " + INDEX_FIRST_APPLICANT.getOneBased()));
+    }
+
+    @Test
+    public void parseCommand_choose() throws Exception {
+        assertEquals(new ComparisonCommand(Side.A), parser.parseCommand("choose a"));
+        assertEquals(new ComparisonCommand(Side.B), parser.parseCommand("choose B"));
+    }
+
+    @Test
+    public void parseCommand_chooseMissingOrInvalidSide_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ComparisonCommand.MESSAGE_USAGE);
+        for (String input : new String[] {"choose", "choose c", "choose a b"}) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(input));
+        }
     }
 
     @Test
