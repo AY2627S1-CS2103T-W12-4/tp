@@ -29,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -82,6 +83,29 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_compareAdd_updatesRankingAndKeepsMembershipSessionOnly() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute("find Benson");
+
+        CommandResult result = logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
+
+        assertEquals(String.format(AddToComparisonCommand.MESSAGE_SUCCESS, Messages.format(BENSON)),
+                result.getFeedbackToUser());
+        assertEquals(Set.of(BENSON.getId()), model.getComparisonList().getMemberIds());
+        assertEquals(1, model.getRankingEngine().getRanking().size());
+        assertEquals(BENSON.getId(), model.getRankingEngine().getRanking().get(0).getApplicantId());
+        assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopenedModel =
+                new ModelManager(savedRecords.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(List.of(ALICE, BENSON), reopenedModel.getApplicantRegistry().getApplicantList());
+        assertTrue(reopenedModel.getComparisonList().getMemberIds().isEmpty());
+        assertTrue(reopenedModel.getRankingEngine().getRanking().isEmpty());
     }
 
     @Test

@@ -12,7 +12,7 @@ import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * The API used to access RecruitDex's model objects, runtime ranking engine, and shared applicant filter.
- * Comparison membership and decision commands are not connected to the running app yet.
+ * Comparison membership is session-only while comparison storage and automatic pair selection remain deferred.
  */
 public interface Model {
     /** {@code Predicate} that always evaluates to true. */
@@ -31,8 +31,7 @@ public interface Model {
     ApplicantRegistry getApplicantRegistry();
 
     /**
-     * Returns the live comparison list responsible for membership and decision operations.
-     * @throws UnsupportedOperationException if comparison models have not been connected yet.
+     * Returns the current session's comparison list, which is replaced when application data is reset.
      */
     ComparisonList getComparisonList();
 

@@ -255,7 +255,7 @@ public class ComparisonListTest {
         assertEquals(0, rankingEngine.recalculationCount);
     }
 
-    private static class FakeRankingEngine implements RankingEngine {
+    private static class FakeRankingEngine extends RankingEngine {
         private final ObservableList<RankingEntry> ranking = FXCollections.observableArrayList();
         private int recalculationCount;
         private Set<ApplicantId> lastActiveMembers = Set.of();
@@ -274,7 +274,7 @@ public class ComparisonListTest {
         }
     }
 
-    private static class FakePairSelector implements PairSelector {
+    private static class FakePairSelector extends PairSelector {
         private Optional<ComparisonPair> nextPair = Optional.empty();
         private int selectionCount;
         private Set<ApplicantId> lastActiveMembers = Set.of();
