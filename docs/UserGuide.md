@@ -81,7 +81,7 @@ Commands such as `edit` and `delete` use indices from the **All applicants** lis
 **Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Decision commands are not connected yet.
-Ranking progress is not saved between sessions.
+Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
 ### Viewing help: `help`
 
@@ -127,7 +127,8 @@ Examples:
 
 Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records and restored when the application reopens. Using `clear` also resets membership.
-Automatic selection of comparison pairs is not available yet.
+Once two applicants are in the comparison list, a random pair appears in the comparison panel.
+Adding more applicants keeps the current pair. Applicants can be compared repeatedly.
 
 ### Removing an applicant from the comparison list: `compare-remove`
 
@@ -150,8 +151,8 @@ Examples:
 * `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
-with the applicant records. Automatic selection of a replacement comparison pair is not available yet,
-so an unanswered comparison involving the removed applicant is cleared.
+with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
+The pair is cleared when fewer than two comparison-list members remain.
 
 ### Listing all applicants: `list`
 
@@ -204,7 +205,8 @@ Format: `delete INDEX`
 * Deletes the applicant at the specified `INDEX`.
 * The index refers to the index number shown in the displayed applicant list.
 * The index **must be a positive integer** 1, 2, 3, ...
-* The ranking updates immediately. An unanswered comparison involving the deleted applicant is cleared.
+* The ranking updates immediately. An unanswered comparison involving the deleted applicant is replaced,
+  or cleared when fewer than two comparison-list members remain.
 * Use `compare-remove` to remove an applicant from the ranking while keeping their record and comparison history.
 
 Examples:

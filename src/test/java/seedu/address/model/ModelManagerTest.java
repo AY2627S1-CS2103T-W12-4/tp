@@ -410,7 +410,9 @@ public class ModelManagerTest {
         assertEquals(List.of(BENSON, CARL), modelManager.getApplicantRegistry().getApplicantList());
         assertEquals(Set.of(BENSON.getId(), CARL.getId()), comparisonList.getMemberIds());
         assertEquals(List.of(retainedDecision), comparisonList.getDecisionHistory());
-        assertTrue(modelManager.getComparisonList().getCurrentPair().isEmpty());
+        ComparisonPair replacementPair = comparisonList.getCurrentPair().orElseThrow();
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()),
+                Set.of(replacementPair.getFirstApplicantId(), replacementPair.getSecondApplicantId()));
         assertSame(ranking, modelManager.getRankingEngine().getRanking());
         assertEquals(2, ranking.size());
         assertEquals(BENSON.getId(), ranking.get(0).getApplicantId());
@@ -482,6 +484,8 @@ public class ModelManagerTest {
         assertEquals(List.of(decision), comparisonList.getDecisionHistory());
         assertEquals(ALICE.getId(), modelManager.getRankingEngine().getRanking().get(0).getApplicantId());
         assertEquals(1, modelManager.getRankingEngine().getRanking().get(0).getComparisonCount());
-        assertTrue(modelManager.getComparisonList().getCurrentPair().isEmpty());
+        ComparisonPair nextPair = comparisonList.getCurrentPair().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(nextPair.getFirstApplicantId(), nextPair.getSecondApplicantId()));
     }
 }

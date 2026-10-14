@@ -34,7 +34,6 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.comparison.ComparisonState;
-import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
 import seedu.address.model.userprefs.UserPrefs;
@@ -225,7 +224,9 @@ public class RemoveFromComparisonCommandTest {
 
         assertEquals(Set.of(ALICE.getId(), CARL.getId()), realComparisonList.getMemberIds());
         assertEquals(List.of(decision), realComparisonList.getDecisionHistory());
-        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
+        ComparisonPair replacementPair = realComparisonList.getCurrentPair().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), CARL.getId()),
+                Set.of(replacementPair.getFirstApplicantId(), replacementPair.getSecondApplicantId()));
         ObservableList<RankingEntry> ranking = connectedModel.getRankingEngine().getRanking();
         assertEquals(2, ranking.size());
         assertTrue(ranking.stream().allMatch(entry -> entry.getComparisonCount() == 0));
@@ -277,7 +278,7 @@ public class RemoveFromComparisonCommandTest {
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
             comparisonList = new ComparisonList(getApplicantRegistry(), super.getComparisonList().getComparisonState(),
-                    rankingEngine, new PairSelector());
+                    rankingEngine);
         }
 
         @Override
@@ -300,7 +301,7 @@ public class RemoveFromComparisonCommandTest {
 
         private ComparisonListStub(ApplicantRegistry registry) {
             super(registry, new ComparisonState(registry),
-                    new RankingEngineStub(), new PairSelector());
+                    new RankingEngineStub());
             for (Applicant applicant : getTypicalApplicants()) {
                 registry.add(applicant);
                 super.add(applicant.getId());

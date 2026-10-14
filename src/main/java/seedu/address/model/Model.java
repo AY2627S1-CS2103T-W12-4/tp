@@ -11,7 +11,7 @@ import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * The API used to access RecruitDex's model objects, runtime ranking engine, and shared applicant filter.
- * Comparison data is persisted with applicant records. Automatic pair selection remains deferred.
+ * Comparison data is persisted with applicant records, and comparison pairs are selected automatically.
  */
 public interface Model {
     /** {@code Predicate} that always evaluates to true. */

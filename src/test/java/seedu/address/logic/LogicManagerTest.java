@@ -110,6 +110,27 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_secondComparisonMember_populatesObservablePairAndPersistsPresentedSides() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        var pairProperty = logic.getCurrentPairProperty();
+        logic.execute("compare-add 1");
+        assertTrue(pairProperty.get().isEmpty());
+
+        logic.execute("compare-add 2");
+
+        ComparisonPair selectedPair = pairProperty.get().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(selectedPair.getFirstApplicantId(), selectedPair.getSecondApplicantId()));
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(saved.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(Optional.of(selectedPair), reopened.getComparisonList().getCurrentPair());
+        assertTrue(reopened.getComparisonList().getDecisionHistory().isEmpty());
+        assertEquals(model.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
+    }
+
+    @Test
     public void execute_savesCurrentHistoryAndPendingPairAfterEveryCommand() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);

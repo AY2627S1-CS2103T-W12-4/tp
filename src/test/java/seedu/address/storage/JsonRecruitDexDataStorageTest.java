@@ -71,12 +71,14 @@ public class JsonRecruitDexDataStorageTest {
                 .filter(entry -> entry.getApplicantId().equals(ALICE.getId())).findFirst().orElseThrow()
                 .getComparisonCount());
 
-        // Removing a pair and membership must overwrite the previous saved state too.
+        // Removing a member replaces an affected pair and overwrites the previous saved state too.
         reopened.getComparisonList().remove(CARL.getId());
         storage.saveRecruitDexData(reopened.getRecruitDexData());
         RecruitDexData savedAgain = new RecruitDexData(storage.readRecruitDexData().orElseThrow());
         assertEquals(reopened.getRecruitDexData(), savedAgain);
-        assertTrue(savedAgain.getComparisonList().getCurrentPair().isEmpty());
+        var replacementPair = savedAgain.getComparisonList().getCurrentPair().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(replacementPair.getFirstApplicantId(), replacementPair.getSecondApplicantId()));
     }
 
     @Test

@@ -143,7 +143,7 @@ The overview does not specify the ranking algorithm. Keep that choice behind `Ra
 
 ### PairSelector
 
-Chooses the next two applicants from the active pool. Keeping selection separate from ranking lets the project change how it chooses useful comparisons without changing applicant records or decision storage. The selection strategy remains to be chosen.
+Chooses a random ordered pair of distinct applicants from the active pool, or no pair when fewer than two members are active. Every ordered pair has equal probability, and previously compared pairs may be selected again. `ComparisonList` creates its own `PairSelector`, selects an initial pair when membership reaches two, and selects subsequent pairs after decisions or when membership changes invalidate the pending pair. Adding another member preserves a valid pending pair. Loading restores the saved pair without selecting a replacement. Keeping selection separate from ranking lets the project change how it chooses useful comparisons without changing applicant records or decision storage.
 
 ## Changes and consistency rules
 

@@ -35,7 +35,6 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.comparison.ComparisonState;
-import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
@@ -264,7 +263,7 @@ public class AddToComparisonCommandTest {
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
             comparisonList = new ComparisonList(getApplicantRegistry(), super.getComparisonList().getComparisonState(),
-                    rankingEngine, new PairSelector());
+                    rankingEngine);
         }
 
         @Override
@@ -288,7 +287,7 @@ public class AddToComparisonCommandTest {
 
         private ComparisonListStub(ApplicantRegistry registry) {
             super(registry, new ComparisonState(registry),
-                    new RankingEngineStub(), new PairSelector());
+                    new RankingEngineStub());
         }
 
         @Override

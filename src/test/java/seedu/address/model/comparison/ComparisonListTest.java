@@ -1,6 +1,7 @@
 package seedu.address.model.comparison;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
@@ -28,7 +29,6 @@ public class ComparisonListTest {
     private ApplicantRegistry applicantRegistry;
     private ComparisonState comparisonState;
     private FakeRankingEngine rankingEngine;
-    private FakePairSelector pairSelector;
     private ComparisonList comparisonList;
 
     @BeforeEach
@@ -40,9 +40,8 @@ public class ComparisonListTest {
 
         comparisonState = new ComparisonState(applicantRegistry);
         rankingEngine = new FakeRankingEngine();
-        pairSelector = new FakePairSelector();
         comparisonList = new ComparisonList(
-                applicantRegistry, comparisonState, rankingEngine, pairSelector);
+                applicantRegistry, comparisonState, rankingEngine);
     }
 
     @Test
@@ -55,6 +54,32 @@ public class ComparisonListTest {
         assertEquals(1, rankingEngine.recalculationCount);
         assertEquals(Set.of(applicantId), rankingEngine.lastActiveMembers);
         assertEquals(List.of(), rankingEngine.lastDecisions);
+        assertTrue(comparisonList.getCurrentPair().isEmpty());
+    }
+
+    @Test
+    public void add_secondMember_selectsInitialPairAndPreservesItOnFurtherAdditions() {
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        assertCurrentPairContains(Set.of(ALICE.getId(), BENSON.getId()));
+        Optional<ComparisonPair> initialPair = comparisonList.getCurrentPair();
+
+        comparisonList.add(CARL.getId());
+
+        assertEquals(initialPair, comparisonList.getCurrentPair());
+        assertTrue(comparisonList.getDecisionHistory().isEmpty());
+    }
+
+    @Test
+    public void add_afterPoolDropsBelowTwoMembers_selectsPairWhenPoolGrowsAgain() {
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        comparisonList.remove(ALICE.getId());
+        assertTrue(comparisonList.getCurrentPair().isEmpty());
+
+        comparisonList.add(CARL.getId());
+
+        assertCurrentPairContains(Set.of(BENSON.getId(), CARL.getId()));
     }
 
     @Test
@@ -137,14 +162,11 @@ public class ComparisonListTest {
         comparisonList.add(CARL.getId());
 
         ComparisonPair currentPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        ComparisonPair replacementPair = new ComparisonPair(BENSON.getId(), CARL.getId());
         comparisonState.setCurrentPair(currentPair);
-        pairSelector.nextPair = Optional.of(replacementPair);
 
         comparisonList.remove(ALICE.getId());
 
-        assertEquals(Optional.of(replacementPair), comparisonState.getCurrentPair());
-        assertEquals(1, pairSelector.selectionCount);
+        assertCurrentPairContains(Set.of(BENSON.getId(), CARL.getId()));
     }
 
     @Test
@@ -159,7 +181,6 @@ public class ComparisonListTest {
         comparisonList.remove(CARL.getId());
 
         assertEquals(Optional.of(currentPair), comparisonState.getCurrentPair());
-        assertEquals(0, pairSelector.selectionCount);
     }
 
     @Test
@@ -171,9 +192,6 @@ public class ComparisonListTest {
         ComparisonPair currentPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
         comparisonState.setCurrentPair(currentPair);
 
-        ComparisonPair nextPair = new ComparisonPair(BENSON.getId(), CARL.getId());
-        pairSelector.nextPair = Optional.of(nextPair);
-
         ComparisonDecision decision = comparisonList.recordDecision(ALICE.getId());
 
         assertEquals(List.of(decision), comparisonList.getDecisionHistory());
@@ -181,15 +199,17 @@ public class ComparisonListTest {
         assertEquals(ALICE.getId(), decision.getFirstApplicantId());
         assertEquals(BENSON.getId(), decision.getSecondApplicantId());
         assertEquals(List.of(decision), rankingEngine.lastDecisions);
-        assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), pairSelector.lastActiveMembers);
-        assertEquals(List.of(decision), pairSelector.lastDecisions);
-        assertEquals(Optional.of(nextPair), comparisonState.getCurrentPair());
+        ComparisonPair nextPair = comparisonList.getCurrentPair().orElseThrow();
+        assertNotEquals(nextPair.getFirstApplicantId(), nextPair.getSecondApplicantId());
+        assertTrue(comparisonList.getMemberIds().contains(nextPair.getFirstApplicantId()));
+        assertTrue(comparisonList.getMemberIds().contains(nextPair.getSecondApplicantId()));
     }
 
     @Test
     public void recordDecision_noPendingPair_throwsIllegalStateException() {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
+        comparisonState.clearCurrentPair();
 
         assertThrows(IllegalStateException.class, () ->
                 comparisonList.recordDecision(ALICE.getId()));
@@ -221,15 +241,14 @@ public class ComparisonListTest {
     }
 
     @Test
-    public void recordDecision_noNextPair_clearsCurrentPair() {
+    public void recordDecision_twoActiveMembers_selectsSameApplicantsForNextComparison() {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
         comparisonState.setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
-        pairSelector.nextPair = Optional.empty();
 
         comparisonList.recordDecision(BENSON.getId());
 
-        assertTrue(comparisonState.getCurrentPair().isEmpty());
+        assertCurrentPairContains(Set.of(ALICE.getId(), BENSON.getId()));
     }
 
     @Test
@@ -237,7 +256,6 @@ public class ComparisonListTest {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
         comparisonState.setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
-        pairSelector.nextPair = Optional.empty();
 
         comparisonList.deleteApplicantReferences(ALICE.getId());
 
@@ -274,19 +292,8 @@ public class ComparisonListTest {
         }
     }
 
-    private static class FakePairSelector extends PairSelector {
-        private Optional<ComparisonPair> nextPair = Optional.empty();
-        private int selectionCount;
-        private Set<ApplicantId> lastActiveMembers = Set.of();
-        private List<ComparisonDecision> lastDecisions = List.of();
-
-        @Override
-        public Optional<ComparisonPair> selectPair(Set<ApplicantId> activeMembers,
-                                                   List<ComparisonDecision> decisions, List<RankingEntry> ranking) {
-            selectionCount++;
-            lastActiveMembers = Set.copyOf(activeMembers);
-            lastDecisions = List.copyOf(decisions);
-            return nextPair;
-        }
+    private void assertCurrentPairContains(Set<ApplicantId> expectedMembers) {
+        ComparisonPair pair = comparisonList.getCurrentPair().orElseThrow();
+        assertEquals(expectedMembers, Set.of(pair.getFirstApplicantId(), pair.getSecondApplicantId()));
     }
 }

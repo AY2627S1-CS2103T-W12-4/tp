@@ -11,7 +11,6 @@ import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonState;
-import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.comparison.ReadOnlyComparisonList;
 import seedu.address.model.ranking.RankingEngine;
 
@@ -31,7 +30,7 @@ public class RecruitDexData implements ReadOnlyRecruitDexData {
 
     private RecruitDexData(RankingEngine rankingEngine) {
         comparisonList = new ComparisonList(applicantRegistry, new ComparisonState(applicantRegistry),
-                rankingEngine, new PairSelector());
+                rankingEngine);
         applicantRegistry.setDeletionHandler(comparisonList::deleteApplicantReferences);
     }
 
@@ -60,7 +59,7 @@ public class RecruitDexData implements ReadOnlyRecruitDexData {
         validatedRegistry.setApplicants(records);
         ReadOnlyComparisonList sourceComparisons = newData.getComparisonList();
         ComparisonList validatedComparisons = new ComparisonList(validatedRegistry,
-                new ComparisonState(validatedRegistry), new RankingEngine(), new PairSelector());
+                new ComparisonState(validatedRegistry), new RankingEngine());
         validatedComparisons.resetData(sourceComparisons.getMemberIds(), sourceComparisons.getDecisionHistory(),
                 sourceComparisons.getCurrentPair());
 

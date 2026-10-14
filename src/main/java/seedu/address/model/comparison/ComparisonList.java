@@ -48,17 +48,15 @@ public class ComparisonList implements ReadOnlyComparisonList {
      * @param applicantRegistry the registry used to verify applicant records
      * @param comparisonState the state containing the pending pair
      * @param rankingEngine the engine used to recalculate the ranking
-     * @param pairSelector the selector used to choose a subsequent pair
      * @throws NullPointerException if any collaborator is null
      */
     public ComparisonList(ApplicantRegistry applicantRegistry,
                           ComparisonState comparisonState,
-                          RankingEngine rankingEngine,
-                          PairSelector pairSelector) {
+                          RankingEngine rankingEngine) {
         this.applicantRegistry = requireNonNull(applicantRegistry);
         this.comparisonState = requireNonNull(comparisonState);
         this.rankingEngine = requireNonNull(rankingEngine);
-        this.pairSelector = requireNonNull(pairSelector);
+        pairSelector = new PairSelector();
     }
 
     /** Returns a live, unmodifiable observable set of unique active applicant IDs. */
@@ -127,6 +125,7 @@ public class ComparisonList implements ReadOnlyComparisonList {
     /**
      * Adds an existing applicant to the pool, without adding or copying a record.
      * Refreshes the ranking, making retained decisions eligible when both participants are active.
+     * Selects an initial pair when none is pending, and preserves an existing pending pair.
      * Rejected membership changes leave all model state unchanged.
      * @throws NullPointerException if {@code applicantId} is null.
      * @throws ApplicantNotFoundException if the applicant has no record in the registry.
@@ -144,6 +143,9 @@ public class ComparisonList implements ReadOnlyComparisonList {
 
         memberIds.add(applicantId);
         recalculateRanking(decisionHistory);
+        if (comparisonState.getCurrentPair().isEmpty()) {
+            setNextPairOrClear();
+        }
     }
 
     /**
