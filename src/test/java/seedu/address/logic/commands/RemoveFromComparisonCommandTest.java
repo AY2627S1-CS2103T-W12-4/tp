@@ -16,7 +16,6 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -35,13 +34,14 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.comparison.ComparisonState;
+import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * Tests command delegation in isolation and integration with the concrete comparison list and state.
- * Ranking calculations and pair selection remain test doubles while their implementations are unavailable.
+ * Uses ranking spies for delegation checks and the real engine when testing the default ModelManager.
  */
 public class RemoveFromComparisonCommandTest {
     private final ComparisonListStub comparisonList = new ComparisonListStub();
@@ -144,11 +144,21 @@ public class RemoveFromComparisonCommandTest {
     }
 
     @Test
-    public void execute_comparisonModelNotConnected_throwsCommandException() {
-        ModelManager unwiredModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
+    public void execute_defaultModelManager_removesMembershipAndUpdatesRanking() throws Exception {
+        ModelManager liveModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
+        liveModel.getComparisonList().add(ALICE.getId());
+        liveModel.getComparisonList().add(BENSON.getId());
+        List<Applicant> recordsBefore = List.copyOf(liveModel.getApplicantRegistry().getApplicantList());
 
-        assertCommandFailure(new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT), unwiredModel,
-                RemoveFromComparisonCommand.MESSAGE_COMPARISON_UNAVAILABLE);
+        CommandResult result = new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT).execute(liveModel);
+
+        assertEquals(String.format(RemoveFromComparisonCommand.MESSAGE_SUCCESS, Messages.format(ALICE)),
+                result.getFeedbackToUser());
+        assertEquals(Set.of(BENSON.getId()), liveModel.getComparisonList().getMemberIds());
+        assertEquals(1, liveModel.getRankingEngine().getRanking().size());
+        assertEquals(BENSON.getId(), liveModel.getRankingEngine().getRanking().get(0).getApplicantId());
+        assertEquals(recordsBefore, liveModel.getApplicantRegistry().getApplicantList());
+        assertEquals(recordsBefore, liveModel.getFilteredApplicantList());
     }
 
     @Test
@@ -198,9 +208,8 @@ public class RemoveFromComparisonCommandTest {
     }
 
     @Test
-    public void execute_realComparisonList_retainsHistoryAndClearsAffectedPair() throws Exception {
-        RankingEngineStub rankingEngine = new RankingEngineStub();
-        ModelWithComparisonList connectedModel = new ModelWithComparisonList(rankingEngine);
+    public void execute_defaultModelManager_retainsHistoryAndClearsAffectedPair() throws Exception {
+        ModelManager connectedModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
         ComparisonList realComparisonList = connectedModel.getComparisonList();
         realComparisonList.add(ALICE.getId());
         realComparisonList.add(BENSON.getId());
@@ -211,18 +220,27 @@ public class RemoveFromComparisonCommandTest {
         connectedModel.getComparisonState().setCurrentPair(pair);
         connectedModel.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         List<Applicant> recordsBefore = List.copyOf(connectedModel.getApplicantRegistry().getApplicantList());
-        int recalculationsBefore = rankingEngine.recalculationCount;
 
         new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT).execute(connectedModel);
 
         assertEquals(Set.of(ALICE.getId(), CARL.getId()), realComparisonList.getMemberIds());
         assertEquals(List.of(decision), realComparisonList.getDecisionHistory());
         assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
-        assertEquals(recalculationsBefore + 1, rankingEngine.recalculationCount);
-        assertEquals(Set.of(ALICE.getId(), CARL.getId()), rankingEngine.lastActiveMembers);
-        assertEquals(List.of(decision), rankingEngine.lastDecisions);
+        ObservableList<RankingEntry> ranking = connectedModel.getRankingEngine().getRanking();
+        assertEquals(2, ranking.size());
+        assertTrue(ranking.stream().allMatch(entry -> entry.getComparisonCount() == 0));
+        assertTrue(ranking.stream().noneMatch(entry -> entry.getApplicantId().equals(BENSON.getId())));
         assertEquals(recordsBefore, connectedModel.getApplicantRegistry().getApplicantList());
         assertEquals(List.of(BENSON), connectedModel.getFilteredApplicantList());
+
+        new AddToComparisonCommand(INDEX_FIRST_APPLICANT).execute(connectedModel);
+
+        assertEquals(List.of(decision), realComparisonList.getDecisionHistory());
+        assertEquals(3, ranking.size());
+        assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
+        assertEquals(1, ranking.get(0).getComparisonCount());
+        assertEquals(1, ranking.stream().filter(entry -> entry.getApplicantId().equals(BENSON.getId()))
+                .findFirst().orElseThrow().getComparisonCount());
     }
 
     @Test
@@ -259,7 +277,7 @@ public class RemoveFromComparisonCommandTest {
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
             comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
-                    rankingEngine, (members, decisions, ranking) -> Optional.empty());
+                    rankingEngine, new PairSelector());
         }
 
         @Override
@@ -282,7 +300,7 @@ public class RemoveFromComparisonCommandTest {
 
         private ComparisonListStub(ApplicantRegistry registry) {
             super(registry, new ComparisonState(registry),
-                    new RankingEngineStub(), (members, decisions, ranking) -> Optional.empty());
+                    new RankingEngineStub(), new PairSelector());
             for (Applicant applicant : getTypicalApplicants()) {
                 registry.add(applicant);
                 super.add(applicant.getId());
@@ -321,7 +339,7 @@ public class RemoveFromComparisonCommandTest {
     /**
      * Records ranking refresh requests without inventing a ranking algorithm for the tests.
      */
-    private static class RankingEngineStub implements RankingEngine {
+    private static class RankingEngineStub extends RankingEngine {
         private final ObservableList<RankingEntry> ranking =
                 FXCollections.unmodifiableObservableList(FXCollections.observableArrayList());
         private int recalculationCount;

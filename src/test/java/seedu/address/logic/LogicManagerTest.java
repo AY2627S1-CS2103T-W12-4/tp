@@ -32,6 +32,7 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
@@ -106,6 +107,38 @@ public class LogicManagerTest {
         assertEquals(List.of(ALICE, BENSON), reopenedModel.getApplicantRegistry().getApplicantList());
         assertTrue(reopenedModel.getComparisonList().getMemberIds().isEmpty());
         assertTrue(reopenedModel.getRankingEngine().getRanking().isEmpty());
+    }
+
+    @Test
+    public void execute_compareRemove_updatesRankingAndPreservesRecordsAndFilter() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 2");
+        logic.execute("find Benson");
+        ObservableList<RankingEntry> ranking = logic.getRanking();
+
+        CommandResult result = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
+
+        assertEquals(String.format(RemoveFromComparisonCommand.MESSAGE_SUCCESS, Messages.format(BENSON)),
+                result.getFeedbackToUser());
+        assertEquals(Set.of(ALICE.getId()), model.getComparisonList().getMemberIds());
+        assertSame(ranking, logic.getRanking());
+        assertEquals(1, ranking.size());
+        assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
+        assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+        assertEquals(List.of(ALICE, BENSON), model.getApplicantRegistry().getApplicantList());
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        assertEquals(List.of(ALICE, BENSON), savedRecords.readRecruitDexData().orElseThrow().getApplicantList());
+
+        CommandResult repeatedResult = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
+
+        assertEquals(RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, repeatedResult.getFeedbackToUser());
+        assertEquals(Set.of(ALICE.getId()), model.getComparisonList().getMemberIds());
+        assertEquals(1, ranking.size());
+        assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
+        assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
     }
 
     @Test

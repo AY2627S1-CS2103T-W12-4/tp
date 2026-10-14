@@ -149,9 +149,9 @@ Examples:
 * `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
 * `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
-Comparison-list membership is not available in the current application.
-Until this feature is enabled, a valid applicant selection reports
-`The comparison list is not available yet.` and makes no changes.
+Removing an applicant updates the ranking immediately. Membership and comparison decisions are kept
+only for the current session. Automatic selection of a replacement comparison pair is not available yet,
+so an unanswered comparison involving the removed applicant is cleared.
 
 ### Listing all applicants: `list`
 
@@ -263,7 +263,7 @@ Action     | Format, Examples
 **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
-**Remove from comparison list (not yet available)** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
+**Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

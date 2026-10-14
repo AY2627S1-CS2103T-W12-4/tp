@@ -28,7 +28,6 @@ public class RemoveFromComparisonCommand extends Command {
 
     public static final String MESSAGE_SUCCESS = "Applicant removed from comparison list: %1$s";
     public static final String MESSAGE_NOT_A_MEMBER = "This applicant is not in the comparison list.";
-    public static final String MESSAGE_COMPARISON_UNAVAILABLE = "The comparison list is not available yet.";
 
     private final Index targetIndex;
 
@@ -48,12 +47,7 @@ public class RemoveFromComparisonCommand extends Command {
         }
 
         Applicant applicant = displayedApplicants.get(targetIndex.getZeroBased());
-        ComparisonList comparisonList;
-        try {
-            comparisonList = model.getComparisonList();
-        } catch (UnsupportedOperationException e) {
-            throw new CommandException(MESSAGE_COMPARISON_UNAVAILABLE, e);
-        }
+        ComparisonList comparisonList = model.getComparisonList();
 
         boolean wasMember = comparisonList.getMemberIds().contains(applicant.getId());
         comparisonList.remove(applicant.getId());
