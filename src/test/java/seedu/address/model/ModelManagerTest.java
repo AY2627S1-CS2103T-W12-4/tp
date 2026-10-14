@@ -9,6 +9,7 @@ import static seedu.address.model.Model.PREDICATE_SHOW_ALL_APPLICANTS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
+import static seedu.address.testutil.TypicalApplicants.CARL;
 
 import java.util.List;
 import java.util.Optional;
@@ -313,6 +314,83 @@ public class ModelManagerTest {
 
         assertEquals(Set.of(ALICE.getId(), BENSON.getId()), comparisonList.getMemberIds());
         assertEquals(Optional.of(pair), modelManager.getComparisonState().getCurrentPair());
+    }
+
+    @Test
+    public void registryDelete_activeMember_removesReferencesAndPreservesUnrelatedHistory() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        modelManager.getApplicantRegistry().add(CARL);
+        ComparisonList comparisonList = modelManager.getComparisonList();
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        comparisonList.add(CARL.getId());
+        ComparisonPair affectedPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        modelManager.getComparisonState().setCurrentPair(affectedPair);
+        comparisonList.recordDecision(ALICE.getId());
+        modelManager.getComparisonState().setCurrentPair(new ComparisonPair(BENSON.getId(), CARL.getId()));
+        ComparisonDecision retainedDecision = comparisonList.recordDecision(BENSON.getId());
+        modelManager.getComparisonState().setCurrentPair(affectedPair);
+        ObservableList<RankingEntry> ranking = modelManager.getRankingEngine().getRanking();
+
+        modelManager.getApplicantRegistry().delete(ALICE.getId());
+
+        assertEquals(List.of(BENSON, CARL), modelManager.getApplicantRegistry().getApplicantList());
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()), comparisonList.getMemberIds());
+        assertEquals(List.of(retainedDecision), comparisonList.getDecisionHistory());
+        assertTrue(modelManager.getComparisonState().getCurrentPair().isEmpty());
+        assertSame(ranking, modelManager.getRankingEngine().getRanking());
+        assertEquals(2, ranking.size());
+        assertEquals(BENSON.getId(), ranking.get(0).getApplicantId());
+        assertEquals(CARL.getId(), ranking.get(1).getApplicantId());
+        assertTrue(ranking.stream().allMatch(entry -> entry.getComparisonCount() == 1));
+    }
+
+    @Test
+    public void registryDelete_inactiveApplicant_removesHistoryAndPreservesUnaffectedPair() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        modelManager.getApplicantRegistry().add(CARL);
+        ComparisonList comparisonList = modelManager.getComparisonList();
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        comparisonList.add(CARL.getId());
+        modelManager.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        comparisonList.recordDecision(ALICE.getId());
+        comparisonList.remove(ALICE.getId());
+        ComparisonPair unaffectedPair = new ComparisonPair(BENSON.getId(), CARL.getId());
+        modelManager.getComparisonState().setCurrentPair(unaffectedPair);
+
+        modelManager.getApplicantRegistry().delete(ALICE.getId());
+
+        assertEquals(List.of(BENSON, CARL), modelManager.getApplicantRegistry().getApplicantList());
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()), comparisonList.getMemberIds());
+        assertTrue(comparisonList.getDecisionHistory().isEmpty());
+        assertEquals(Optional.of(unaffectedPair), modelManager.getComparisonState().getCurrentPair());
+        assertEquals(2, modelManager.getRankingEngine().getRanking().size());
+        assertTrue(modelManager.getRankingEngine().getRanking().stream()
+                .allMatch(entry -> entry.getComparisonCount() == 0));
+    }
+
+    @Test
+    public void registryDelete_afterDataReset_cleansCurrentComparisonList() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getComparisonList().add(ALICE.getId());
+        ApplicantRegistry registry = modelManager.getApplicantRegistry();
+        RecruitDexData replacement = new RecruitDexDataBuilder().withApplicant(BENSON).withApplicant(CARL).build();
+        modelManager.setRecruitDexData(replacement);
+        ComparisonList currentList = modelManager.getComparisonList();
+        currentList.add(BENSON.getId());
+        currentList.add(CARL.getId());
+        modelManager.getComparisonState().setCurrentPair(new ComparisonPair(BENSON.getId(), CARL.getId()));
+
+        registry.delete(BENSON.getId());
+
+        assertEquals(List.of(CARL), registry.getApplicantList());
+        assertEquals(Set.of(CARL.getId()), currentList.getMemberIds());
+        assertTrue(modelManager.getComparisonState().getCurrentPair().isEmpty());
+        assertEquals(1, modelManager.getRankingEngine().getRanking().size());
+        assertEquals(CARL.getId(), modelManager.getRankingEngine().getRanking().get(0).getApplicantId());
     }
 
     @Test

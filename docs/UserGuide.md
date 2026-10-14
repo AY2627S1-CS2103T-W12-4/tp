@@ -197,13 +197,15 @@ Examples:
 
 ### Deleting an applicant: `delete`
 
-Deletes the specified applicant record.
+Permanently deletes the specified applicant record, their comparison membership, and decisions involving them.
 
 Format: `delete INDEX`
 
 * Deletes the applicant at the specified `INDEX`.
 * The index refers to the index number shown in the displayed applicant list.
 * The index **must be a positive integer** 1, 2, 3, ...
+* The ranking updates immediately. An unanswered comparison involving the deleted applicant is cleared.
+* Use `compare-remove` to remove an applicant from the ranking while keeping their record and comparison history.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd applicant in the displayed list.
