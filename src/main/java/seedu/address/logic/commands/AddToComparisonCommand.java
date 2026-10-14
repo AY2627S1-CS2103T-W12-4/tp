@@ -11,7 +11,6 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
-import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 
 /**
@@ -28,7 +27,6 @@ public class AddToComparisonCommand extends Command {
     public static final String MESSAGE_SUCCESS = "Applicant added to comparison list: %1$s";
     public static final String MESSAGE_DUPLICATE_MEMBER = "This applicant is already in the comparison list.";
     public static final String MESSAGE_APPLICANT_NOT_FOUND = "This applicant no longer exists in RecruitDex.";
-    public static final String MESSAGE_COMPARISON_UNAVAILABLE = "The comparison list is not available yet.";
 
     private final Index targetIndex;
 
@@ -48,15 +46,8 @@ public class AddToComparisonCommand extends Command {
         }
 
         Applicant applicant = displayedApplicants.get(targetIndex.getZeroBased());
-        ComparisonList comparisonList;
         try {
-            comparisonList = model.getComparisonList();
-        } catch (UnsupportedOperationException e) {
-            throw new CommandException(MESSAGE_COMPARISON_UNAVAILABLE, e);
-        }
-
-        try {
-            comparisonList.add(applicant.getId());
+            model.getComparisonList().add(applicant.getId());
         } catch (DuplicateComparisonMemberException e) {
             throw new CommandException(MESSAGE_DUPLICATE_MEMBER, e);
         } catch (ApplicantNotFoundException e) {

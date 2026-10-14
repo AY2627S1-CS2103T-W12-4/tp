@@ -3,6 +3,8 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -14,17 +16,21 @@ import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonState;
+import seedu.address.model.comparison.PairSelector;
+import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.userprefs.ReadOnlyUserPrefs;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
- * Holds saved RecruitDex data, separately saved preferences, and the runtime applicant filter.
+ * Holds saved RecruitDex data, preferences, and runtime comparison membership, filtering, and ranking.
  */
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
     private final RecruitDexData recruitDexData;
     private final UserPrefs userPrefs;
+    private final RankingEngine rankingEngine;
+    private ComparisonList comparisonList;
     private final FilteredList<Applicant> filteredApplicants;
     private final ObservableList<Applicant> unmodifiableFilteredApplicants;
 
@@ -38,6 +44,9 @@ public class ModelManager implements Model {
 
         this.recruitDexData = new RecruitDexData(recruitDexData);
         this.userPrefs = new UserPrefs(userPrefs);
+        rankingEngine = new RankingEngine();
+        comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
+                rankingEngine, new PairSelector());
         filteredApplicants = new FilteredList<>(getApplicantRegistry().getApplicantList());
         unmodifiableFilteredApplicants = FXCollections.unmodifiableObservableList(filteredApplicants);
     }
@@ -55,6 +64,10 @@ public class ModelManager implements Model {
     public void setRecruitDexData(ReadOnlyRecruitDexData recruitDexData) {
         // Keep the registry and its observable list so existing UI subscriptions remain connected.
         this.recruitDexData.resetData(recruitDexData);
+        // The current saved data has no comparison membership or decisions to restore a ranking from.
+        rankingEngine.recalculate(Set.of(), List.of());
+        comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
+                rankingEngine, new PairSelector());
     }
 
     @Override
@@ -69,13 +82,17 @@ public class ModelManager implements Model {
 
     @Override
     public ComparisonList getComparisonList() {
-        // Replace this with the live data object's comparison list when model wiring is implemented.
-        throw new UnsupportedOperationException("Comparison models have not been connected yet.");
+        return comparisonList;
     }
 
     @Override
     public ComparisonState getComparisonState() {
         return recruitDexData.getComparisonState();
+    }
+
+    @Override
+    public RankingEngine getRankingEngine() {
+        return rankingEngine;
     }
 
     @Override

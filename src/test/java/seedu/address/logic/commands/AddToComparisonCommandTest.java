@@ -35,6 +35,7 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.comparison.ComparisonState;
+import seedu.address.model.comparison.PairSelector;
 import seedu.address.model.comparison.exceptions.DuplicateComparisonMemberException;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
@@ -42,7 +43,7 @@ import seedu.address.model.userprefs.UserPrefs;
 
 /**
  * Tests command delegation in isolation and integration with the concrete comparison list and state.
- * Ranking calculations and pair selection remain test doubles while their implementations are unavailable.
+ * Uses ranking spies for delegation checks and the real engine when testing the default ModelManager.
  */
 public class AddToComparisonCommandTest {
     private final ComparisonListStub comparisonList = new ComparisonListStub();
@@ -142,11 +143,16 @@ public class AddToComparisonCommandTest {
     }
 
     @Test
-    public void execute_comparisonModelNotConnected_throwsCommandException() {
-        ModelManager unwiredModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
+    public void execute_defaultModelManager_addsMembershipAndUpdatesRanking() throws Exception {
+        ModelManager liveModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
 
-        assertCommandFailure(new AddToComparisonCommand(INDEX_FIRST_APPLICANT), unwiredModel,
-                AddToComparisonCommand.MESSAGE_COMPARISON_UNAVAILABLE);
+        CommandResult result = new AddToComparisonCommand(INDEX_FIRST_APPLICANT).execute(liveModel);
+
+        assertEquals(String.format(AddToComparisonCommand.MESSAGE_SUCCESS, Messages.format(ALICE)),
+                result.getFeedbackToUser());
+        assertEquals(Set.of(ALICE.getId()), liveModel.getComparisonList().getMemberIds());
+        assertEquals(1, liveModel.getRankingEngine().getRanking().size());
+        assertEquals(ALICE.getId(), liveModel.getRankingEngine().getRanking().get(0).getApplicantId());
     }
 
     @Test
@@ -258,7 +264,7 @@ public class AddToComparisonCommandTest {
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
             comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
-                    rankingEngine, (members, decisions, ranking) -> Optional.empty());
+                    rankingEngine, new PairSelector());
         }
 
         @Override
@@ -282,7 +288,7 @@ public class AddToComparisonCommandTest {
 
         private ComparisonListStub(ApplicantRegistry registry) {
             super(registry, new ComparisonState(registry),
-                    new RankingEngineStub(), (members, decisions, ranking) -> Optional.empty());
+                    new RankingEngineStub(), new PairSelector());
         }
 
         @Override
@@ -323,7 +329,7 @@ public class AddToComparisonCommandTest {
     /**
      * Records ranking refresh requests without inventing a ranking algorithm for the tests.
      */
-    private static class RankingEngineStub implements RankingEngine {
+    private static class RankingEngineStub extends RankingEngine {
         private final ObservableList<RankingEntry> ranking =
                 FXCollections.unmodifiableObservableList(FXCollections.observableArrayList());
         private int recalculationCount;

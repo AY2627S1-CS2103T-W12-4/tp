@@ -110,6 +110,17 @@
     -fx-text-fill: white;
 }
 
+.ranking-metadata,
+.ranking-note,
+.ranking-empty-message {
+    -fx-font-size: 11px;
+    -fx-text-fill: #cccccc;
+}
+
+.ranking-note {
+    -fx-padding: 0 0 6 0;
+}
+
 /* Tabs: switch between the comparison view and the full applicant list. */
 
 .tab-pane .tab-header-area {
