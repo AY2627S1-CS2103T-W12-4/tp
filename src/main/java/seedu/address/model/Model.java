@@ -7,11 +7,12 @@ import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.ApplicantRegistry;
 import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonState;
+import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.userprefs.UserPrefs;
 
 /**
- * The API used by commands to access RecruitDex's model objects and shared applicant filter.
- * Comparison and ranking contracts are intentionally not connected to the running app yet.
+ * The API used to access RecruitDex's model objects, runtime ranking engine, and shared applicant filter.
+ * Comparison membership and decision commands are not connected to the running app yet.
  */
 public interface Model {
     /** {@code Predicate} that always evaluates to true. */
@@ -37,6 +38,11 @@ public interface Model {
 
     /** Returns the live state holding the pending comparison pair. */
     ComparisonState getComparisonState();
+
+    /**
+     * Returns the live engine responsible for derived runtime rankings.
+     */
+    RankingEngine getRankingEngine();
 
     /** Returns an unmodifiable observable view of the displayed applicants. */
     ObservableList<Applicant> getFilteredApplicantList();

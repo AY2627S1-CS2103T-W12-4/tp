@@ -1,6 +1,8 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_APPLICANT_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
@@ -18,11 +20,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
@@ -33,7 +38,9 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyRecruitDexData;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.applicant.NameContainsKeywordsPredicate;
+import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonPair;
+import seedu.address.model.ranking.RankingEntry;
 import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.storage.JsonRecruitDexDataStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -228,5 +235,59 @@ public class LogicManagerTest {
         model.getComparisonState().setCurrentPair(pair);
 
         assertEquals(List.of(Optional.of(pair)), seen);
+    }
+
+    @Test
+    public void getRanking_recalculation_updatesSameLiveView() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        ObservableList<RankingEntry> rankingEntries = logic.getRanking();
+        assertSame(model.getRankingEngine().getRanking(), rankingEntries);
+        assertTrue(rankingEntries.isEmpty());
+
+        model.getRankingEngine().recalculate(Set.of(ALICE.getId()), List.of());
+        assertEquals(List.of(new RankingEntry(ALICE.getId(), 1, OptionalDouble.of(0), 0)), rankingEntries);
+
+        model.getRankingEngine().recalculate(Set.of(BENSON.getId()), List.of());
+        assertSame(rankingEntries, logic.getRanking());
+        assertEquals(List.of(new RankingEntry(BENSON.getId(), 1, OptionalDouble.of(0), 0)), rankingEntries);
+    }
+
+    @Test
+    public void getRanking_modifyView_throwsUnsupportedOperationException() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getRankingEngine().recalculate(Set.of(ALICE.getId()), List.of());
+        List<RankingEntry> originalEntries = List.copyOf(logic.getRanking());
+
+        assertThrows(UnsupportedOperationException.class, () -> logic.getRanking().clear());
+
+        assertEquals(originalEntries, logic.getRanking());
+    }
+
+    @Test
+    public void getRanking_searchFilter_preservesCompleteRanking() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getRankingEngine().recalculate(Set.of(ALICE.getId(), BENSON.getId()),
+                List.of(new ComparisonDecision(ALICE.getId(), BENSON.getId(), ALICE.getId())));
+        List<RankingEntry> originalEntries = List.copyOf(logic.getRanking());
+
+        model.updateFilteredApplicantList(applicant -> applicant.getId().equals(ALICE.getId()));
+
+        assertEquals(List.of(ALICE), logic.getFilteredApplicantList());
+        assertEquals(List.of(ALICE, BENSON), logic.getApplicantList());
+        assertEquals(originalEntries, logic.getRanking());
+    }
+
+    @Test
+    public void execute_clearCommand_clearsRetainedRankingView() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getRankingEngine().recalculate(Set.of(ALICE.getId()), List.of());
+        ObservableList<RankingEntry> rankingEntries = logic.getRanking();
+
+        logic.execute("clear");
+
+        assertSame(rankingEntries, logic.getRanking());
+        assertTrue(rankingEntries.isEmpty());
     }
 }
