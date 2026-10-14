@@ -79,7 +79,8 @@ Searching filters the applicant list and leaves the leaderboard unchanged. Appli
 Commands such as `edit` and `delete` use indices from the **All applicants** list.
 
 **Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
-Comparison-list and decision commands are not connected yet, so adding applicant records leaves the leaderboard empty.
+Use `compare-add INDEX` to include an existing applicant in the leaderboard.
+Adding applicant records alone leaves the leaderboard empty. Decision commands are not connected yet.
 Ranking progress is not saved between sessions.
 
 ### Viewing help: `help`
@@ -107,6 +108,26 @@ Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 * `add n/Jane Doe p/91234567 e/jane@example.com a/Blk 1 Clementi y/6 s/LinkedIn i/Great system design t/Java t/Kafka`
+
+### Adding an applicant to the comparison list: `compare-add`
+
+Adds an existing applicant to the active comparison list.
+
+Format: `compare-add INDEX`
+
+* `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
+* After `find`, the index refers to the filtered results.
+* The applicant must already have a record and must not already be in the comparison list.
+* This command keeps applicant records and the current search filter unchanged.
+
+Examples:
+
+* `list` followed by `compare-add 2` selects the second applicant in the displayed list.
+* `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
+
+Adding an applicant updates the ranking immediately. Membership and comparison decisions are kept only
+for the current session and are lost when the application closes. Using `clear` also resets membership.
+Automatic selection of comparison pairs is not available yet.
 
 ### Listing all applicants: `list`
 
@@ -217,6 +238,7 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
+**Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

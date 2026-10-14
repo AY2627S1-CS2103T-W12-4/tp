@@ -25,6 +25,7 @@ import seedu.address.model.applicant.NameContainsKeywordsPredicate;
 import seedu.address.model.applicant.exceptions.ApplicantNotFoundException;
 import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 import seedu.address.model.comparison.ComparisonDecision;
+import seedu.address.model.comparison.ComparisonList;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.ranking.RankingEngine;
 import seedu.address.model.ranking.RankingEntry;
@@ -239,7 +240,8 @@ public class ModelManagerTest {
         modelManager.getApplicantRegistry().add(ALICE);
         RankingEngine engine = modelManager.getRankingEngine();
         ObservableList<RankingEntry> rankingEntries = engine.getRanking();
-        engine.recalculate(Set.of(ALICE.getId()), List.of());
+        ComparisonList previousList = modelManager.getComparisonList();
+        previousList.add(ALICE.getId());
         RecruitDexData replacement = new RecruitDexDataBuilder().withApplicant(BENSON).build();
 
         modelManager.setRecruitDexData(replacement);
@@ -247,6 +249,8 @@ public class ModelManagerTest {
         assertSame(engine, modelManager.getRankingEngine());
         assertSame(rankingEntries, engine.getRanking());
         assertTrue(rankingEntries.isEmpty());
+        assertNotSame(previousList, modelManager.getComparisonList());
+        assertTrue(modelManager.getComparisonList().getMemberIds().isEmpty());
         assertEquals(List.of(BENSON), modelManager.getApplicantRegistry().getApplicantList());
 
         engine.recalculate(Set.of(BENSON.getId()), List.of());
@@ -292,5 +296,39 @@ public class ModelManagerTest {
         modelManager.getRankingEngine().recalculate(Set.of(ALICE.getId()), List.of());
 
         assertEquals(modelManager, otherModel);
+    }
+
+    @Test
+    public void registryEdit_preservesComparisonMembershipAndPendingPair() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        ComparisonList comparisonList = modelManager.getComparisonList();
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        modelManager.getComparisonState().setCurrentPair(pair);
+        Applicant editedAlice = new ApplicantBuilder(ALICE).withName("Alice Tan").build();
+
+        modelManager.getApplicantRegistry().edit(ALICE.getId(), editedAlice);
+
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()), comparisonList.getMemberIds());
+        assertEquals(Optional.of(pair), modelManager.getComparisonState().getCurrentPair());
+    }
+
+    @Test
+    public void comparisonList_manuallySelectedPair_recordsDecisionAndUpdatesSharedRanking() {
+        modelManager.getApplicantRegistry().add(ALICE);
+        modelManager.getApplicantRegistry().add(BENSON);
+        ComparisonList comparisonList = modelManager.getComparisonList();
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        modelManager.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+
+        ComparisonDecision decision = comparisonList.recordDecision(ALICE.getId());
+
+        assertEquals(List.of(decision), comparisonList.getDecisionHistory());
+        assertEquals(ALICE.getId(), modelManager.getRankingEngine().getRanking().get(0).getApplicantId());
+        assertEquals(1, modelManager.getRankingEngine().getRanking().get(0).getComparisonCount());
+        assertTrue(modelManager.getComparisonState().getCurrentPair().isEmpty());
     }
 }
