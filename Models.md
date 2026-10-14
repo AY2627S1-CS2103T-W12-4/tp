@@ -29,13 +29,14 @@ ModelManager
 |-- RecruitDexData                  application data, saved in one file
 |   |-- ApplicantRegistry
 |   |   `-- Applicant records
-|   |-- ComparisonList
-|   |   |-- Member ApplicantIds
-|   |   `-- ComparisonDecision history
-|   `-- ComparisonState
-|       `-- Optional ComparisonPair
+|   `-- ComparisonList
+|       |-- Member ApplicantIds
+|       |-- ComparisonDecision history
+|       |-- ComparisonState
+|       |   `-- Optional ComparisonPair
+|       `-- PairSelector             runtime collaborator, not saved
 |-- RankingEngine                   calculates the ranking
-|-- PairSelector                    chooses the next pair
+|   `-- RankingEntry results         derived runtime values, not saved
 |-- filteredApplicants              displayed subset, runtime state
 `-- UserPrefs                       preferences, saved separately
 ```
@@ -48,7 +49,7 @@ The two classes serve different purposes: `RecruitDexData` is the application's 
 
 ## ModelManager access and applicant filtering
 
-Expose the contained objects through getters such as `getApplicantRegistry()`, `getComparisonList()`, `getComparisonState()`, `getRankingEngine()`, `getPairSelector()`, and `getUserPrefs()`. Getters for domain objects can access them through `RecruitDexData`; they should return the live objects rather than copies. The `Model` interface declares these accessors rather than duplicating each object's operations.
+Expose the contained objects through getters such as `getApplicantRegistry()`, `getComparisonList()`, `getRankingEngine()`, and `getUserPrefs()`. Getters for domain objects can access them through `RecruitDexData`; they should return the live objects rather than copies. The `Model` interface declares these accessors rather than duplicating each object's operations. `ComparisonList` owns access to `ComparisonState` and coordinates `PairSelector`; neither is exposed as a separate component by `RecruitDexData` or `Model`. Access the pending state through `model.getComparisonList().getComparisonState()`.
 
 For example, a command calls `model.getApplicantRegistry().delete(id)` instead of `model.deleteApplicant(id)`. Similarly, comparison commands use `model.getComparisonList()` to perform comparison operations. Each object protects its internal state and provides complete operations, including collaboration with other models when needed. Deleting an applicant must also remove comparison references and invalidate an affected pair; commands should not have to perform those steps themselves. Exposing an object does not mean exposing mutable collections that bypass its rules.
 
@@ -86,9 +87,25 @@ The single source of applicant records. It supports adding, editing, deleting, a
 
 ## Comparison membership and decisions
 
+Keep comparison-related classes together in `src/main/java/seedu/address/model/comparison/` (`seedu.address.model.comparison`), under the responsibility of `ComparisonList`:
+
+```text
+model/comparison/
+|-- ComparisonList.java
+|-- ReadOnlyComparisonList.java
+|-- ComparisonState.java
+|-- ComparisonPair.java
+|-- ComparisonDecision.java
+|-- PairSelector.java
+`-- exceptions/
+    `-- DuplicateComparisonMemberException.java
+```
+
 ### ComparisonList
 
-Owns a unique set of applicant IDs representing the active pool, together with an ordered history of comparison decisions. Start with one comparison list; the overview does not require multiple recruitment campaigns or independent rankings.
+Owns a unique set of applicant IDs representing the active pool, together with an ordered history of comparison decisions and the pending `ComparisonState`. It coordinates the runtime `PairSelector` and ranking refreshes. Start with one comparison list; the overview does not require multiple recruitment campaigns or independent rankings.
+
+`getComparisonState()` provides access to pending-pair observation. Pair changes must still enforce active membership through `ComparisonList`; exposing state must not provide a way to bypass that rule.
 
 An applicant must exist in the registry before joining. Adding a record does not automatically add membership, and removing membership does not delete the record. A search filter only changes what is displayed; it does not change this pool.
 
@@ -107,6 +124,14 @@ Persist `ComparisonState` so the user can resume an unanswered comparison after 
 With fewer than two active applicants, no pair is available. Changes to membership or records must not leave the UI displaying an invalid pair. Applicant details are resolved from the registry so edits appear in the comparison view.
 
 ## Ranking and pair selection
+
+Keep ranking-related classes together in `src/main/java/seedu/address/model/ranking/` (`seedu.address.model.ranking`), under the responsibility of `RankingEngine`:
+
+```text
+model/ranking/
+|-- RankingEngine.java
+`-- RankingEntry.java
+```
 
 ### RankingEngine and RankingEntry
 
@@ -143,7 +168,9 @@ These policies are proposed design choices, not requirements stated in the overv
 
 ## Persistence and model access
 
-`RecruitDexData` is the root object for application data persisted in one file. It contains `ApplicantRegistry`, `ComparisonList`, and `ComparisonState`, including the pending pair. A read-only interface, such as `ReadOnlyRecruitDexData`, gives Storage access without allowing it to mutate live data. `UserPrefs` is persisted in a separate file.
+`RecruitDexData` is the root object for application data persisted in one file. It contains `ApplicantRegistry` and `ComparisonList`; `ComparisonList` contains `ComparisonState`, including the pending pair. A read-only interface, such as `ReadOnlyRecruitDexData`, gives Storage access without allowing it to mutate live data. Persist comparison membership, decisions, and state, but rebuild runtime collaborators such as `PairSelector` and `RankingEngine`. `UserPrefs` is persisted in a separate file.
+
+`ReadOnlyRecruitDexData.getComparisonList()` returns a `ReadOnlyComparisonList` view of membership, ordered decisions, and the pending pair. The mutable data object returns its live `ComparisonList`. Resetting application data restores the existing registry and comparison list in place, retaining their observable views and the current-pair property. `ModelManager` supplies the runtime ranking engine to the data object's comparison list so restoration also refreshes the ranking observed by the UI.
 
 Save and restore records, membership, decisions, and the pending pair together. Loading must validate relationships as well as individual field values, including that a restored pair contains two distinct active applicants who exist in the registry.
 

@@ -24,13 +24,21 @@ class JsonSerializableRecruitDexData {
     public static final String MESSAGE_DUPLICATE_APPLICANT = "Applicants list contains duplicate applicant(s).";
 
     private final List<JsonAdaptedApplicant> applicants = new ArrayList<>();
+    private final JsonAdaptedComparisonList comparisonList;
 
     /**
      * Constructs a {@code JsonSerializableRecruitDexData} with the given applicants.
      */
+    public JsonSerializableRecruitDexData(List<JsonAdaptedApplicant> applicants) {
+        this(applicants, null);
+    }
+
+    /** Missing comparison data is accepted for files saved before comparison persistence existed. */
     @JsonCreator
-    public JsonSerializableRecruitDexData(@JsonProperty("applicants") List<JsonAdaptedApplicant> applicants) {
+    public JsonSerializableRecruitDexData(@JsonProperty("applicants") List<JsonAdaptedApplicant> applicants,
+            @JsonProperty("comparisonList") JsonAdaptedComparisonList comparisonList) {
         this.applicants.addAll(applicants);
+        this.comparisonList = comparisonList;
     }
 
     /**
@@ -41,6 +49,7 @@ class JsonSerializableRecruitDexData {
     public JsonSerializableRecruitDexData(ReadOnlyRecruitDexData source) {
         applicants.addAll(source.getApplicantList().stream().map(JsonAdaptedApplicant::new)
                 .collect(Collectors.toList()));
+        comparisonList = new JsonAdaptedComparisonList(source.getComparisonList());
     }
 
     /**
@@ -57,6 +66,9 @@ class JsonSerializableRecruitDexData {
             } catch (DuplicateApplicantException e) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_APPLICANT, e);
             }
+        }
+        if (comparisonList != null) {
+            comparisonList.restoreTo(recruitDexData.getComparisonList());
         }
         return recruitDexData;
     }

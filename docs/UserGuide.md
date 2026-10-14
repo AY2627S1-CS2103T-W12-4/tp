@@ -125,8 +125,8 @@ Examples:
 * `list` followed by `compare-add 2` selects the second applicant in the displayed list.
 * `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
 
-Adding an applicant updates the ranking immediately. Membership and comparison decisions are kept only
-for the current session and are lost when the application closes. Using `clear` also resets membership.
+Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
+with the applicant records and restored when the application reopens. Using `clear` also resets membership.
 Automatic selection of comparison pairs is not available yet.
 
 ### Removing an applicant from the comparison list: `compare-remove`
@@ -149,8 +149,8 @@ Examples:
 * `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
 * `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
-Removing an applicant updates the ranking immediately. Membership and comparison decisions are kept
-only for the current session. Automatic selection of a replacement comparison pair is not available yet,
+Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
+with the applicant records. Automatic selection of a replacement comparison pair is not available yet,
 so an unanswered comparison involving the removed applicant is cleared.
 
 ### Listing all applicants: `list`
@@ -225,11 +225,16 @@ Format: `exit`
 
 ### Saving the data
 
-RecruitDex automatically saves applicant records after every successful command. You do not need to save manually.
+RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
+comparison after every successful command. Reopening RecruitDex restores this data and rebuilds the ranking.
+You do not need to save manually.
 
 ### Editing the data file
 
-Applicant records are saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that data file.
+Applicant records and comparison data are saved automatically as a JSON file
+`[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that
+data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
+comparison-list members. Existing files without comparison data load with an empty comparison list.
 
 <box type="warning" seamless>
 

@@ -138,7 +138,7 @@ public class RemoveFromComparisonCommandTest {
         assertEquals(Set.of(ALICE.getId()), rankingEngine.lastActiveMembers);
         assertTrue(rankingEngine.lastDecisions.isEmpty());
         assertTrue(realComparisonList.getDecisionHistory().isEmpty());
-        assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
         assertEquals(recordsBefore, connectedModel.getApplicantRegistry().getApplicantList());
         assertEquals(List.of(BENSON), connectedModel.getFilteredApplicantList());
     }
@@ -188,7 +188,7 @@ public class RemoveFromComparisonCommandTest {
         assertEquals(Set.of(ALICE.getId()), rankingEngine.lastActiveMembers);
         assertTrue(rankingEngine.lastDecisions.isEmpty());
         assertTrue(realComparisonList.getDecisionHistory().isEmpty());
-        assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
         assertEquals(recordsBefore, connectedModel.getApplicantRegistry().getApplicantList());
         assertEquals(List.of(BENSON), connectedModel.getFilteredApplicantList());
     }
@@ -215,9 +215,9 @@ public class RemoveFromComparisonCommandTest {
         realComparisonList.add(BENSON.getId());
         realComparisonList.add(CARL.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        connectedModel.getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
         ComparisonDecision decision = realComparisonList.recordDecision(ALICE.getId());
-        connectedModel.getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
         connectedModel.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         List<Applicant> recordsBefore = List.copyOf(connectedModel.getApplicantRegistry().getApplicantList());
 
@@ -225,7 +225,7 @@ public class RemoveFromComparisonCommandTest {
 
         assertEquals(Set.of(ALICE.getId(), CARL.getId()), realComparisonList.getMemberIds());
         assertEquals(List.of(decision), realComparisonList.getDecisionHistory());
-        assertTrue(connectedModel.getComparisonState().getCurrentPair().isEmpty());
+        assertTrue(connectedModel.getComparisonList().getCurrentPair().isEmpty());
         ObservableList<RankingEntry> ranking = connectedModel.getRankingEngine().getRanking();
         assertEquals(2, ranking.size());
         assertTrue(ranking.stream().allMatch(entry -> entry.getComparisonCount() == 0));
@@ -276,7 +276,7 @@ public class RemoveFromComparisonCommandTest {
 
         ModelWithComparisonList(RankingEngine rankingEngine) {
             super(getTypicalRecruitDexData(), new UserPrefs());
-            comparisonList = new ComparisonList(getApplicantRegistry(), getComparisonState(),
+            comparisonList = new ComparisonList(getApplicantRegistry(), super.getComparisonList().getComparisonState(),
                     rankingEngine, new PairSelector());
         }
 

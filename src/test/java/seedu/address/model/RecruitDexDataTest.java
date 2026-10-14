@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,12 @@ public class RecruitDexDataTest {
     public void resetData_duplicateIds_rejectsReplacementWithoutChangingRecords() {
         recruitDexData.getApplicantRegistry().add(BENSON);
         Applicant conflictingId = new ApplicantBuilder(ALICE).withName("Another applicant").build();
-        ReadOnlyRecruitDexData invalidData = () -> FXCollections.observableArrayList(ALICE, conflictingId);
+        ReadOnlyRecruitDexData invalidData = new RecruitDexData() {
+            @Override
+            public ObservableList<Applicant> getApplicantList() {
+                return FXCollections.observableArrayList(ALICE, conflictingId);
+            }
+        };
 
         assertThrows(DuplicateApplicantException.class, () -> recruitDexData.resetData(invalidData));
         assertEquals(List.of(BENSON), recruitDexData.getApplicantList());
@@ -89,49 +95,51 @@ public class RecruitDexDataTest {
     public void toStringMethod() {
         String expected = RecruitDexData.class.getCanonicalName()
                 + "{applicants=" + recruitDexData.getApplicantList()
-                + ", comparisonState=" + recruitDexData.getComparisonState() + "}";
+                + ", comparisonList=" + recruitDexData.getComparisonList() + "}";
         assertEquals(expected, recruitDexData.toString());
     }
 
     @Test
     public void getComparisonState_startsWithNoPair() {
-        assertEquals(Optional.empty(), recruitDexData.getComparisonState().getCurrentPair());
+        assertEquals(Optional.empty(), recruitDexData.getComparisonList().getCurrentPair());
     }
 
     @Test
     public void getComparisonState_validatesAgainstTheDataRegistry() {
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        assertThrows(ApplicantNotFoundException.class, () -> recruitDexData.getComparisonState().setCurrentPair(pair));
+        assertThrows(ApplicantNotFoundException.class, () ->
+                recruitDexData.getComparisonList().getComparisonState().setCurrentPair(pair));
 
         recruitDexData.getApplicantRegistry().add(ALICE);
         recruitDexData.getApplicantRegistry().add(BENSON);
-        recruitDexData.getComparisonState().setCurrentPair(pair);
+        recruitDexData.getComparisonList().getComparisonState().setCurrentPair(pair);
 
-        assertEquals(Optional.of(pair), recruitDexData.getComparisonState().getCurrentPair());
+        assertEquals(Optional.of(pair), recruitDexData.getComparisonList().getCurrentPair());
     }
 
     @Test
     public void getComparisonState_returnsTheSameLiveObjectEachTime() {
-        assertSame(recruitDexData.getComparisonState(), recruitDexData.getComparisonState());
+        assertSame(recruitDexData.getComparisonList().getComparisonState(),
+                recruitDexData.getComparisonList().getComparisonState());
     }
 
     @Test
     public void resetData_clearsPendingPair() {
         RecruitDexData data = getTypicalRecruitDexData();
-        data.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        data.getComparisonList().getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
 
         data.resetData(getTypicalRecruitDexData());
 
-        assertEquals(Optional.empty(), data.getComparisonState().getCurrentPair());
+        assertEquals(Optional.empty(), data.getComparisonList().getCurrentPair());
     }
 
     @Test
     public void resetData_invalidData_keepsPendingPair() {
         RecruitDexData data = getTypicalRecruitDexData();
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        data.getComparisonState().setCurrentPair(pair);
+        data.getComparisonList().getComparisonState().setCurrentPair(pair);
         List<Applicant> duplicates = List.of(ALICE, ALICE);
-        ReadOnlyRecruitDexData invalid = new ReadOnlyRecruitDexData() {
+        ReadOnlyRecruitDexData invalid = new RecruitDexData() {
             @Override
             public ObservableList<Applicant> getApplicantList() {
                 return FXCollections.observableArrayList(duplicates);
@@ -140,18 +148,42 @@ public class RecruitDexDataTest {
 
         assertThrows(DuplicateApplicantException.class, () -> data.resetData(invalid));
 
-        assertEquals(Optional.of(pair), data.getComparisonState().getCurrentPair());
+        assertEquals(Optional.of(pair), data.getComparisonList().getCurrentPair());
     }
 
     @Test
-    public void copyConstructor_doesNotCopyPendingPair() {
+    public void copyConstructor_copiesPendingPairIntoIndependentState() {
         RecruitDexData source = getTypicalRecruitDexData();
-        source.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        source.getComparisonList().add(ALICE.getId());
+        source.getComparisonList().add(BENSON.getId());
+        source.getComparisonList().getComparisonState()
+                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
 
         RecruitDexData copy = new RecruitDexData(source);
 
-        assertEquals(Optional.empty(), copy.getComparisonState().getCurrentPair());
-        assertNotSame(source.getComparisonState(), copy.getComparisonState());
+        assertEquals(source.getComparisonList().getCurrentPair(), copy.getComparisonList().getCurrentPair());
+        assertNotSame(source.getComparisonList().getComparisonState(), copy.getComparisonList().getComparisonState());
+        copy.getComparisonList().remove(ALICE.getId());
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()), source.getComparisonList().getMemberIds());
+        assertEquals(Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId())),
+                source.getComparisonList().getCurrentPair());
+    }
+
+    @Test
+    public void registryDelete_standaloneData_cleansOwnedComparisonReferences() {
+        RecruitDexData data = getTypicalRecruitDexData();
+        data.getComparisonList().add(ALICE.getId());
+        data.getComparisonList().add(BENSON.getId());
+        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        data.getComparisonList().getComparisonState().setCurrentPair(pair);
+        data.getComparisonList().recordDecision(ALICE.getId());
+        data.getComparisonList().getComparisonState().setCurrentPair(pair);
+
+        data.getApplicantRegistry().delete(ALICE.getId());
+
+        assertEquals(Set.of(BENSON.getId()), data.getComparisonList().getMemberIds());
+        assertEquals(List.of(), data.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.empty(), data.getComparisonList().getCurrentPair());
     }
 
     @Test
@@ -161,10 +193,12 @@ public class RecruitDexDataTest {
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());
 
-        first.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        first.getComparisonList().getComparisonState()
+                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
         assertNotEquals(first, second);
 
-        second.getComparisonState().setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        second.getComparisonList().getComparisonState()
+                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());
     }

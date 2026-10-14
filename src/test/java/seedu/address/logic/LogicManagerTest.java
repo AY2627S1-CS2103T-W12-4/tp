@@ -87,7 +87,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_compareAdd_updatesRankingAndKeepsMembershipSessionOnly() throws Exception {
+    public void execute_compareAdd_updatesRankingAndPersistsMembership() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
         logic.execute("find Benson");
@@ -105,8 +105,39 @@ public class LogicManagerTest {
         ModelManager reopenedModel =
                 new ModelManager(savedRecords.readRecruitDexData().orElseThrow(), new UserPrefs());
         assertEquals(List.of(ALICE, BENSON), reopenedModel.getApplicantRegistry().getApplicantList());
-        assertTrue(reopenedModel.getComparisonList().getMemberIds().isEmpty());
-        assertTrue(reopenedModel.getRankingEngine().getRanking().isEmpty());
+        assertEquals(Set.of(BENSON.getId()), reopenedModel.getComparisonList().getMemberIds());
+        assertEquals(model.getRankingEngine().getRanking(), reopenedModel.getRankingEngine().getRanking());
+    }
+
+    @Test
+    public void execute_savesCurrentHistoryAndPendingPairAfterEveryCommand() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+
+        logic.execute("find Alice");
+
+        JsonRecruitDexDataStorage saved =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(saved.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(List.of(decision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.of(pair), reopened.getComparisonList().getCurrentPair());
+        assertEquals(model.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
+        assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
+
+        logic.execute("clear");
+        reopened.setRecruitDexData(saved.readRecruitDexData().orElseThrow());
+        assertTrue(reopened.getApplicantRegistry().getApplicantList().isEmpty());
+        assertTrue(reopened.getComparisonList().getMemberIds().isEmpty());
+        assertTrue(reopened.getComparisonList().getDecisionHistory().isEmpty());
+        assertTrue(reopened.getComparisonList().getCurrentPair().isEmpty());
+        assertTrue(reopened.getRankingEngine().getRanking().isEmpty());
     }
 
     @Test
@@ -274,10 +305,10 @@ public class LogicManagerTest {
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
 
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
         assertEquals(Optional.of(pair), logic.getCurrentPairProperty().get());
 
-        model.getComparisonState().clearCurrentPair();
+        model.getComparisonList().getComparisonState().clearCurrentPair();
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
     }
 
@@ -289,7 +320,7 @@ public class LogicManagerTest {
         logic.getCurrentPairProperty().addListener((observable, oldValue, newValue) -> seen.add(newValue));
         ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
 
-        model.getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().getComparisonState().setCurrentPair(pair);
 
         assertEquals(List.of(Optional.of(pair)), seen);
     }

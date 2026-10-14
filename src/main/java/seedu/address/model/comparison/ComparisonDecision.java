@@ -4,6 +4,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import seedu.address.model.applicant.ApplicantId;
@@ -39,17 +40,26 @@ public class ComparisonDecision {
      */
     public ComparisonDecision(ApplicantId firstApplicantId,
                               ApplicantId secondApplicantId, ApplicantId winnerId) {
-        requireAllNonNull(firstApplicantId, secondApplicantId, winnerId);
+        this(UUID.randomUUID(), firstApplicantId, secondApplicantId, winnerId, Instant.now());
+    }
+
+    /**
+     * Restores an existing judgment, preserving its ID, timestamp, and presented sides.
+     * Validates the same participant and winner constraints as a new judgment.
+     */
+    public ComparisonDecision(UUID decisionId, ApplicantId firstApplicantId,
+            ApplicantId secondApplicantId, ApplicantId winnerId, Instant timestamp) {
+        requireAllNonNull(decisionId, firstApplicantId, secondApplicantId, winnerId, timestamp);
         checkArgument(!firstApplicantId.equals(secondApplicantId),
                 "A comparison decision must contain two distinct applicants.");
         checkArgument(winnerId.equals(firstApplicantId) || winnerId.equals(secondApplicantId),
                 "The winner must be one of the applicants in the comparison.");
 
-        this.decisionId = UUID.randomUUID();
+        this.decisionId = decisionId;
         this.firstApplicantId = firstApplicantId;
         this.secondApplicantId = secondApplicantId;
         this.winnerId = winnerId;
-        this.timestamp = Instant.now();
+        this.timestamp = timestamp;
     }
 
     /** Returns the unique ID of this judgment. */
@@ -75,5 +85,20 @@ public class ComparisonDecision {
     /** Returns the time this judgment was recorded. */
     public Instant getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other == this || other instanceof ComparisonDecision otherDecision
+                && decisionId.equals(otherDecision.decisionId)
+                && firstApplicantId.equals(otherDecision.firstApplicantId)
+                && secondApplicantId.equals(otherDecision.secondApplicantId)
+                && winnerId.equals(otherDecision.winnerId)
+                && timestamp.equals(otherDecision.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(decisionId, firstApplicantId, secondApplicantId, winnerId, timestamp);
     }
 }
