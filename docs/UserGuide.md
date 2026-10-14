@@ -129,6 +129,30 @@ Adding an applicant updates the ranking immediately. Membership and comparison d
 for the current session and are lost when the application closes. Using `clear` also resets membership.
 Automatic selection of comparison pairs is not available yet.
 
+### Removing an applicant from the comparison list: `compare-remove`
+
+Removes an existing applicant from the active comparison list while keeping their record and comparison history.
+
+Format: `compare-remove INDEX`
+
+* `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
+* After `find`, the index refers to the filtered results.
+* The current search filter is kept unchanged.
+* Removing an applicant who is already outside the comparison list succeeds without changing membership
+  and reports `This applicant is not in the comparison list.`
+* Decisions involving the removed applicant are retained but excluded from the current ranking.
+  Adding the applicant back makes those decisions eligible again when both participants are active.
+* An unanswered comparison involving the removed applicant is cleared or replaced.
+
+Examples:
+
+* `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
+* `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
+
+Removing an applicant updates the ranking immediately. Membership and comparison decisions are kept
+only for the current session. Automatic selection of a replacement comparison pair is not available yet,
+so an unanswered comparison involving the removed applicant is cleared.
+
 ### Listing all applicants: `list`
 
 Shows all applicant records.
@@ -239,6 +263,7 @@ Action     | Format, Examples
 **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
+**Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
