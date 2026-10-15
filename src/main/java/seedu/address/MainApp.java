@@ -32,11 +32,12 @@ import seedu.address.ui.UiManager;
  */
 public class MainApp extends Application {
 
-    public static final String VERSION = "V0.5.1";
+    public static final String VERSION = "V1.3";
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
-    // Retain the existing location so the migration loads users' current applicant records.
+    // Retain the existing location so the migration loads users' current applicant
+    // records.
     private static final Path RECRUIT_DEX_DATA_FILE_PATH = Paths.get("data", "addressbook.json");
 
     protected Ui ui;
@@ -62,9 +63,12 @@ public class MainApp extends Application {
     }
 
     /**
-     * Returns a {@code ModelManager} with the data from {@code storage}'s RecruitDex and {@code userPrefs}. <br>
-     * The data from the sample RecruitDex will be used instead if {@code storage}'s RecruitDex is not found,
-     * or an empty RecruitDex will be used instead if errors occur when reading {@code storage}'s RecruitDex.
+     * Returns a {@code ModelManager} with the data from {@code storage}'s
+     * RecruitDex and {@code userPrefs}. <br>
+     * The data from the sample RecruitDex will be used instead if {@code storage}'s
+     * RecruitDex is not found,
+     * or an empty RecruitDex will be used instead if errors occur when reading
+     * {@code storage}'s RecruitDex.
      */
     private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
         logger.info("Using data file : " + storage.getRecruitDexDataFilePath());
@@ -88,7 +92,8 @@ public class MainApp extends Application {
     }
 
     /**
-     * Returns a {@code UserPrefs} using the file at {@code storage}'s user prefs file path,
+     * Returns a {@code UserPrefs} using the file at {@code storage}'s user prefs
+     * file path,
      * or a new {@code UserPrefs} with default configuration if errors occur when
      * reading from the file.
      */
@@ -109,7 +114,8 @@ public class MainApp extends Application {
             initializedPrefs = new UserPrefs();
         }
 
-        //Update prefs file in case it was missing to begin with or there are new/unused fields
+        // Update prefs file in case it was missing to begin with or there are
+        // new/unused fields
         try {
             storage.saveUserPrefs(initializedPrefs);
         } catch (IOException e) {
