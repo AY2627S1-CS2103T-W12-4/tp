@@ -16,7 +16,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import seedu.address.logic.commands.ComparisonCommand.Side;
+import seedu.address.logic.commands.CompareCommand.Side;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.applicant.Applicant;
@@ -24,7 +24,7 @@ import seedu.address.model.comparison.ComparisonDecision;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.ranking.RankingEntry;
 
-public class ComparisonCommandTest {
+public class CompareCommandTest {
     private ModelManager model;
     private ComparisonPair presentedPair;
 
@@ -46,9 +46,9 @@ public class ComparisonCommandTest {
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(ALICE.getId()));
         var filteredView = model.getFilteredApplicantList();
 
-        CommandResult result = new ComparisonCommand(Side.A).execute(model);
+        CommandResult result = new CompareCommand(Side.A).execute(model);
 
-        assertEquals(String.format(ComparisonCommand.MESSAGE_SUCCESS, BENSON.getName(), ALICE.getName()),
+        assertEquals(String.format(CompareCommand.MESSAGE_SUCCESS, BENSON.getName(), ALICE.getName()),
                 result.getFeedbackToUser());
         assertRecordedWinner(BENSON);
         assertSame(filteredView, model.getFilteredApplicantList());
@@ -57,9 +57,9 @@ public class ComparisonCommandTest {
 
     @Test
     public void execute_sideB_recordsSecondApplicantAndSelectsNextPair() throws Exception {
-        CommandResult result = new ComparisonCommand(Side.B).execute(model);
+        CommandResult result = new CompareCommand(Side.B).execute(model);
 
-        assertEquals(String.format(ComparisonCommand.MESSAGE_SUCCESS, ALICE.getName(), BENSON.getName()),
+        assertEquals(String.format(CompareCommand.MESSAGE_SUCCESS, ALICE.getName(), BENSON.getName()),
                 result.getFeedbackToUser());
         assertRecordedWinner(ALICE);
     }
@@ -69,8 +69,8 @@ public class ComparisonCommandTest {
         model.getComparisonList().getComparisonState().clearCurrentPair();
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
 
-        assertThrows(CommandException.class, ComparisonCommand.MESSAGE_NO_PENDING_PAIR, () ->
-                new ComparisonCommand(Side.A).execute(model));
+        assertThrows(CommandException.class, CompareCommand.MESSAGE_NO_PENDING_PAIR, () ->
+                new CompareCommand(Side.A).execute(model));
 
         assertTrue(model.getComparisonList().getDecisionHistory().isEmpty());
         assertEquals(rankingBefore, model.getRankingEngine().getRanking());
@@ -85,7 +85,7 @@ public class ComparisonCommandTest {
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
 
         assertThrows(CommandException.class, "The pending pair is no longer valid.", () ->
-                new ComparisonCommand(Side.A).execute(model));
+                new CompareCommand(Side.A).execute(model));
 
         assertEquals(List.of(priorDecision), model.getComparisonList().getDecisionHistory());
         assertEquals(rankingBefore, model.getRankingEngine().getRanking());
@@ -94,18 +94,18 @@ public class ComparisonCommandTest {
 
     @Test
     public void constructor_nullSide_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new ComparisonCommand(null));
+        assertThrows(NullPointerException.class, () -> new CompareCommand(null));
     }
 
     @Test
     public void equalsAndToString_distinguishChosenSides() {
-        ComparisonCommand chooseA = new ComparisonCommand(Side.A);
+        CompareCommand chooseA = new CompareCommand(Side.A);
         assertTrue(chooseA.equals(chooseA));
-        assertTrue(chooseA.equals(new ComparisonCommand(Side.A)));
-        assertFalse(chooseA.equals(new ComparisonCommand(Side.B)));
+        assertTrue(chooseA.equals(new CompareCommand(Side.A)));
+        assertFalse(chooseA.equals(new CompareCommand(Side.B)));
         assertFalse(chooseA.equals(null));
         assertFalse(chooseA.equals("choose a"));
-        assertEquals(ComparisonCommand.class.getCanonicalName() + "{side=A}", chooseA.toString());
+        assertEquals(CompareCommand.class.getCanonicalName() + "{side=A}", chooseA.toString());
     }
 
     private void assertRecordedWinner(Applicant winner) {
