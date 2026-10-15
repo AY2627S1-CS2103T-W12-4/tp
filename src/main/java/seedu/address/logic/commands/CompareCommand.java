@@ -13,7 +13,7 @@ import seedu.address.model.comparison.ComparisonPair;
  * Records a judgment for the displayed comparison pair by choosing side A or B.
  * ComparisonList validates the judgment, updates the ranking, and selects the next pair.
  */
-public class ComparisonCommand extends Command {
+public class CompareCommand extends Command {
     public static final String COMMAND_WORD = "choose";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
@@ -31,7 +31,7 @@ public class ComparisonCommand extends Command {
 
     private final Side side;
 
-    public ComparisonCommand(Side side) {
+    public CompareCommand(Side side) {
         this.side = requireNonNull(side);
     }
 
@@ -57,7 +57,7 @@ public class ComparisonCommand extends Command {
 
     @Override
     public boolean equals(Object other) {
-        return other == this || other instanceof ComparisonCommand otherCommand && side == otherCommand.side;
+        return other == this || other instanceof CompareCommand otherCommand && side == otherCommand.side;
     }
 
     @Override

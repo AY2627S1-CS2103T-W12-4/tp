@@ -32,7 +32,7 @@ import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.CommandResult;
-import seedu.address.logic.commands.ComparisonCommand;
+import seedu.address.logic.commands.CompareCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -146,7 +146,7 @@ public class LogicManagerTest {
 
         CommandResult result = logic.execute("choose a");
 
-        assertEquals(String.format(ComparisonCommand.MESSAGE_SUCCESS, winner.getName(), loser.getName()),
+        assertEquals(String.format(CompareCommand.MESSAGE_SUCCESS, winner.getName(), loser.getName()),
                 result.getFeedbackToUser());
         ComparisonDecision firstDecision = model.getComparisonList().getDecisionHistory().get(0);
         assertEquals(presentedPair.getFirstApplicantId(), firstDecision.getFirstApplicantId());
@@ -183,7 +183,7 @@ public class LogicManagerTest {
                 new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
         ReadOnlyRecruitDexData savedBefore = saved.readRecruitDexData().orElseThrow();
 
-        assertCommandException("choose a", ComparisonCommand.MESSAGE_NO_PENDING_PAIR);
+        assertCommandException("choose a", CompareCommand.MESSAGE_NO_PENDING_PAIR);
 
         assertEquals(savedBefore, saved.readRecruitDexData().orElseThrow());
         assertTrue(model.getComparisonList().getDecisionHistory().isEmpty());
