@@ -12,7 +12,6 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
-import static seedu.address.testutil.TypicalApplicants.AMY;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
 
 import java.io.IOException;
@@ -33,6 +32,7 @@ import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AddToComparisonCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.CompareCommand;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.RemoveFromComparisonCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -49,7 +49,6 @@ import seedu.address.model.userprefs.UserPrefs;
 import seedu.address.storage.JsonRecruitDexDataStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
-import seedu.address.testutil.ApplicantBuilder;
 
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
@@ -348,10 +347,71 @@ public class LogicManagerTest {
         // Triggers the saveRecruitDexData method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Applicant expectedApplicant = new ApplicantBuilder(AMY).withTags().build();
+        // the save fails, so the add is undone and the model is as it was before the command
         ModelManager expectedModel = new ModelManager();
-        expectedModel.getApplicantRegistry().add(expectedApplicant);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_storageThrowsIoException_restoresDataThatWasThereBefore() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getComparisonList().add(ALICE.getId());
+        ModelManager expectedModel = new ModelManager(model.getRecruitDexData(), new UserPrefs());
+        failingStorageLogic(DUMMY_IO_EXCEPTION);
+
+        String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
+        assertThrows(CommandException.class, () -> logic.execute(addCommand));
+
+        assertEquals(expectedModel.getRecruitDexData(), model.getRecruitDexData());
+        assertEquals(List.of(ALICE), model.getApplicantRegistry().getApplicantList());
+        assertTrue(model.getComparisonList().getMemberIds().contains(ALICE.getId()));
+    }
+
+    @Test
+    public void execute_storageThrowsAccessDenied_restoresDataThatWasThereBefore() {
+        model.getApplicantRegistry().add(ALICE);
+        failingStorageLogic(DUMMY_AD_EXCEPTION);
+
+        String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
+        assertThrows(CommandException.class, () -> logic.execute(addCommand));
+
+        assertEquals(List.of(ALICE), model.getApplicantRegistry().getApplicantList());
+    }
+
+    @Test
+    public void execute_storageThrowsIoException_failedDeleteIsUndone() {
+        model.getApplicantRegistry().add(ALICE);
+        model.getComparisonList().add(ALICE.getId());
+        failingStorageLogic(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute(DeleteCommand.COMMAND_WORD + " 1"));
+
+        // both the record and its membership of the comparison list are back
+        assertEquals(List.of(ALICE), model.getApplicantRegistry().getApplicantList());
+        assertTrue(model.getComparisonList().getMemberIds().contains(ALICE.getId()));
+    }
+
+    @Test
+    public void execute_storageWorks_keepsTheChange() throws Exception {
+        String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
+        logic.execute(addCommand);
+        assertEquals(1, model.getApplicantRegistry().getApplicantList().size());
+    }
+
+    /** Points {@code logic} at a storage whose saves always throw {@code exception}. */
+    private void failingStorageLogic(IOException exception) {
+        JsonRecruitDexDataStorage recruitDexDataStorage =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("failing.json")) {
+                    @Override
+                    public void saveRecruitDexData(ReadOnlyRecruitDexData recruitDexData) throws IOException {
+                        throw exception;
+                    }
+                };
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.resolve("prefs.json"));
+        logic = new LogicManager(model, new StorageManager(recruitDexDataStorage, userPrefsStorage));
     }
 
     @Test

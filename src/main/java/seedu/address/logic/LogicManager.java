@@ -15,6 +15,8 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.RecruitDexParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
+import seedu.address.model.ReadOnlyRecruitDexData;
+import seedu.address.model.RecruitDexData;
 import seedu.address.model.applicant.Applicant;
 import seedu.address.model.comparison.ComparisonPair;
 import seedu.address.model.ranking.RankingEntry;
@@ -50,13 +52,17 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = recruitDexParser.parseCommand(commandText);
+        // kept so that a command whose changes cannot be saved is undone, leaving screen and file in agreement
+        ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
         commandResult = command.execute(model);
 
         try {
             storage.saveRecruitDexData(model.getRecruitDexData());
         } catch (AccessDeniedException e) {
+            model.setRecruitDexData(dataBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
+            model.setRecruitDexData(dataBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
