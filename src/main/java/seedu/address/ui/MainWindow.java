@@ -3,9 +3,9 @@ package seedu.address.ui;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
@@ -43,7 +43,7 @@ public class MainWindow extends UiPart<Stage> {
     private StackPane commandBoxPlaceholder;
 
     @FXML
-    private MenuItem helpMenuItem;
+    private Menu helpMenu;
 
     @FXML
     private StackPane applicantListPanelPlaceholder;
@@ -76,6 +76,7 @@ public class MainWindow extends UiPart<Stage> {
         setWindowDefaultSize(logic.getGuiSettings());
 
         setAccelerators();
+        setUpHelpMenu();
 
         helpWindow = new HelpWindow();
     }
@@ -85,15 +86,25 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     private void setAccelerators() {
-        setAccelerator(helpMenuItem, KeyCombination.valueOf("F1"));
+        setAccelerator(KeyCombination.valueOf("F1"), this::handleHelp);
     }
 
     /**
-     * Sets the accelerator of a MenuItem.
+     * Makes clicking "Help" in the menu bar open the command list directly.
+     * A menu with no items opens nothing, so its label is what gets clicked.
+     */
+    private void setUpHelpMenu() {
+        Label helpLabel = new Label("Help");
+        helpLabel.setOnMouseClicked(event -> handleHelp());
+        helpMenu.setGraphic(helpLabel);
+    }
+
+    /**
+     * Runs {@code action} when {@code keyCombination} is pressed.
      * @param keyCombination the KeyCombination value of the accelerator
      */
-    private void setAccelerator(MenuItem menuItem, KeyCombination keyCombination) {
-        menuItem.setAccelerator(keyCombination);
+    private void setAccelerator(KeyCombination keyCombination, Runnable action) {
+        getRoot().getScene().getAccelerators().put(keyCombination, action);
 
         /*
          * TODO: the code below can be removed once the bug reported here
@@ -112,7 +123,7 @@ public class MainWindow extends UiPart<Stage> {
          */
         getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getTarget() instanceof TextInputControl && keyCombination.match(event)) {
-                menuItem.getOnAction().handle(new ActionEvent());
+                action.run();
                 event.consume();
             }
         });
