@@ -1,5 +1,10 @@
-#copyButton, #helpMessage {
+#copyButton, #helpMessage, #commandsTitle {
     -fx-text-fill: white;
+}
+
+#commandsTitle {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
 }
 
 #copyButton {
@@ -16,4 +21,57 @@
 
 #helpMessageContainer {
     -fx-background-color: derive(#1d1d1d, 20%);
+}
+
+#commandScroll {
+    -fx-background: #1e1e1e;
+    -fx-background-color: #1e1e1e;
+}
+
+#commandTable {
+    -fx-background-color: #1e1e1e;
+}
+
+.help-header {
+    -fx-background-color: #3e7b91;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 6 10 6 10;
+}
+
+.help-group {
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #9fd3e6;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 10 4 10;
+}
+
+.help-row-even {
+    -fx-background-color: #262626;
+}
+
+.help-row-odd {
+    -fx-background-color: #1e1e1e;
+}
+
+.help-command, .help-text, .help-code {
+    -fx-text-fill: #e6e6e6;
+    -fx-font-size: 12px;
+    -fx-padding: 6 10 6 10;
+    -fx-alignment: top-left;
+    -fx-border-color: #333333;
+    -fx-border-width: 0 0 1 0;
+}
+
+.help-command {
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-weight: bold;
+    -fx-text-fill: #9fd3e6;
+}
+
+.help-code {
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 11px;
 }
