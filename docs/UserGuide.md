@@ -26,7 +26,7 @@ RecruitDex is a desktop application for managing applicant records through comma
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
-1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
+1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the Help window, which lists every command.<br>
    Some example commands you can try:
 
    * `list` : Lists all applicants.
@@ -85,11 +85,16 @@ Comparison membership, decisions, and any unanswered pair are saved between sess
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
+Opens the Help window, which lists every command in a table so you can look up a format without leaving RecruitDex.
 
-![help message](images/helpMessage.png)
+![help window](images/helpWindow.png)
 
 Format: `help`
+
+* The table has four columns: **Command**, **What it does**, **Parameters** and **Example**. The commands are grouped under **Applicants**, **Comparison** and **General**, and the window scrolls if your screen is small.
+* In the **Parameters** column, items in square brackets are optional, and `...` means you can repeat the item. A command that takes no parameters shows `-`.
+* You can also open the window by clicking **Help** in the menu bar, or by pressing `F1`.
+* The window ends with a link to this user guide, and a **Copy URL** button to copy it.
 
 
 ### Adding an applicant: `add`
@@ -280,7 +285,7 @@ _Details coming soon ..._
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+2. **If you minimize the Help Window** and then run the `help` command (or click `Help` in the menu bar, or press `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 
