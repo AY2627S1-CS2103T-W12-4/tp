@@ -53,6 +53,8 @@
         "common-classes": "Common classes",
         "implementation": "Implementation",
         "applicant-ranking": "Applicant ranking",
+        "atomic-saving": "Atomic saving",
+        "help-window-command-table": "Help window command table",
         "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
         "proposed-data-archiving": "[Proposed] Data archiving",
         "documentation-logging-testing-dev-ops": "Documentation, logging, testing, dev-ops",
