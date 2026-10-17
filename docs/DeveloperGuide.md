@@ -87,7 +87,9 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, `ComparisonPanel`, `RankingPanel`, and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
+The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, `ComparisonPanel` (made of two `ComparisonCard`s), `RankingPanel`, `HelpWindow` and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
+
+The main window has two tabs. The **Compare** tab shows the `ComparisonPanel` (applicants A and B) beside the `RankingPanel`, and the **All applicants** tab shows the `ApplicantListPanel`, whose index numbers are the `INDEX` that commands such as `edit` and `delete` use. `HelpWindow` is a separate window that lists every command in a table. It opens when the user types `help`, presses `F1` or clicks **Help** in the menu bar. See [Help window command table](#help-window-command-table) for how its rows are produced.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/java/seedu/recruitdex/ui/MainWindow.java).
 
@@ -109,6 +111,8 @@ Here's a (partial) class diagram of the `Logic` component:
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
+
+`LogicManager.execute` also keeps the data file and the screen in agreement. It copies the application data before running the command and saves the result afterwards. If the save fails, it restores the copy and reports the error, so the user never sees a change that was not saved. See [Atomic saving](#atomic-saving).
 
 <box type="info" seamless>
 
@@ -161,7 +165,8 @@ The `Model` component,
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
 The `Storage` component,
-* saves applicant records and user preferences in JSON format. Comparison membership, decisions, pending pairs, and rankings are not persisted yet.
+* saves applicant records, comparison membership, decision history, the pending pair and user preferences in JSON format. Rankings are derived from the decisions, so they are rebuilt after loading and not saved.
+* writes every file atomically: the JSON goes into a temporary file that then replaces the real file, so a crash part way through a save cannot leave a half-written data file. See [Atomic saving](#atomic-saving).
 * is implemented by `StorageManager`, which delegates JSON file access to `JsonRecruitDexDataStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
@@ -189,6 +194,65 @@ This section describes some noteworthy details on how certain features are imple
 `ModelManager` owns the shared engine. `Logic.getRanking()` exposes its view to `RankingPanel`, which refreshes names from the full applicant list independently of search filtering. UI-bound observable updates must run on the JavaFX application thread.
 
 **Current scope:** Comparison-list and decision commands are not connected to the running app yet. The leaderboard starts empty, and ranking progress is not persisted. Replacing application data clears the ranking while retaining its observable view.
+
+### Atomic saving
+
+A data file that is cut off part way through a save would lose the recruiter's work, so saving never writes to the data file directly.
+
+`FileUtil.writeToFileAtomically(file, content)` does the following:
+
+1. It writes `content` to a temporary file next to `file`, named after it with a `.tmp` ending.
+1. It moves the temporary file over `file` in one step, using an atomic move where the file system supports it. At every moment `file` holds either the old complete data or the new complete data.
+1. If either step fails, it deletes the temporary file and rethrows the error, so `file` keeps its previous content.
+
+`JsonUtil.saveJsonFile` uses it, so both the data file and the preferences file are saved this way.
+
+A save can also fail after the command has already changed the model, for example when the disk is full. `LogicManager.execute` handles this by copying the application data before the command runs (`new RecruitDexData(model.getRecruitDexData())`). If saving throws an `IOException`, it puts the copy back with `Model#setRecruitDexData` and throws a `CommandException`, so the screen shows the data as it was.
+
+**Design considerations:**
+
+**Aspect: How to write the file.**
+
+* **Alternative 1 (current choice):** Write a temporary file, then replace the data file with it.
+  * Pros: The data file is never half-written. There is still only one human-editable data file.
+  * Cons: The data folder must be writable, not just the file. A stale `.tmp` file can be left behind after a crash, but the next save overwrites it.
+* **Alternative 2:** Overwrite the data file in place.
+  * Pros: Simplest to write.
+  * Cons: A crash during the write leaves a truncated file, and the app then starts with no data.
+* **Alternative 3:** Write a new file for every command and keep them all.
+  * Pros: Gives a history of the data.
+  * Cons: Files pile up, the app must work out which is current, and the project requires a single human-editable data file.
+
+**Aspect: What to do when a save fails.**
+
+* **Alternative 1 (current choice):** Restore the data from before the command.
+  * Pros: The screen and the file always agree.
+  * Cons: Every command pays for one copy of the data, which is small for this application.
+* **Alternative 2:** Keep the change in memory and only show an error.
+  * Pros: No copy needed.
+  * Cons: The user sees a change that the file does not have, and loses it when the app closes.
+
+### Help window command table
+
+The help window shows every command with its format and an example, and must not drift out of date when a command changes. The rows are therefore built from the usage text that each command already has.
+
+* Each command class has a `MESSAGE_USAGE` written as `word: description. Parameters: ...` on one line, then `Example: ...` on the next. Commands that take no parameters leave out the `Parameters:` part.
+* `CommandInfo.fromUsage(usage)` splits that text into four parts: the command word, the description, the parameters and the example.
+* `CommandSummary` lists the usage text of all commands in three groups (Applicants, Comparison and General) and exposes them as `CommandInfo` rows.
+* `HelpWindow` creates a header row, then a heading and one row of four labels for each command, in a `GridPane` inside a `ScrollPane`.
+
+`CommandSummaryTest` scans the `seedu.recruitdex.logic.commands` package for every concrete `Command` and fails if one has no entry in the summary. A developer who adds a command must therefore also add it to `CommandSummary`, and give it a `MESSAGE_USAGE` in the format above.
+
+**Design considerations:**
+
+**Aspect: Where the help text comes from.**
+
+* **Alternative 1 (current choice):** Parse each command's existing `MESSAGE_USAGE`.
+  * Pros: No second copy of the help text, so the formats shown cannot differ from the ones used in error messages. A test catches a forgotten command.
+  * Cons: The usage text must keep its format, otherwise `CommandInfo.fromUsage` rejects it.
+* **Alternative 2:** Write the help text by hand in the window.
+  * Pros: Free-form layout.
+  * Cons: It goes out of date every time a command changes.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -612,7 +676,7 @@ testers are expected to do more *exploratory* testing.
    1. Download the JAR file and copy it into an empty folder.
 
    1. Double-click the JAR file.<br>
-      Expected: The GUI opens with sample applicants and an empty ranking panel showing **No applicants in the comparison list.** The window size may not be optimal.
+      Expected: The GUI opens with sample applicants, and the ranking panel's heading shows `0 applicants in comparison list`. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -642,8 +706,35 @@ testers are expected to do more *exploratory* testing.
 
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+1. Dealing with a missing data file
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Close RecruitDex, then delete `data/recruitdex.json`.
+
+   1. Launch RecruitDex again.<br>
+      Expected: The GUI opens with the sample applicants, and a new data file is created.
+
+1. Dealing with a corrupted data file
+
+   1. Close RecruitDex, open `data/recruitdex.json` in a text editor, delete its last `}` and save the file.
+
+   1. Launch RecruitDex again.<br>
+      Expected: The GUI opens with an empty applicant list. The corrupted file stays as it is until a command saves new data.
+
+1. Checking that saving is atomic
+
+   1. Launch RecruitDex, add an applicant, for example `add n/Test One p/91234567 e/t1@example.com a/Blk 1`, and close the app.
+
+   1. List the `data` folder.<br>
+      Expected: It contains `recruitdex.json` and no `.tmp` file, and `recruitdex.json` contains `Test One`.
+
+1. Dealing with a failed save
+
+   1. Close RecruitDex and make the `data` folder read-only. On macOS and Linux, run `chmod a-w data`.
+
+   1. Launch RecruitDex and enter `add n/Test Two p/92345678 e/t2@example.com a/Blk 2`.<br>
+      Expected: The result box shows a "Could not save data" error, and `Test Two` is **not** in the applicant list.
+
+   1. Close RecruitDex, make the folder writable again (`chmod u+w data`) and check `recruitdex.json`.<br>
+      Expected: The file does not contain `Test Two`.
 
 1. _{ more test cases … }_
