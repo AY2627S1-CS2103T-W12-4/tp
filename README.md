@@ -2,7 +2,7 @@
 
 [![CI Status](https://github.com/AY2627S1-CS2103T-W12-4/tp/workflows/Java%20CI/badge.svg)](https://github.com/AY2627S1-CS2103T-W12-4/tp/actions)
 
-![RecruitDex UI mockup](docs/images/Ui.png)
+![RecruitDex UI](docs/images/Ui.png)
 
 RecruitDex is a desktop application for software engineering recruiters to manage applicant information and build rankings through side-by-side comparisons. It is designed for recruiters who prefer typing commands, with a graphical interface for reviewing applicant details, comparisons, and ranking changes.
 

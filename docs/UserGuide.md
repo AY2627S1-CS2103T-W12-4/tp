@@ -26,7 +26,7 @@ RecruitDex is a desktop application for managing applicant records through comma
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
-1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
+1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the Help window, which lists every command.<br>
    Some example commands you can try:
 
    * `list` : Lists all applicants.
@@ -35,11 +35,23 @@ RecruitDex is a desktop application for managing applicant records through comma
 
    * `delete 3` : Deletes the 3rd applicant shown in the current list.
 
+   * `compare-add 1` : Adds the 1st applicant to the comparison list. Add at least two applicants, then use `choose a` or `choose b` to pick the stronger one of the pair shown in the **Compare** tab.
+
    * `clear` : Deletes all applicant records.
 
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
+
+--------------------------------------------------------------------------------------------------------------------
+
+## Using the window
+
+* **Command box (top):** type a command here and press Enter. Everything in RecruitDex is done with commands.
+* **Result box (below it):** shows what the last command did, or why it failed.
+* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
+* **All applicants tab:** lists every applicant record, numbered. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
+* **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -53,10 +65,10 @@ RecruitDex is a desktop application for managing applicant records through comma
   For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
+  For example, `n/NAME [t/SKILL]` can be used as `n/John Doe t/Java` or as `n/John Doe`.
 
 * Items followed by `...` can appear zero or more times.<br>
-  For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
+  For example, `[t/SKILL]...` may be omitted, or written as `t/Java` or `t/Java t/Kafka`.
 
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
@@ -78,18 +90,23 @@ The **RANKING** panel displays applicants in the active comparison list.
 Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
 Commands such as `edit` and `delete` use indices from the **All applicants** list.
 
-**Current iteration:** The leaderboard starts empty and shows **No applicants in the comparison list.**
+**Current iteration:** The leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
 Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
+Opens the Help window, which lists every command in a table so you can look up a format without leaving RecruitDex.
 
-![help message](images/helpMessage.png)
+![help window](images/helpWindow.png)
 
 Format: `help`
+
+* The table has four columns: **Command**, **What it does**, **Parameters** and **Example**. The commands are grouped under **Applicants**, **Comparison** and **General**, and the window scrolls if your screen is small.
+* In the **Parameters** column, items in square brackets are optional, and `...` means you can repeat the item. A command that takes no parameters shows `-`.
+* You can also open the window by clicking **Help** in the menu bar, or by pressing `F1`.
+* The window ends with a link to this user guide, and a **Copy URL** button to copy it.
 
 
 ### Adding an applicant: `add`
@@ -234,9 +251,11 @@ Examples:
 
 ### Clearing all entries: `clear`
 
-Clears all applicant records and the runtime ranking.
+Deletes all applicant records, and resets the comparison list, the decision history, any unanswered pair and the ranking.
 
 Format: `clear`
+
+* This cannot be undone, so back up the data file first if you might need the data again.
 
 ### Exiting the program: `exit`
 
@@ -249,6 +268,8 @@ Format: `exit`
 RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
 comparison after every successful command. Reopening RecruitDex restores this data and rebuilds the ranking.
 You do not need to save manually.
+
+RecruitDex writes the data to a temporary file first and only then replaces the data file, so a crash during a save cannot leave a half-written file. If a save fails, for example because the folder is not writable, the command is undone and RecruitDex shows an error message.
 
 ### Editing the data file
 
@@ -280,7 +301,7 @@ _Details coming soon ..._
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+2. **If you minimize the Help Window** and then run the `help` command (or click `Help` in the menu bar, or press `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -288,13 +309,14 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]...` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd y/5 s/LinkedIn t/Java t/Kafka`
+**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]...`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Delete** | `delete INDEX`<br> e.g., `delete 3`
+**List**   | `list`
+**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
 **Choose stronger applicant** | `choose a` or `choose b`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
-**List**   | `list`
 **Help**   | `help`
+**Exit**   | `exit`
