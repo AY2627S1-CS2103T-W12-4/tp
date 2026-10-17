@@ -6,7 +6,7 @@ import seedu.address.model.applicant.Applicant;
 /**
  * A utility class to help with building RecruitDexData objects.
  * Example usage: <br>
- *     {@code RecruitDexData ab = new RecruitDexDataBuilder().withApplicant("John", "Doe").build();}
+ *     {@code RecruitDexData recruitDexData = new RecruitDexDataBuilder().withApplicant("John", "Doe").build();}
  */
 public class RecruitDexDataBuilder {
 

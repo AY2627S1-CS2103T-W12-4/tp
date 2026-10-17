@@ -64,11 +64,11 @@ public class TypicalApplicants {
      * Returns an {@code RecruitDexData} with all the typical applicants.
      */
     public static RecruitDexData getTypicalRecruitDexData() {
-        RecruitDexData ab = new RecruitDexData();
+        RecruitDexData recruitDexData = new RecruitDexData();
         for (Applicant applicant : getTypicalApplicants()) {
-            ab.getApplicantRegistry().add(applicant);
+            recruitDexData.getApplicantRegistry().add(applicant);
         }
-        return ab;
+        return recruitDexData;
     }
 
     public static List<Applicant> getTypicalApplicants() {

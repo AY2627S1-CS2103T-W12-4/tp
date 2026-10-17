@@ -24,7 +24,7 @@ public class StorageManagerTest {
 
     @BeforeEach
     public void setUp() {
-        JsonRecruitDexDataStorage recruitDexDataStorage = new JsonRecruitDexDataStorage(getTempFilePath("ab"));
+        JsonRecruitDexDataStorage recruitDexDataStorage = new JsonRecruitDexDataStorage(getTempFilePath("recruitdex"));
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(getTempFilePath("prefs"));
         storageManager = new StorageManager(recruitDexDataStorage, userPrefsStorage);
     }

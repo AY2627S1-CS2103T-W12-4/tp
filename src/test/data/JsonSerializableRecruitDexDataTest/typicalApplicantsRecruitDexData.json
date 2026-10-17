@@ -1,5 +1,5 @@
 {
-  "_comment": "AddressBook save file which contains the same Applicant values as in TypicalApplicants#getTypicalAddressBook()",
+  "_comment": "RecruitDex save file which contains the same Applicant values as in TypicalApplicants#getTypicalRecruitDexData()",
   "applicants" : [ {
     "id" : "123e4567-e89b-12d3-a456-426614174000",
     "name" : "Alice Pauline",

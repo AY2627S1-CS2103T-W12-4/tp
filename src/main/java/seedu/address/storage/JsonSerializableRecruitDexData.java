@@ -16,9 +16,9 @@ import seedu.address.model.applicant.exceptions.DuplicateApplicantException;
 
 /**
  * An immutable snapshot of RecruitDex application data for JSON storage.
- * The legacy root name and applicants field are retained for existing data files.
+ * The root name is used when JSON root wrapping is enabled.
  */
-@JsonRootName(value = "addressbook")
+@JsonRootName(value = "recruitdex")
 class JsonSerializableRecruitDexData {
 
     public static final String MESSAGE_DUPLICATE_APPLICANT = "Applicants list contains duplicate applicant(s).";

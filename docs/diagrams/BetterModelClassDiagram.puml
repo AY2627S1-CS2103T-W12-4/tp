@@ -4,8 +4,8 @@ skinparam arrowThickness 1.1
 skinparam arrowColor MODEL_COLOR
 skinparam classBackgroundColor MODEL_COLOR
 
-AddressBook *-right-> "1" UniqueApplicantList
-AddressBook *-right-> "1" UniqueTagList
+RecruitDexData *-right-> "1" UniqueApplicantList
+RecruitDexData *-right-> "1" UniqueTagList
 UniqueTagList -[hidden]down- UniqueApplicantList
 UniqueTagList -[hidden]down- UniqueApplicantList
 
