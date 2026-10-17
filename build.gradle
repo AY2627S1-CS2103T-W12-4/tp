@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass = 'seedu.address.Main'
+    mainClass = 'seedu.recruitdex.Main'
 }
 
 java {
