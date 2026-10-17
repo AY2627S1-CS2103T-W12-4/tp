@@ -1,0 +1,242 @@
+package seedu.recruitdex.logic.commands;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.DESC_AMY;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.DESC_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_INTERVIEW_NOTES_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_NAME_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_SOURCE_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.VALID_YEARS_OF_EXPERIENCE_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.assertCommandFailure;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.assertCommandSuccess;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.showApplicantAtIndex;
+import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalRecruitDexData;
+import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
+import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
+
+import org.junit.jupiter.api.Test;
+
+import seedu.recruitdex.commons.core.index.Index;
+import seedu.recruitdex.logic.Messages;
+import seedu.recruitdex.logic.commands.EditCommand.EditApplicantDescriptor;
+import seedu.recruitdex.model.Model;
+import seedu.recruitdex.model.ModelManager;
+import seedu.recruitdex.model.RecruitDexData;
+import seedu.recruitdex.model.applicant.Applicant;
+import seedu.recruitdex.model.userprefs.UserPrefs;
+import seedu.recruitdex.testutil.ApplicantBuilder;
+import seedu.recruitdex.testutil.EditApplicantDescriptorBuilder;
+
+/**
+ * Contains integration tests (interaction with the Model) and unit tests for EditCommand.
+ */
+public class EditCommandTest {
+
+    private Model model = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
+
+    @Test
+    public void execute_allFieldsSpecifiedUnfilteredList_success() {
+        Applicant editedApplicant = new ApplicantBuilder()
+                .withId(model.getFilteredApplicantList().get(0).getId().value).build();
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder(editedApplicant).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+        expectedModel.getApplicantRegistry().edit(model.getFilteredApplicantList().get(0).getId(), editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_someFieldsSpecifiedUnfilteredList_success() {
+        Index indexLastApplicant = Index.fromOneBased(model.getFilteredApplicantList().size());
+        Applicant lastApplicant = model.getFilteredApplicantList().get(indexLastApplicant.getZeroBased());
+
+        ApplicantBuilder applicantInList = new ApplicantBuilder(lastApplicant);
+        Applicant editedApplicant = applicantInList.withName(VALID_NAME_BOB).withPhone(VALID_PHONE_BOB)
+                .withTags(VALID_TAG_HUSBAND).build();
+
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB)
+                .withPhone(VALID_PHONE_BOB).withTags(VALID_TAG_HUSBAND).build();
+        EditCommand editCommand = new EditCommand(indexLastApplicant, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+        expectedModel.getApplicantRegistry().edit(lastApplicant.getId(), editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_noFieldSpecifiedUnfilteredList_success() {
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, new EditApplicantDescriptor());
+        Applicant editedApplicant = model.getFilteredApplicantList().get(INDEX_FIRST_APPLICANT.getZeroBased());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_filteredList_success() {
+        showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
+
+        Applicant applicantInFilteredList = model.getFilteredApplicantList().get(INDEX_FIRST_APPLICANT.getZeroBased());
+        Applicant editedApplicant = new ApplicantBuilder(applicantInFilteredList).withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT,
+                new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB).build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+        expectedModel.getApplicantRegistry().edit(model.getFilteredApplicantList().get(0).getId(), editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_duplicateApplicantUnfilteredList_failure() {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(INDEX_FIRST_APPLICANT.getZeroBased());
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder(firstApplicant).build();
+        EditCommand editCommand = new EditCommand(INDEX_SECOND_APPLICANT, descriptor);
+
+        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_APPLICANT);
+    }
+
+    @Test
+    public void execute_duplicateApplicantFilteredList_failure() {
+        showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
+
+        // edit applicant in filtered list into a duplicate in RecruitDex
+        Applicant applicantInList = model.getRecruitDexData().getApplicantList()
+                .get(INDEX_SECOND_APPLICANT.getZeroBased());
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT,
+                new EditApplicantDescriptorBuilder(applicantInList).build());
+
+        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_APPLICANT);
+    }
+
+    @Test
+    public void execute_invalidApplicantIndexUnfilteredList_failure() {
+        Index outOfBoundIndex = Index.fromOneBased(model.getFilteredApplicantList().size() + 1);
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(outOfBoundIndex, descriptor);
+
+        assertCommandFailure(editCommand, model, Messages.MESSAGE_INVALID_APPLICANT_DISPLAYED_INDEX);
+    }
+
+    /**
+     * Edit filtered list where index is larger than size of filtered list,
+     * but smaller than size of RecruitDex
+     */
+    @Test
+    public void execute_invalidApplicantIndexFilteredList_failure() {
+        showApplicantAtIndex(model, INDEX_FIRST_APPLICANT);
+        Index outOfBoundIndex = INDEX_SECOND_APPLICANT;
+        // ensures that outOfBoundIndex is still in bounds of RecruitDex list
+        assertTrue(outOfBoundIndex.getZeroBased() < model.getRecruitDexData().getApplicantList().size());
+
+        EditCommand editCommand = new EditCommand(outOfBoundIndex,
+                new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB).build());
+
+        assertCommandFailure(editCommand, model, Messages.MESSAGE_INVALID_APPLICANT_DISPLAYED_INDEX);
+    }
+
+    @Test
+    public void equals() {
+        final EditCommand standardCommand = new EditCommand(INDEX_FIRST_APPLICANT, DESC_AMY);
+
+        // same values -> returns true
+        EditApplicantDescriptor copyDescriptor = new EditApplicantDescriptor(DESC_AMY);
+        EditCommand commandWithSameValues = new EditCommand(INDEX_FIRST_APPLICANT, copyDescriptor);
+        assertTrue(standardCommand.equals(commandWithSameValues));
+
+        // same object -> returns true
+        assertTrue(standardCommand.equals(standardCommand));
+
+        // null -> returns false
+        assertFalse(standardCommand.equals(null));
+
+        // different types -> returns false
+        assertFalse(standardCommand.equals(new ClearCommand()));
+
+        // different index -> returns false
+        assertFalse(standardCommand.equals(new EditCommand(INDEX_SECOND_APPLICANT, DESC_AMY)));
+
+        // different descriptor -> returns false
+        assertFalse(standardCommand.equals(new EditCommand(INDEX_FIRST_APPLICANT, DESC_BOB)));
+    }
+
+    @Test
+    public void toStringMethod() {
+        Index index = Index.fromOneBased(1);
+        EditApplicantDescriptor editApplicantDescriptor = new EditApplicantDescriptor();
+        EditCommand editCommand = new EditCommand(index, editApplicantDescriptor);
+        String expected = EditCommand.class.getCanonicalName() + "{index=" + index + ", editApplicantDescriptor="
+                + editApplicantDescriptor + "}";
+        assertEquals(expected, editCommand.toString());
+    }
+
+    @Test
+    public void execute_optionalFieldsSpecifiedUnfilteredList_success() {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        Applicant editedApplicant = new ApplicantBuilder(firstApplicant)
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).build();
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder()
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+        expectedModel.getApplicantRegistry().edit(firstApplicant.getId(), editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_editApplicant_keepsApplicantId() throws Exception {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withName(VALID_NAME_BOB)
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).build();
+
+        new EditCommand(INDEX_FIRST_APPLICANT, descriptor).execute(model);
+
+        Applicant editedApplicant = model.getFilteredApplicantList().get(0);
+        assertEquals(VALID_NAME_BOB, editedApplicant.getName().fullName);
+        assertEquals(firstApplicant.getId(), editedApplicant.getId());
+    }
+
+    @Test
+    public void execute_clearOptionalFields_success() {
+        Applicant firstApplicant = model.getFilteredApplicantList().get(0);
+        Applicant editedApplicant = new ApplicantBuilder(firstApplicant).withInterviewNotes("")
+                .withYearsOfExperience("").withSource("").build();
+        EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withInterviewNotes("")
+                .withYearsOfExperience("").withSource("").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_APPLICANT, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_APPLICANT_SUCCESS,
+                Messages.format(editedApplicant));
+        Model expectedModel = new ModelManager(new RecruitDexData(model.getRecruitDexData()), new UserPrefs());
+        expectedModel.getApplicantRegistry().edit(firstApplicant.getId(), editedApplicant);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+        assertEquals("", model.getFilteredApplicantList().get(0).getInterviewNotes().value);
+    }
+}

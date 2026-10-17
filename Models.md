@@ -59,7 +59,7 @@ Search commands update this shared filter. Commands using displayed indices, suc
 
 ## Applicant records
 
-Keep `applicant` as the folder and package name for applicant-related classes: `src/main/java/seedu/address/model/applicant/` (`seedu.address.model.applicant`). It contains `ApplicantRegistry`, `Applicant`, `ApplicantId`, and other related types. These classes share this folder rather than introducing an `applicantregistry` folder or a nested folder for `Applicant`.
+Keep `applicant` as the folder and package name for applicant-related classes: `src/main/java/seedu/recruitdex/model/applicant/` (`seedu.recruitdex.model.applicant`). It contains `ApplicantRegistry`, `Applicant`, `ApplicantId`, and other related types. These classes share this folder rather than introducing an `applicantregistry` folder or a nested folder for `Applicant`.
 
 ```text
 model/applicant/
@@ -87,7 +87,7 @@ The single source of applicant records. It supports adding, editing, deleting, a
 
 ## Comparison membership and decisions
 
-Keep comparison-related classes together in `src/main/java/seedu/address/model/comparison/` (`seedu.address.model.comparison`), under the responsibility of `ComparisonList`:
+Keep comparison-related classes together in `src/main/java/seedu/recruitdex/model/comparison/` (`seedu.recruitdex.model.comparison`), under the responsibility of `ComparisonList`:
 
 ```text
 model/comparison/
@@ -125,7 +125,7 @@ With fewer than two active applicants, no pair is available. Changes to membersh
 
 ## Ranking and pair selection
 
-Keep ranking-related classes together in `src/main/java/seedu/address/model/ranking/` (`seedu.address.model.ranking`), under the responsibility of `RankingEngine`:
+Keep ranking-related classes together in `src/main/java/seedu/recruitdex/model/ranking/` (`seedu.recruitdex.model.ranking`), under the responsibility of `RankingEngine`:
 
 ```text
 model/ranking/
