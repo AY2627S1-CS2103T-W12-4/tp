@@ -22,7 +22,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
 1. Copy the file to the folder you want to use as the _home folder_ for RecruitDex.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar recruitdex.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
@@ -253,7 +253,7 @@ You do not need to save manually.
 ### Editing the data file
 
 Applicant records and comparison data are saved automatically as a JSON file
-`[JAR file location]/data/addressbook.json`. Advanced users are welcome to update records directly by editing that
+`[JAR file location]/data/recruitdex.json`. Advanced users are welcome to update records directly by editing that
 data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
 comparison-list members. Existing files without comparison data load with an empty comparison list.
 

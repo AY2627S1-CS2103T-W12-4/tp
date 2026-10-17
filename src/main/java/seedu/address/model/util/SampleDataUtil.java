@@ -51,11 +51,11 @@ public class SampleDataUtil {
     }
 
     public static ReadOnlyRecruitDexData getSampleRecruitDexData() {
-        RecruitDexData sampleAb = new RecruitDexData();
+        RecruitDexData sampleRecruitDexData = new RecruitDexData();
         for (Applicant sampleApplicant : getSampleApplicants()) {
-            sampleAb.getApplicantRegistry().add(sampleApplicant);
+            sampleRecruitDexData.getApplicantRegistry().add(sampleApplicant);
         }
-        return sampleAb;
+        return sampleRecruitDexData;
     }
 
     /**
