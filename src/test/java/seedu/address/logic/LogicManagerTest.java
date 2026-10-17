@@ -13,6 +13,7 @@ import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalApplicants.ALICE;
 import static seedu.address.testutil.TypicalApplicants.BENSON;
+import static seedu.address.testutil.TypicalApplicants.CARL;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -220,11 +221,13 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_compareRemove_updatesRankingAndPreservesRecordsAndFilter() throws Exception {
+    public void execute_compareRemove_persistsRemovalAndClearedPairAcrossRestart() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
         logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
         logic.execute(AddToComparisonCommand.COMMAND_WORD + " 2");
+        logic.execute("choose a");
+        List<ComparisonDecision> historyBefore = List.copyOf(model.getComparisonList().getDecisionHistory());
         logic.execute("find Benson");
         ObservableList<RankingEntry> ranking = logic.getRanking();
 
@@ -236,11 +239,20 @@ public class LogicManagerTest {
         assertSame(ranking, logic.getRanking());
         assertEquals(1, ranking.size());
         assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
+        assertEquals(0, ranking.get(0).getComparisonCount());
+        assertTrue(logic.getCurrentPairProperty().get().isEmpty());
         assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
         assertEquals(List.of(ALICE, BENSON), model.getApplicantRegistry().getApplicantList());
         JsonRecruitDexDataStorage savedRecords =
                 new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
-        assertEquals(List.of(ALICE, BENSON), savedRecords.readRecruitDexData().orElseThrow().getApplicantList());
+        ModelManager reopened = new ModelManager(savedRecords.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(List.of(ALICE, BENSON), reopened.getApplicantRegistry().getApplicantList());
+        assertEquals(Set.of(ALICE.getId()), reopened.getComparisonList().getMemberIds());
+        assertEquals(historyBefore, reopened.getComparisonList().getDecisionHistory());
+        assertTrue(reopened.getComparisonList().getCurrentPair().isEmpty());
+        assertEquals(ranking, reopened.getRankingEngine().getRanking());
+        assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
 
         CommandResult repeatedResult = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
 
@@ -249,6 +261,52 @@ public class LogicManagerTest {
         assertEquals(1, ranking.size());
         assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
         assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+        assertEquals(reopened.getRecruitDexData(), savedRecords.readRecruitDexData().orElseThrow());
+    }
+
+    @Test
+    public void execute_compareRemove_persistsReplacementPairAndRetainedHistoryAcrossRestart() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getApplicantRegistry().add(CARL);
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 2");
+        logic.execute("choose a");
+        ComparisonDecision decision = model.getComparisonList().getDecisionHistory().get(0);
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 3");
+        logic.execute("find Benson");
+
+        logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
+
+        ComparisonPair replacementPair = logic.getCurrentPairProperty().get().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), CARL.getId()),
+                Set.of(replacementPair.getFirstApplicantId(), replacementPair.getSecondApplicantId()));
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        ModelManager reopened = new ModelManager(savedRecords.readRecruitDexData().orElseThrow(), new UserPrefs());
+        assertEquals(model.getRecruitDexData(), reopened.getRecruitDexData());
+        assertEquals(List.of(ALICE, BENSON, CARL), reopened.getApplicantRegistry().getApplicantList());
+        assertEquals(Set.of(ALICE.getId(), CARL.getId()), reopened.getComparisonList().getMemberIds());
+        assertEquals(List.of(decision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.of(replacementPair), reopened.getComparisonList().getCurrentPair());
+        assertEquals(logic.getRanking(), reopened.getRankingEngine().getRanking());
+        assertEquals(2, reopened.getRankingEngine().getRanking().size());
+        assertTrue(reopened.getRankingEngine().getRanking().stream()
+                .allMatch(entry -> entry.getComparisonCount() == 0));
+
+        Logic reopenedLogic = new LogicManager(reopened, new StorageManager(savedRecords,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+
+        reopenedLogic.execute(AddToComparisonCommand.COMMAND_WORD + " 2");
+
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), reopened.getComparisonList().getMemberIds());
+        assertEquals(List.of(decision), reopened.getComparisonList().getDecisionHistory());
+        assertEquals(Optional.of(replacementPair), reopened.getComparisonList().getCurrentPair());
+        assertEquals(3, reopenedLogic.getRanking().size());
+        assertEquals(decision.getWinnerId(), reopenedLogic.getRanking().get(0).getApplicantId());
+        assertEquals(1, reopenedLogic.getRanking().get(0).getComparisonCount());
+        assertEquals(2, reopenedLogic.getRanking().stream().mapToInt(RankingEntry::getComparisonCount).sum());
+        assertEquals(reopened.getRecruitDexData(), savedRecords.readRecruitDexData().orElseThrow());
     }
 
     @Test
