@@ -581,29 +581,39 @@ For all use cases below, the **System** is RecruitDex and the **Actor** is a rec
 ### Non-Functional Requirements
 
 **Performance**
-1. CRUD operations such as adding, deleting and editing should be finished within 2 seconds, for up to 200 candidates.
-2. After all candidate comparisons have been completed the application should finish ranking the candidates within 10 seconds.
-3. RecruitDex should remain responsive while containing up to 1000 candidates.
 
-**Reliability**
-1. The application should not terminate and should show a clear error message if an invalid input is received, after which it should continue working normally.
+1. On the project’s reference test machine, adding, editing, deleting, or searching applicant records must complete within 2 seconds when the data file contains up to 1,000 applicant records.
+2. On the reference test machine, recalculating the ranking must complete within 10 seconds for up to 200 active applicants and 19,900 decisions.
+3. After a comparison is submitted, the updated ranking must be available to the user within 2 seconds for a comparison list of up to 200 applicants.
 
-**Portability**
-1. The application should run on Linux, MacOS and Windows with Java 25 installed.
-2. The application should work without requiring an installer.
+**Reliability and data integrity**
 
-**Persistence**
-1. All data stored in RecruitDex, including rankings and attribute values should be stored in a file so that data persists between sessions.
+1. Invalid commands or rejected operations must display an error message without terminating the application.
+2. A rejected operation must leave applicant records, comparison-list membership, decision history, the pending comparison pair, and ranking unchanged.
+3. If saving fails, RecruitDex must report the error and preserve the last successfully saved data file.
+4. After a successful save and subsequent restart, RecruitDex must restore applicant records, comparison-list membership, ordered decision history, the pending comparison pair, and user preferences.
+5. After loading saved data, RecruitDex must recalculate the ranking from the restored membership and decision history. The resulting ranking must match the ranking produced from the same data before saving.
 
 **Usability**
-1. A recruiter new to the app should be able to learn to perform the core functions of the app, such as adding and comparing applicants with minimal guidance.
-2. If the user changes candidate data by mistake, undoing the mistake should be quick, within 10 seconds, and easy.
 
-**Availability**
-1. All features of RecruitDex should be fully usable without an internet connection.
-2. All features of RecruitDex should be fully usable without requiring multiple users.
+1. The `help` command must show the syntax and a usage example for every supported command.
+2. When a command is rejected, RecruitDex must identify the reason and, where applicable, show the expected command format.
+3. In a usability test with five people unfamiliar with RecruitDex, at least four must be able to add an applicant, add the applicant to the comparison list, submit a comparison, and view the ranking within 10 minutes using the in-app help and without assistance.
 
-*{More to be added}*
+**Compatibility and installation**
+
+1. RecruitDex must run on Windows, macOS, and Linux with Java 25 installed.
+2. Users must be able to launch RecruitDex without running an installer.
+
+**Operational constraints**
+
+1. Applicant management, comparison, and ranking features must work without an internet connection.
+2. RecruitDex is a single-user desktop application. Concurrent use of the same data file by multiple running instances is not supported.
+
+**Undo and redo** *(only include this requirement if undo and redo are part of the release scope)*
+
+1. A user must be able to undo or redo a supported data-changing operation within 10 seconds of requesting it.
+2. Undoing or redoing an operation must restore applicant records and all affected comparison membership, decision history, pending-pair, and ranking state.
 
 ### Glossary
 
