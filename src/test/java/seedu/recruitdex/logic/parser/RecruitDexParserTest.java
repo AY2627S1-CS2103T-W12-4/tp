@@ -125,8 +125,8 @@ public class RecruitDexParserTest {
         String expectedMessage =
                 String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
 
-        assertThrows(ParseException.class, expectedMessage,
-                () -> parser.parseCommand(FindCommand.COMMAND_WORD));
+        assertThrows(ParseException.class, expectedMessage, () ->
+                parser.parseCommand(FindCommand.COMMAND_WORD));
     }
 
     @Test

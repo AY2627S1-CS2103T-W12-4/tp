@@ -1,7 +1,6 @@
 package seedu.recruitdex.model.applicant;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Predicate;
 
 import seedu.recruitdex.commons.util.ToStringBuilder;
