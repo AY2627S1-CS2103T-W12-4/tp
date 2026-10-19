@@ -8,7 +8,6 @@ import static seedu.recruitdex.testutil.Assert.assertThrows;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +26,7 @@ import seedu.recruitdex.logic.commands.ListCommand;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 import seedu.recruitdex.model.applicant.Applicant;
-import seedu.recruitdex.model.applicant.NameContainsKeywordsPredicate;
+import seedu.recruitdex.model.applicant.TagContainsKeywordsPredicate;
 import seedu.recruitdex.testutil.ApplicantBuilder;
 import seedu.recruitdex.testutil.ApplicantUtil;
 import seedu.recruitdex.testutil.EditApplicantDescriptorBuilder;
@@ -113,11 +112,21 @@ public class RecruitDexParserTest {
     }
 
     @Test
-    public void parseCommand_find() throws Exception {
+    public void parseCommand_findByTags() throws Exception {
         List<String> keywords = List.of("foo", "bar", "baz");
         FindCommand command = (FindCommand) parser.parseCommand(
-                FindCommand.COMMAND_WORD + " " + keywords.stream().collect(Collectors.joining(" ")));
-        assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
+                FindCommand.COMMAND_WORD + " -t " + String.join(" ", keywords));
+
+        assertEquals(new FindCommand(new TagContainsKeywordsPredicate(keywords)), command);
+    }
+
+    @Test
+    public void parseCommand_findWithoutAttributes_throwsParseException() {
+        String expectedMessage =
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+
+        assertThrows(ParseException.class, expectedMessage,
+                () -> parser.parseCommand(FindCommand.COMMAND_WORD));
     }
 
     @Test

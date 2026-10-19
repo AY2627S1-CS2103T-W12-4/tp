@@ -140,7 +140,7 @@ Format: `compare-add INDEX`
 Examples:
 
 * `list` followed by `compare-add 2` selects the second applicant in the displayed list.
-* `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
+* `find -n Betsy` followed by `compare-add 1` selects the first applicant in the search results.
 
 Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records and restored when the application reopens. Using `clear` also resets membership.
@@ -165,7 +165,7 @@ Format: `compare-remove INDEX`
 Examples:
 
 * `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
-* `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
+* `find -n Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
@@ -215,22 +215,26 @@ Examples:
 *  `edit 1 y/7 s/Referral` Sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
 *  `edit 3 i/` Clears the interview notes of the 3rd applicant.
 
-### Locating applicants by name: `find`
+### Finding applicants: `find`
 
-Finds applicants whose names contain any of the given keywords.
+Finds applicants whose details match every supplied condition. You can search by name, phone number, email, address, interview notes, years of experience, source, or skill tags. At least one condition is required.
 
-Format: `find KEYWORD [MORE_KEYWORDS]`
+Format: `find [ -n NAME] [ -p PHONE] [ -e EMAIL] [ -a ADDRESS] [ -i INTERVIEW_NOTES] [ -y YEARS_OF_EXPERIENCE] [ -s SOURCE] [ -t SKILL_TERMS]`
 
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Applicants matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* Include at least one attribute prefix. The brackets indicate optional attributes; omit the brackets when entering a command.
+* Attribute values may contain spaces and can appear in any order. Each prefix may be used at most once.
+* When you supply more than one attribute, an applicant must match **all** supplied conditions.
+* Name, email, address, interview notes, and source searches are case-insensitive partial matches. Phone searches match part of the phone number.
+* `YEARS_OF_EXPERIENCE` must match the applicant’s value exactly.
+* For `-t`, enter one or more space-separated search terms. Each term must partially match at least one skill tag on the applicant. Matching is case-insensitive; different terms may match different tags.
+* A tag search must include at least one term.
 
 Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+
+* `find -n Alice` finds applicants whose names contain `Alice`, ignoring case.
+* `find -t java kaf` finds applicants with a skill tag matching `java` and a skill tag matching `kaf`.
+* `find -n Alice -s LinkedIn -y 5` finds applicants whose name contains `Alice`, whose source contains `LinkedIn`, and whose years of experience is exactly `5`.
+* `find -a jurong west -n Alice Pauline` searches by both address and name. Attribute order does not matter.
 
 ### Deleting an applicant: `delete`
 
@@ -247,7 +251,7 @@ Format: `delete INDEX`
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd applicant in the displayed list.
-* `find Betsy` followed by `delete 1` deletes the 1st applicant in the results of the `find` command.
+* `find -n Betsy` followed by `delete 1` deletes the 1st applicant in the results of the `find` command.
 
 ### Clearing all entries: `clear`
 
@@ -313,7 +317,7 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]...`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find**   | `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`<br> e.g., `find -n Alice -t java kaf`
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
