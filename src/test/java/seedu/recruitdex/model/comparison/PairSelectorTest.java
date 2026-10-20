@@ -4,11 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.recruitdex.testutil.Assert.assertThrows;
-import static seedu.recruitdex.testutil.TypicalApplicants.ALICE;
-import static seedu.recruitdex.testutil.TypicalApplicants.BENSON;
-import static seedu.recruitdex.testutil.TypicalApplicants.CARL;
-import static seedu.recruitdex.testutil.TypicalApplicants.DANIEL;
-import static seedu.recruitdex.testutil.TypicalApplicants.ELLE;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,10 +20,12 @@ import seedu.recruitdex.model.ranking.RankingEntry;
 
 public class PairSelectorTest {
     private static final long SEED = 2103L;
-    private static final ApplicantId A = ALICE.getId();
-    private static final ApplicantId B = BENSON.getId();
-    private static final ApplicantId C = CARL.getId();
-    private static final ApplicantId D = DANIEL.getId();
+    // Fixed IDs keep the sorted member order, and therefore seeded selection, identical across runs.
+    private static final ApplicantId A = new ApplicantId("00000000-0000-0000-0000-00000000000a");
+    private static final ApplicantId B = new ApplicantId("00000000-0000-0000-0000-00000000000b");
+    private static final ApplicantId C = new ApplicantId("00000000-0000-0000-0000-00000000000c");
+    private static final ApplicantId D = new ApplicantId("00000000-0000-0000-0000-00000000000d");
+    private static final ApplicantId E = new ApplicantId("00000000-0000-0000-0000-00000000000e");
 
     private final PairSelector selector = new PairSelector();
     private final PairSelector seeded = new PairSelector(new Random(SEED));
@@ -36,12 +33,12 @@ public class PairSelectorTest {
     @Test
     public void selectPair_fewerThanTwoMembers_returnsEmpty() {
         assertTrue(selector.selectPair(Set.of(), List.of(), List.of()).isEmpty());
-        assertTrue(selector.selectPair(Set.of(ALICE.getId()), List.of(), List.of()).isEmpty());
+        assertTrue(selector.selectPair(Set.of(A), List.of(), List.of()).isEmpty());
     }
 
     @Test
     public void selectPair_twoMembers_alwaysContainsBothDistinctMembers() {
-        Set<ApplicantId> members = Set.of(ALICE.getId(), BENSON.getId());
+        Set<ApplicantId> members = Set.of(A, B);
         for (int attempt = 0; attempt < 100; attempt++) {
             ComparisonPair pair = selector.selectPair(members, List.of(), List.of()).orElseThrow();
             assertNotEquals(pair.getFirstApplicantId(), pair.getSecondApplicantId());
@@ -51,10 +48,10 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_largerPool_containsOnlyDistinctActiveMembersAndPreservesInputs() {
-        Set<ApplicantId> members = new HashSet<>(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()));
+        Set<ApplicantId> members = new HashSet<>(Set.of(A, B, C));
         Set<ApplicantId> originalMembers = Set.copyOf(members);
         List<ComparisonDecision> history = List.of(
-                new ComparisonDecision(ALICE.getId(), BENSON.getId(), ALICE.getId()));
+                new ComparisonDecision(A, B, A));
         for (int attempt = 0; attempt < 100; attempt++) {
             ComparisonPair pair = selector.selectPair(members, history, List.of()).orElseThrow();
             assertNotEquals(pair.getFirstApplicantId(), pair.getSecondApplicantId());
@@ -82,8 +79,8 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_sameSeedAndInputs_returnsSamePair() {
-        Set<ApplicantId> forward = new LinkedHashSet<>(List.of(A, B, C, D, ELLE.getId()));
-        Set<ApplicantId> backward = new LinkedHashSet<>(List.of(ELLE.getId(), D, C, B, A));
+        Set<ApplicantId> forward = new LinkedHashSet<>(List.of(A, B, C, D, E));
+        Set<ApplicantId> backward = new LinkedHashSet<>(List.of(E, D, C, B, A));
         PairSelector first = new PairSelector(new Random(SEED));
         PairSelector second = new PairSelector(new Random(SEED));
         for (int attempt = 0; attempt < 50; attempt++) {
@@ -135,7 +132,7 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_inactiveParticipantDecisions_areIgnored() {
-        ApplicantId inactive = ELLE.getId();
+        ApplicantId inactive = E;
         List<ComparisonDecision> history = new ArrayList<>();
         for (int count = 0; count < 20; count++) {
             history.add(decision(A, inactive));
@@ -168,14 +165,21 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_repeatedPair_penalisedButStillPossible() {
-        List<ComparisonDecision> history = List.of(decision(A, B), decision(A, B), decision(C, A), decision(C, B));
+        // Every member has two comparisons. A-B was compared twice and C-D (excluded as the last pair) twice,
+        // so {A, B} is expected in about 2.6% of selections and the never-compared {A, C} in about 24%.
+        List<ComparisonDecision> history = List.of(decision(A, B), decision(A, B), decision(C, D), decision(C, D));
         int repeated = 0;
-        for (int attempt = 0; attempt < 600; attempt++) {
-            if (members(select(Set.of(A, B, C), history, List.of())).equals(Set.of(A, B))) {
+        int fresh = 0;
+        for (int attempt = 0; attempt < 1000; attempt++) {
+            Set<ApplicantId> pair = members(select(Set.of(A, B, C, D), history, List.of()));
+            if (pair.equals(Set.of(A, B))) {
                 repeated++;
+            } else if (pair.equals(Set.of(A, C))) {
+                fresh++;
             }
         }
-        assertTrue(repeated > 0 && repeated < 200, "Repeated pair selected " + repeated + " of 600 times");
+        assertTrue(repeated > 0, "Repeated pair was never selected");
+        assertTrue(repeated * 4 < fresh, "Repeated pair selected " + repeated + " times vs " + fresh + " fresh");
     }
 
     @Test
