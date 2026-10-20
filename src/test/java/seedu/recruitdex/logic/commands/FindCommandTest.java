@@ -83,7 +83,7 @@ public class FindCommandTest {
         Predicate<Applicant> predicate = applicant ->
                 applicant.getAddress().toString().toLowerCase().contains("street")
                         && applicant.getTags().stream()
-                        .anyMatch(tag -> tag.toString().equalsIgnoreCase("friends"));
+                        .anyMatch(tag -> tag.toString().toLowerCase().contains("friends"));
         FindCommand command = new FindCommand(predicate);
 
         expectedModel.updateFilteredApplicantList(predicate);

@@ -177,10 +177,10 @@ public class CommandSummaryTest {
     @Test
     public void getGroups_commandsWithParametersShowThem() {
         CommandInfo add = infoOf("add");
-        assertTrue(add.parameters().contains("n/NAME"));
-        assertTrue(add.parameters().contains("[t/SKILL]..."));
+        assertTrue(add.parameters().contains("-nNAME"));
+        assertTrue(add.parameters().contains("[-tSKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
-        assertTrue(infoOf("find").parameters().startsWith("KEYWORD"));
+        assertTrue(infoOf("find").parameters().startsWith("-n"));
     }
 
     @Test

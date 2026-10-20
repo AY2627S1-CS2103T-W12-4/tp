@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.recruitdex.testutil.TypicalApplicants.ALICE;
 import static seedu.recruitdex.testutil.TypicalApplicants.BENSON;
+import static seedu.recruitdex.testutil.TypicalApplicants.DANIEL;
 import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import java.util.List;
@@ -57,54 +58,54 @@ public class FindCommandParserTest {
 
     @Test
     public void parse_nameSearch_isCaseInsensitiveAndPartial() throws Exception {
-        assertMatchingApplicants("-n aLiCe", ALICE);
+        assertMatchingApplicants(" -n aLiCe", ALICE);
     }
 
     @Test
     public void parse_phoneSearch_matchesPartialNumber() throws Exception {
-        assertMatchingApplicants("-p 9435", ALICE);
+        assertMatchingApplicants(" -p 9435", ALICE);
     }
 
     @Test
     public void parse_emailSearch_isCaseInsensitiveAndPartial() throws Exception {
-        assertMatchingApplicants("-e ALICE@EXAMPLE", ALICE);
+        assertMatchingApplicants(" -e ALICE@EXAMPLE", ALICE);
     }
 
     @Test
     public void parse_addressSearch_isCaseInsensitiveAndPartial() throws Exception {
-        assertMatchingApplicants("-a JURONG WEST", ALICE);
+        assertMatchingApplicants(" -a JURONG WEST", ALICE);
     }
 
     @Test
     public void parse_interviewNotesSearch_isCaseInsensitiveAndPartial() throws Exception {
-        assertMatchingApplicants("-i STRONG IN JAVA", ALICE);
+        assertMatchingApplicants(" -i STRONG IN JAVA", ALICE);
     }
 
     @Test
     public void parse_yearsOfExperienceSearch_matchesExactValue() throws Exception {
-        assertMatchingApplicants("-y 5", ALICE);
+        assertMatchingApplicants(" -y 5", ALICE);
     }
 
     @Test
     public void parse_sourceSearch_isCaseInsensitiveAndPartial() throws Exception {
-        assertMatchingApplicants("-s LINK", ALICE);
+        assertMatchingApplicants(" -s LINK", ALICE);
     }
 
     @Test
     public void parse_tagSearch_matchesEveryTermAcrossTags() throws Exception {
-        assertMatchingApplicants("-t fri end", ALICE, BENSON);
+        assertMatchingApplicants(" -t fri end", ALICE, BENSON, DANIEL);
     }
 
     @Test
     public void parse_multipleAttributes_requiresAllToMatch() throws Exception {
-        assertMatchingApplicants("-n ALICE PAULINE -p 9435 -e alice@example.com "
+        assertMatchingApplicants(" -n ALICE PAULINE -p 9435 -e alice@example.com "
                         + "-a jurong -i java -y 5 -s linkedin -t fri",
                 ALICE);
     }
 
     @Test
     public void parse_attributeValuesMayContainSpacesAndPrefixesMayBeReordered() throws Exception {
-        assertMatchingApplicants("-t fri -a 123, Jurong West Ave 6, #08-111 -n Alice Pauline",
+        assertMatchingApplicants(" -t fri -a 123, Jurong West Ave 6, #08-111 -n Alice Pauline",
                 ALICE);
     }
 
