@@ -38,6 +38,9 @@ public class SwitchTabCommand extends Command {
 
     private final Tab tab;
 
+    /**
+     * Creates a command to switch to {@code tab}.
+     */
     public SwitchTabCommand(Tab tab) {
         this.tab = requireNonNull(tab);
     }

@@ -24,15 +24,15 @@ public class SwitchTabCommandTest {
 
     @Test
     public void execute_compare_success() {
-        CommandResult expectedCommandResult = new CommandResult(String.format(MESSAGE_SUCCESS, "Compare"),
-                Tab.COMPARE);
+        String expectedMessage = String.format(MESSAGE_SUCCESS, "Compare");
+        CommandResult expectedCommandResult = new CommandResult(expectedMessage, Tab.COMPARE);
         assertCommandSuccess(new SwitchTabCommand(Tab.COMPARE), model, expectedCommandResult, expectedModel);
     }
 
     @Test
     public void execute_applicants_success() {
-        CommandResult expectedCommandResult = new CommandResult(String.format(MESSAGE_SUCCESS, "All applicants"),
-                Tab.APPLICANTS);
+        String expectedMessage = String.format(MESSAGE_SUCCESS, "All applicants");
+        CommandResult expectedCommandResult = new CommandResult(expectedMessage, Tab.APPLICANTS);
         assertCommandSuccess(new SwitchTabCommand(Tab.APPLICANTS), model, expectedCommandResult, expectedModel);
     }
 
