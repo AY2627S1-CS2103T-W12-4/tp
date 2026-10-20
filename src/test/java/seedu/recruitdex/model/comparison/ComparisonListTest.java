@@ -87,8 +87,8 @@ public class ComparisonListTest {
     public void add_unregisteredApplicant_throwsApplicantNotFoundException() {
         ApplicantId unregisteredId = new ApplicantId();
 
-        assertThrows(ApplicantNotFoundException.class,
-                () -> comparisonList.add(unregisteredId));
+        assertThrows(ApplicantNotFoundException.class, () ->
+                comparisonList.add(unregisteredId));
 
         assertTrue(comparisonList.getMemberIds().isEmpty());
         assertEquals(0, rankingEngine.recalculationCount);
@@ -98,8 +98,8 @@ public class ComparisonListTest {
     public void add_existingMember_throwsDuplicateComparisonMemberException() {
         comparisonList.add(ALICE.getId());
 
-        assertThrows(DuplicateComparisonMemberException.class,
-                () -> comparisonList.add(ALICE.getId()));
+        assertThrows(DuplicateComparisonMemberException.class, () ->
+                comparisonList.add(ALICE.getId()));
 
         assertEquals(Set.of(ALICE.getId()), comparisonList.getMemberIds());
         assertEquals(1, rankingEngine.recalculationCount);
@@ -115,14 +115,14 @@ public class ComparisonListTest {
 
     @Test
     public void getMemberIds_unmodifiableView_rejectsMutation() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> comparisonList.getMemberIds().add(ALICE.getId()));
+        assertThrows(UnsupportedOperationException.class, () ->
+                comparisonList.getMemberIds().add(ALICE.getId()));
     }
 
     @Test
     public void getDecisionHistory_unmodifiableView_rejectsMutation() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> comparisonList.getDecisionHistory().add(
+        assertThrows(UnsupportedOperationException.class, () ->
+                comparisonList.getDecisionHistory().add(
                         new ComparisonDecision(
                                 ALICE.getId(), BENSON.getId(), ALICE.getId())));
     }
@@ -166,8 +166,8 @@ public class ComparisonListTest {
 
     @Test
     public void remove_nullApplicantId_throwsNullPointerException() {
-        assertThrows(NullPointerException.class,
-                () -> comparisonList.remove(null));
+        assertThrows(NullPointerException.class, () ->
+                comparisonList.remove(null));
 
         assertTrue(comparisonList.getMemberIds().isEmpty());
         assertEquals(0, rankingEngine.recalculationCount);
@@ -230,26 +230,31 @@ public class ComparisonListTest {
         comparisonList.add(BENSON.getId());
         comparisonState.clearCurrentPair();
 
-        assertThrows(IllegalStateException.class,
-                () -> comparisonList.recordDecision(ALICE.getId()));
+        assertThrows(IllegalStateException.class, () ->
+                comparisonList.recordDecision(ALICE.getId()));
 
         assertTrue(comparisonList.getDecisionHistory().isEmpty());
         assertEquals(2, rankingEngine.recalculationCount);
     }
 
     @Test
-    public void recordDecision_invalidPendingPair_throwsIllegalStateException() {
+    public void remove_memberInCurrentPair_replacesPairBeforeNextDecision() {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
         comparisonList.add(CARL.getId());
         comparisonState.setCurrentPair(
                 new ComparisonPair(ALICE.getId(), BENSON.getId()));
+
         comparisonList.remove(ALICE.getId());
 
-        assertThrows(IllegalStateException.class,
-                () -> comparisonList.recordDecision(BENSON.getId()));
+        assertCurrentPairContains(Set.of(BENSON.getId(), CARL.getId()));
 
-        assertTrue(comparisonList.getDecisionHistory().isEmpty());
+        ComparisonDecision decision = comparisonList.recordDecision(BENSON.getId());
+
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()),
+                Set.of(decision.getFirstApplicantId(), decision.getSecondApplicantId()));
+        assertEquals(BENSON.getId(), decision.getWinnerId());
+        assertEquals(List.of(decision), comparisonList.getDecisionHistory());
     }
 
     @Test
@@ -260,8 +265,8 @@ public class ComparisonListTest {
         comparisonState.setCurrentPair(
                 new ComparisonPair(ALICE.getId(), BENSON.getId()));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> comparisonList.recordDecision(CARL.getId()));
+        assertThrows(IllegalArgumentException.class, () ->
+                comparisonList.recordDecision(CARL.getId()));
 
         assertTrue(comparisonList.getDecisionHistory().isEmpty());
         assertEquals(3, rankingEngine.recalculationCount);
@@ -269,8 +274,8 @@ public class ComparisonListTest {
 
     @Test
     public void recordDecision_nullWinner_throwsNullPointerException() {
-        assertThrows(NullPointerException.class,
-                () -> comparisonList.recordDecision(null));
+        assertThrows(NullPointerException.class, () ->
+                comparisonList.recordDecision(null));
 
         assertTrue(comparisonList.getDecisionHistory().isEmpty());
     }
@@ -336,8 +341,8 @@ public class ComparisonListTest {
 
     @Test
     public void deleteApplicantReferences_nullApplicantId_throwsNullPointerException() {
-        assertThrows(NullPointerException.class,
-                () -> comparisonList.deleteApplicantReferences(null));
+        assertThrows(NullPointerException.class, () ->
+                comparisonList.deleteApplicantReferences(null));
 
         assertTrue(comparisonList.getMemberIds().isEmpty());
         assertEquals(0, rankingEngine.recalculationCount);
@@ -369,8 +374,8 @@ public class ComparisonListTest {
         comparisonList.add(ALICE.getId());
         ApplicantId unregisteredId = new ApplicantId();
 
-        assertThrows(ApplicantNotFoundException.class,
-                () -> comparisonList.resetData(
+        assertThrows(ApplicantNotFoundException.class, () ->
+                comparisonList.resetData(
                         Set.of(unregisteredId),
                         List.of(),
                         Optional.empty()));
@@ -386,8 +391,8 @@ public class ComparisonListTest {
         ComparisonDecision decision =
                 new ComparisonDecision(ALICE.getId(), unregisteredId, ALICE.getId());
 
-        assertThrows(ApplicantNotFoundException.class,
-                () -> comparisonList.resetData(
+        assertThrows(ApplicantNotFoundException.class, () ->
+                comparisonList.resetData(
                         Set.of(ALICE.getId()),
                         List.of(decision),
                         Optional.empty()));
@@ -401,8 +406,8 @@ public class ComparisonListTest {
     public void resetData_pendingPairWithInactiveApplicant_throwsIllegalArgumentException() {
         ComparisonPair pendingPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> comparisonList.resetData(
+        assertThrows(IllegalArgumentException.class, () ->
+                comparisonList.resetData(
                         Set.of(ALICE.getId()),
                         List.of(),
                         Optional.of(pendingPair)));
