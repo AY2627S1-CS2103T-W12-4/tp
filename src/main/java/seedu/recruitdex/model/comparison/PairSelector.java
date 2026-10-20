@@ -72,7 +72,8 @@ public class PairSelector {
     private ApplicantId sampleAnchor(List<ApplicantId> members, SelectionStats stats) {
         double[] weights = new double[members.size()];
         for (int index = 0; index < members.size(); index++) {
-            weights[index] = 1 / Math.pow(1 + stats.count(members.get(index)), ANCHOR_COVERAGE_EXPONENT);
+            int comparisonCount = stats.getComparisonCount(members.get(index));
+            weights[index] = 1 / Math.pow(1 + comparisonCount, ANCHOR_COVERAGE_EXPONENT);
         }
         return members.get(sampleIndex(weights));
     }
@@ -91,19 +92,19 @@ public class PairSelector {
         if (stats.lastAnsweredPair().equals(Optional.of(PairKey.of(anchor, candidate)))) {
             return 0;
         }
-        double gap = stats.score(anchor) - stats.score(candidate);
+        double gap = stats.getScore(anchor) - stats.getScore(candidate);
         double winProbability = 1 / (1 + Math.exp(-gap));
         double closeness = 4 * winProbability * (1 - winProbability);
-        double coverage = 1.0 / (1 + stats.count(candidate));
-        double repeat = 1 / Math.pow(1 + stats.pairCount(anchor, candidate), REPEAT_PENALTY_EXPONENT);
+        double coverage = 1.0 / (1 + stats.getComparisonCount(candidate));
+        double repeat = 1 / Math.pow(1 + stats.getPairCount(anchor, candidate), REPEAT_PENALTY_EXPONENT);
         return Math.max(MIN_WEIGHT, closeness * coverage * repeat);
     }
 
     /** Places the applicant with the lower first-side imbalance first, breaking ties randomly. */
     private ComparisonPair orderBySide(ApplicantId first, ApplicantId second, SelectionStats stats) {
-        int difference = Integer.compare(stats.imbalance(first), stats.imbalance(second));
-        boolean swap = difference > 0 || (difference == 0 && random.nextBoolean());
-        return swap ? new ComparisonPair(second, first) : new ComparisonPair(first, second);
+        int difference = Integer.compare(stats.getSideImbalance(first), stats.getSideImbalance(second));
+        boolean shouldSwap = difference > 0 || (difference == 0 && random.nextBoolean());
+        return shouldSwap ? new ComparisonPair(second, first) : new ComparisonPair(first, second);
     }
 
     /** Samples an index with probability proportional to its non-negative weight. */
@@ -133,7 +134,7 @@ public class PairSelector {
      * Holds eligible-history statistics for one selection, discarded afterwards.
      */
     private record SelectionStats(Map<ApplicantId, Double> scores, Map<ApplicantId, Integer> comparisonCounts,
-            Map<ApplicantId, Integer> sideImbalance, Map<PairKey, Integer> pairCounts,
+            Map<ApplicantId, Integer> sideImbalances, Map<PairKey, Integer> pairCounts,
             Optional<PairKey> lastAnsweredPair) {
 
         static SelectionStats from(List<ApplicantId> members, List<ComparisonDecision> decisions,
@@ -145,7 +146,7 @@ public class PairSelector {
             }
 
             Map<ApplicantId, Integer> counts = new HashMap<>();
-            Map<ApplicantId, Integer> imbalance = new HashMap<>();
+            Map<ApplicantId, Integer> imbalances = new HashMap<>();
             Map<PairKey, Integer> pairCounts = new HashMap<>();
             PairKey lastPair = null;
             for (ComparisonDecision decision : decisions) {
@@ -156,27 +157,27 @@ public class PairSelector {
                 }
                 counts.merge(first, 1, Integer::sum);
                 counts.merge(second, 1, Integer::sum);
-                imbalance.merge(first, 1, Integer::sum);
-                imbalance.merge(second, -1, Integer::sum);
+                imbalances.merge(first, 1, Integer::sum);
+                imbalances.merge(second, -1, Integer::sum);
                 lastPair = PairKey.of(first, second);
                 pairCounts.merge(lastPair, 1, Integer::sum);
             }
-            return new SelectionStats(scores, counts, imbalance, pairCounts, Optional.ofNullable(lastPair));
+            return new SelectionStats(scores, counts, imbalances, pairCounts, Optional.ofNullable(lastPair));
         }
 
-        double score(ApplicantId applicantId) {
+        double getScore(ApplicantId applicantId) {
             return scores.getOrDefault(applicantId, 0.0);
         }
 
-        int count(ApplicantId applicantId) {
+        int getComparisonCount(ApplicantId applicantId) {
             return comparisonCounts.getOrDefault(applicantId, 0);
         }
 
-        int imbalance(ApplicantId applicantId) {
-            return sideImbalance.getOrDefault(applicantId, 0);
+        int getSideImbalance(ApplicantId applicantId) {
+            return sideImbalances.getOrDefault(applicantId, 0);
         }
 
-        int pairCount(ApplicantId first, ApplicantId second) {
+        int getPairCount(ApplicantId first, ApplicantId second) {
             return pairCounts.getOrDefault(PairKey.of(first, second), 0);
         }
     }

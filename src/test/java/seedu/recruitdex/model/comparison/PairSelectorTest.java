@@ -93,9 +93,9 @@ public class PairSelectorTest {
     public void selectPair_unassessedMember_isSelectedMostOften() {
         List<ComparisonDecision> history = new ArrayList<>();
         for (int cycle = 0; cycle < 3; cycle++) {
-            history.add(decision(A, B));
-            history.add(decision(B, C));
-            history.add(decision(C, A));
+            history.add(createDecision(A, B));
+            history.add(createDecision(B, C));
+            history.add(createDecision(C, A));
         }
         int withD = 0;
         for (int attempt = 0; attempt < 500; attempt++) {
@@ -108,23 +108,24 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_lastAnsweredPairWithThreeMembers_isNotRepeated() {
-        List<ComparisonDecision> history = List.of(decision(A, C), decision(A, B));
+        List<ComparisonDecision> history = List.of(createDecision(A, C), createDecision(A, B));
         for (int attempt = 0; attempt < 500; attempt++) {
-            assertNotEquals(Set.of(A, B), members(select(Set.of(A, B, C), history, List.of())));
+            assertNotEquals(Set.of(A, B), getMembers(select(Set.of(A, B, C), history, List.of())));
         }
     }
 
     @Test
     public void selectPair_twoMembers_repeatsLastAnsweredPair() {
-        List<ComparisonDecision> history = List.of(decision(A, B));
+        List<ComparisonDecision> history = List.of(createDecision(A, B));
         for (int attempt = 0; attempt < 100; attempt++) {
-            assertEquals(Set.of(A, B), members(select(Set.of(A, B), history, List.of())));
+            assertEquals(Set.of(A, B), getMembers(select(Set.of(A, B), history, List.of())));
         }
     }
 
     @Test
     public void selectPair_sideImbalance_placesLessFrequentFirstApplicantFirst() {
-        List<ComparisonDecision> history = List.of(decision(A, B), decision(A, B), decision(A, B));
+        List<ComparisonDecision> history = List.of(createDecision(A, B), createDecision(A, B),
+                createDecision(A, B));
         for (int attempt = 0; attempt < 100; attempt++) {
             assertEquals(B, select(Set.of(A, B), history, List.of()).getFirstApplicantId());
         }
@@ -135,7 +136,7 @@ public class PairSelectorTest {
         ApplicantId inactive = E;
         List<ComparisonDecision> history = new ArrayList<>();
         for (int count = 0; count < 20; count++) {
-            history.add(decision(A, inactive));
+            history.add(createDecision(A, inactive));
         }
         int withA = 0;
         for (int attempt = 0; attempt < 600; attempt++) {
@@ -149,11 +150,12 @@ public class PairSelectorTest {
 
     @Test
     public void selectPair_closeScores_preferredOverDistantScores() {
-        List<RankingEntry> ranking = List.of(entry(C, 1, 5.0), entry(B, 2, 0.1), entry(A, 3, 0.0));
+        List<RankingEntry> ranking = List.of(createEntry(C, 1, 5.0), createEntry(B, 2, 0.1),
+                createEntry(A, 3, 0.0));
         int closePairs = 0;
         int distantPairs = 0;
         for (int attempt = 0; attempt < 500; attempt++) {
-            Set<ApplicantId> pair = members(select(Set.of(A, B, C), List.of(), ranking));
+            Set<ApplicantId> pair = getMembers(select(Set.of(A, B, C), List.of(), ranking));
             if (pair.equals(Set.of(A, B))) {
                 closePairs++;
             } else if (pair.equals(Set.of(A, C))) {
@@ -164,14 +166,15 @@ public class PairSelectorTest {
     }
 
     @Test
-    public void selectPair_repeatedPair_penalisedButStillPossible() {
+    public void selectPair_repeatedPair_penalizedButStillPossible() {
         // Every member has two comparisons. A-B was compared twice and C-D (excluded as the last pair) twice,
         // so {A, B} is expected in about 2.6% of selections and the never-compared {A, C} in about 24%.
-        List<ComparisonDecision> history = List.of(decision(A, B), decision(A, B), decision(C, D), decision(C, D));
+        List<ComparisonDecision> history = List.of(createDecision(A, B), createDecision(A, B),
+                createDecision(C, D), createDecision(C, D));
         int repeated = 0;
         int fresh = 0;
         for (int attempt = 0; attempt < 1000; attempt++) {
-            Set<ApplicantId> pair = members(select(Set.of(A, B, C, D), history, List.of()));
+            Set<ApplicantId> pair = getMembers(select(Set.of(A, B, C, D), history, List.of()));
             if (pair.equals(Set.of(A, B))) {
                 repeated++;
             } else if (pair.equals(Set.of(A, C))) {
@@ -179,12 +182,13 @@ public class PairSelectorTest {
             }
         }
         assertTrue(repeated > 0, "Repeated pair was never selected");
-        assertTrue(repeated * 4 < fresh, "Repeated pair selected " + repeated + " times vs " + fresh + " fresh");
+        assertTrue(repeated * 4 < fresh,
+                "Repeated pair selected " + repeated + " times vs " + fresh + " fresh");
     }
 
     @Test
     public void selectPair_rankingMissingMembers_treatsAsDefaultScore() {
-        List<RankingEntry> ranking = List.of(entry(A, 1, 1.0));
+        List<RankingEntry> ranking = List.of(createEntry(A, 1, 1.0));
         ComparisonPair pair = select(Set.of(A, B, C), List.of(), ranking);
         assertNotEquals(pair.getFirstApplicantId(), pair.getSecondApplicantId());
     }
@@ -200,7 +204,7 @@ public class PairSelectorTest {
         for (int count = 0; count < 5000; count++) {
             int first = random.nextInt(ids.size());
             int second = (first + 1 + random.nextInt(ids.size() - 1)) % ids.size();
-            history.add(decision(ids.get(first), ids.get(second)));
+            history.add(createDecision(ids.get(first), ids.get(second)));
         }
         Set<ApplicantId> members = Set.copyOf(ids);
 
@@ -219,19 +223,19 @@ public class PairSelectorTest {
         return seeded.selectPair(members, history, ranking).orElseThrow();
     }
 
-    private static ComparisonDecision decision(ApplicantId first, ApplicantId second) {
+    private static ComparisonDecision createDecision(ApplicantId first, ApplicantId second) {
         return new ComparisonDecision(first, second, first);
     }
 
-    private static RankingEntry entry(ApplicantId applicantId, int position, double score) {
+    private static RankingEntry createEntry(ApplicantId applicantId, int position, double score) {
         return new RankingEntry(applicantId, position, OptionalDouble.of(score), 0);
     }
 
-    private static Set<ApplicantId> members(ComparisonPair pair) {
+    private static Set<ApplicantId> getMembers(ComparisonPair pair) {
         return Set.of(pair.getFirstApplicantId(), pair.getSecondApplicantId());
     }
 
     private static boolean contains(ComparisonPair pair, ApplicantId applicantId) {
-        return members(pair).contains(applicantId);
+        return getMembers(pair).contains(applicantId);
     }
 }
