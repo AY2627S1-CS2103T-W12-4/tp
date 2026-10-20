@@ -100,7 +100,7 @@ public class CommandSummaryTest {
                 DeleteCommand.COMMAND_WORD, ListCommand.COMMAND_WORD, FindCommand.COMMAND_WORD,
                 ClearCommand.COMMAND_WORD, AddToComparisonCommand.COMMAND_WORD,
                 RemoveFromComparisonCommand.COMMAND_WORD, CompareCommand.COMMAND_WORD,
-                HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD);
+                SwitchTabCommand.COMMAND_WORD, HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD);
         assertTrue(documented.containsAll(expected));
     }
 
@@ -158,7 +158,7 @@ public class CommandSummaryTest {
                 words(CommandSummary.getGroups().get(CommandSummary.APPLICANTS_HEADING)));
         assertEquals(List.of(AddToComparisonCommand.COMMAND_WORD, RemoveFromComparisonCommand.COMMAND_WORD,
                 CompareCommand.COMMAND_WORD), words(CommandSummary.getGroups().get(CommandSummary.COMPARISON_HEADING)));
-        assertEquals(List.of(HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD),
+        assertEquals(List.of(SwitchTabCommand.COMMAND_WORD, HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD),
                 words(CommandSummary.getGroups().get(CommandSummary.GENERAL_HEADING)));
     }
 
@@ -181,6 +181,7 @@ public class CommandSummaryTest {
         assertTrue(add.parameters().contains("[t/SKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
         assertTrue(infoOf("find").parameters().startsWith("KEYWORD"));
+        assertTrue(infoOf("switch").parameters().startsWith("TAB"));
     }
 
     @Test

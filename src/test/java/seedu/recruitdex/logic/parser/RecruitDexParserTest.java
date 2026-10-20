@@ -25,6 +25,8 @@ import seedu.recruitdex.logic.commands.FindCommand;
 import seedu.recruitdex.logic.commands.HelpCommand;
 import seedu.recruitdex.logic.commands.ListCommand;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
+import seedu.recruitdex.logic.commands.SwitchTabCommand;
+import seedu.recruitdex.logic.commands.SwitchTabCommand.Tab;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.applicant.NameContainsKeywordsPredicate;
@@ -59,6 +61,20 @@ public class RecruitDexParserTest {
     public void parseCommand_chooseMissingOrInvalidSide_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, CompareCommand.MESSAGE_USAGE);
         for (String input : new String[] {"choose", "choose c", "choose a b"}) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(input));
+        }
+    }
+
+    @Test
+    public void parseCommand_switch() throws Exception {
+        assertEquals(new SwitchTabCommand(Tab.COMPARE), parser.parseCommand("switch compare"));
+        assertEquals(new SwitchTabCommand(Tab.APPLICANTS), parser.parseCommand("switch APPLICANTS"));
+    }
+
+    @Test
+    public void parseCommand_switchMissingOrInvalidTab_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, SwitchTabCommand.MESSAGE_USAGE);
+        for (String input : new String[] {"switch", "switch foo", "switch compare applicants"}) {
             assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(input));
         }
     }

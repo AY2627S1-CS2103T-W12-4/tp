@@ -51,7 +51,7 @@
         </StackPane>
 
         <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" focusTraversable="false" VBox.vgrow="ALWAYS">
-          <Tab text="Compare">
+          <Tab fx:id="compareTab" text="Compare">
             <GridPane fx:id="mainContent" styleClass="pane-with-border" hgap="8">
               <padding>
                 <Insets top="8" right="10" bottom="8" left="10" />
@@ -67,7 +67,7 @@
               <StackPane fx:id="rankingPanelPlaceholder" GridPane.columnIndex="1" />
             </GridPane>
           </Tab>
-          <Tab text="All applicants">
+          <Tab fx:id="applicantsTab" text="All applicants">
             <VBox fx:id="applicantList" styleClass="pane-with-border">
               <padding>
                 <Insets top="10" right="10" bottom="10" left="10" />

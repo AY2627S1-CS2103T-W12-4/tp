@@ -3,8 +3,10 @@ package seedu.recruitdex.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import seedu.recruitdex.commons.util.ToStringBuilder;
+import seedu.recruitdex.logic.commands.SwitchTabCommand.Tab;
 
 /**
  * Represents the result of a command execution.
@@ -19,13 +21,33 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
+    /** The tab of the main window to show, or null to leave the tab unchanged. */
+    private final Tab tabToShow;
+
     /**
      * Constructs a {@code CommandResult} with the specified fields.
+     * {@code tabToShow} may be null to leave the tab unchanged.
      */
-    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Tab tabToShow) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
         this.showHelp = showHelp;
         this.exit = exit;
+        this.tabToShow = tabToShow;
+    }
+
+    /**
+     * Constructs a {@code CommandResult} with the specified fields, leaving the tab unchanged.
+     */
+    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+        this(feedbackToUser, showHelp, exit, null);
+    }
+
+    /**
+     * Constructs a {@code CommandResult} that shows {@code tabToShow},
+     * with other fields set to their default value.
+     */
+    public CommandResult(String feedbackToUser, Tab tabToShow) {
+        this(feedbackToUser, false, false, requireNonNull(tabToShow));
     }
 
     /**
@@ -48,6 +70,11 @@ public class CommandResult {
         return exit;
     }
 
+    /** Returns the tab of the main window to show, if the command asks for one. */
+    public Optional<Tab> getTabToShow() {
+        return Optional.ofNullable(tabToShow);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -61,12 +88,13 @@ public class CommandResult {
 
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
-                && exit == otherCommandResult.exit;
+                && exit == otherCommandResult.exit
+                && Objects.equals(tabToShow, otherCommandResult.tabToShow);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit);
+        return Objects.hash(feedbackToUser, showHelp, exit, tabToShow);
     }
 
     @Override
@@ -75,6 +103,7 @@ public class CommandResult {
                 .add("feedbackToUser", feedbackToUser)
                 .add("showHelp", showHelp)
                 .add("exit", exit)
+                .add("tabToShow", tabToShow)
                 .toString();
     }
 

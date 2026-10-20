@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.recruitdex.testutil.Assert.assertThrows;
 
 import org.junit.jupiter.api.Test;
+
+import seedu.recruitdex.logic.commands.SwitchTabCommand.Tab;
 
 public class CommandResultTest {
     @Test
@@ -15,6 +18,9 @@ public class CommandResultTest {
         // same values -> returns true
         assertTrue(commandResult.equals(new CommandResult("feedback")));
         assertTrue(commandResult.equals(new CommandResult("feedback", false, false)));
+        assertTrue(commandResult.equals(new CommandResult("feedback", false, false, null)));
+        assertTrue(new CommandResult("feedback", Tab.COMPARE)
+                .equals(new CommandResult("feedback", false, false, Tab.COMPARE)));
 
         // same object -> returns true
         assertTrue(commandResult.equals(commandResult));
@@ -33,6 +39,10 @@ public class CommandResultTest {
 
         // different exit value -> returns false
         assertFalse(commandResult.equals(new CommandResult("feedback", false, true)));
+
+        // different tabToShow value -> returns false
+        assertFalse(commandResult.equals(new CommandResult("feedback", Tab.COMPARE)));
+        assertFalse(new CommandResult("feedback", Tab.COMPARE).equals(new CommandResult("feedback", Tab.APPLICANTS)));
     }
 
     @Test
@@ -50,6 +60,20 @@ public class CommandResultTest {
 
         // different exit value -> returns different hashcode
         assertNotEquals(commandResult.hashCode(), new CommandResult("feedback", false, true).hashCode());
+
+        // different tabToShow value -> returns different hashcode
+        assertNotEquals(commandResult.hashCode(), new CommandResult("feedback", Tab.COMPARE).hashCode());
+    }
+
+    @Test
+    public void getTabToShow() {
+        assertTrue(new CommandResult("feedback").getTabToShow().isEmpty());
+        assertEquals(Tab.APPLICANTS, new CommandResult("feedback", Tab.APPLICANTS).getTabToShow().get());
+    }
+
+    @Test
+    public void constructor_nullTab_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new CommandResult("feedback", (Tab) null));
     }
 
     @Test
@@ -57,7 +81,7 @@ public class CommandResultTest {
         CommandResult commandResult = new CommandResult("feedback");
         String expected = CommandResult.class.getCanonicalName() + "{feedbackToUser="
                 + commandResult.getFeedbackToUser() + ", showHelp=" + commandResult.isShowHelp()
-                + ", exit=" + commandResult.isExit() + "}";
+                + ", exit=" + commandResult.isExit() + ", tabToShow=null}";
         assertEquals(expected, commandResult.toString());
     }
 }
