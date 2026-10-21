@@ -267,7 +267,7 @@ public class AddCommandParserTest {
         Applicant expectedApplicant = new ApplicantBuilder(BOB).withTags().withInterviewNotes("Strong in Java")
                 .withYearsOfExperience("7").withSource("LinkedIn").build();
         assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
-                + " i/   Strong in Java    y/  7   s/    LinkedIn   ", new AddCommand(expectedApplicant));
+                + " -i   Strong in Java    -y  7   -s    LinkedIn   ", new AddCommand(expectedApplicant));
     }
 
     @Test

@@ -100,6 +100,7 @@ public class CommandSummaryTest {
                 DeleteCommand.COMMAND_WORD, ListCommand.COMMAND_WORD, FindCommand.COMMAND_WORD,
                 ClearCommand.COMMAND_WORD, AddToComparisonCommand.COMMAND_WORD,
                 RemoveFromComparisonCommand.COMMAND_WORD, CompareCommand.COMMAND_WORD,
+                HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD,
                 SwitchTabCommand.COMMAND_WORD, HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD);
         assertTrue(documented.containsAll(expected));
     }
@@ -177,11 +178,12 @@ public class CommandSummaryTest {
     @Test
     public void getGroups_commandsWithParametersShowThem() {
         CommandInfo add = infoOf("add");
-        assertTrue(add.parameters().contains("n/NAME"));
-        assertTrue(add.parameters().contains("[t/SKILL]..."));
+        assertTrue(add.parameters().contains("-nNAME"));
+        assertTrue(add.parameters().contains("[-tSKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
         assertTrue(infoOf("find").parameters().startsWith("KEYWORD"));
         assertTrue(infoOf("switch").parameters().startsWith("TAB"));
+        assertTrue(infoOf("find").parameters().startsWith("-n"));
     }
 
     @Test

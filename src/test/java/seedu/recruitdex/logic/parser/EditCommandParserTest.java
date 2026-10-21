@@ -273,7 +273,7 @@ public class EditCommandParserTest {
     @Test
     public void parse_optionalFieldsWithExtraWhitespace_trimmed() {
         Index targetIndex = INDEX_FIRST_APPLICANT;
-        String userInput = targetIndex.getOneBased() + " i/   Strong in Java    y/  7   s/    LinkedIn   ";
+        String userInput = targetIndex.getOneBased() + " -i   Strong in Java    -y  7   -s    LinkedIn   ";
 
         EditApplicantDescriptor descriptor = new EditApplicantDescriptorBuilder().withInterviewNotes("Strong in Java")
                 .withYearsOfExperience("7").withSource("LinkedIn").build();

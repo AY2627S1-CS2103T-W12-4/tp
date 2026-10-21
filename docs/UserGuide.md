@@ -31,7 +31,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
    * `list` : Lists all applicants.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds an applicant named `John Doe`.
+   * `add -nJohn Doe -p98765432 -ejohnd@example.com -aJohn street, block 123, #01-01` : Adds an applicant named `John Doe`.
 
    * `delete 3` : Deletes the 3rd applicant shown in the current list.
 
@@ -62,16 +62,16 @@ RecruitDex is a desktop application for managing applicant records through comma
 **Notes about the command format:**<br>
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
+  For example, in `add -nNAME`, replace `NAME` with a value such as `John Doe`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/SKILL]` can be used as `n/John Doe t/Java` or as `n/John Doe`.
+  For example, `-nNAME [-tSKILL]` can be used as `-nJohn Doe -tJava` or as `-nJohn Doe`.
 
 * Items followed by `...` can appear zero or more times.<br>
-  For example, `[t/SKILL]...` may be omitted, or written as `t/Java` or `t/Java t/Kafka`.
+  For example, `[-tSKILL]...` may be omitted, or written as `-tJava` or `-tJava -tKafka`.
 
 * Parameters can be in any order.<br>
-  For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+  For example, if the command specifies `-nNAME -pPHONE_NUMBER`, `-pPHONE_NUMBER -nNAME` is also acceptable.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -113,18 +113,19 @@ Format: `help`
 
 Adds an applicant record to RecruitDex.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
+Format: `add -nNAME -pPHONE_NUMBER -eEMAIL -aADDRESS [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
 
 * `INTERVIEW_NOTES` is free text, for example `Strong system design`.
 * `YEARS_OF_EXPERIENCE` is a whole number from 0 to 60.
 * `SOURCE` is free text saying where the applicant came from, for example `LinkedIn` or `Referral`.
-* `SKILL` is entered with the `t/` prefix. An applicant can have any number of skills, including zero. A skill can contain only letters and numbers, so `C++` is not accepted.
-* The optional fields can be left out, or given with nothing after the prefix (for example `i/`), which leaves them empty.
+* `SKILL` is entered with the `-t` prefix. An applicant can have any number of skills, including zero. A skill can contain only letters and numbers, so `C++` is not accepted.
+* The name, phone number, email, and address are required. Optional fields can be left out, or given with nothing after the prefix (for example `-i`), which leaves them empty.
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
-* `add n/Jane Doe p/91234567 e/jane@example.com a/Blk 1 Clementi y/6 s/LinkedIn i/Great system design t/Java t/Kafka`
+
+* `add -nJohn Doe -p98765432 -ejohnd@example.com -aJohn street, block 123, #01-01`
+* `add -nBetsy Crowe -tfriend -ebetsycrowe@example.com -aNewgate Prison -p1234567 -tcriminal`
+* `add -nJane Doe -p91234567 -ejane@example.com -aBlk 1 Clementi -y6 -sLinkedIn -iGreat system design -tJava -tKafka`
 
 ### Adding an applicant to the comparison list: `compare-add`
 
@@ -140,7 +141,7 @@ Format: `compare-add INDEX`
 Examples:
 
 * `list` followed by `compare-add 2` selects the second applicant in the displayed list.
-* `find Betsy` followed by `compare-add 1` selects the first applicant in the search results.
+* `find -n Betsy` followed by `compare-add 1` selects the first applicant in the search results.
 
 Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records and restored when the application reopens. Using `clear` also resets membership.
@@ -165,7 +166,7 @@ Format: `compare-remove INDEX`
 Examples:
 
 * `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
-* `find Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
+* `find -n Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
@@ -200,37 +201,42 @@ Format: `list`
 
 Edits an existing applicant record.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]... `
+Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
 
 * Edits the applicant at the specified `INDEX`. The index refers to the index number shown in the displayed applicant list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* When editing skills (`t/`), all of the applicant's existing skills are removed; adding skills is not cumulative.
-* To remove all of an applicant's skills, enter `t/` without a skill after it.
-* To clear the interview notes, years of experience or source, enter its prefix with nothing after it, for example `i/`.
+* When editing skills (`-t`), all of the applicant's existing skills are removed; adding skills is not cumulative.
+* To remove all of an applicant's skills, enter `-t` without a skill after it.
+* To clear the interview notes, years of experience or source, enter its prefix with nothing after it, for example `-i`.
 
 Examples:
-*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st applicant to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd applicant to be `Betsy Crower` and clears all existing skills.
-*  `edit 1 y/7 s/Referral` Sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
-*  `edit 3 i/` Clears the interview notes of the 3rd applicant.
 
-### Locating applicants by name: `find`
+* `edit 1 -p91234567 -ejohndoe@example.com` edits the phone number and email address of the 1st applicant.
+* `edit 2 -nBetsy Crower -t` edits the name of the 2nd applicant and clears all existing skills.
+* `edit 1 -y7 -sReferral` sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
+* `edit 3 -i` clears the interview notes of the 3rd applicant.
 
-Finds applicants whose names contain any of the given keywords.
+### Finding applicants: `find`
 
-Format: `find KEYWORD [MORE_KEYWORDS]`
+Finds applicants whose details match every supplied condition. You can search by name, phone number, email, address, interview notes, years of experience, source, or skill tags. At least one condition is required.
 
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Applicants matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+Format: `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`
+
+* Include at least one attribute prefix. The brackets indicate optional attributes; omit the brackets when entering a command.
+* Attribute values may contain spaces and can appear in any order. Each prefix may be used at most once.
+* When you supply more than one attribute, an applicant must match **all** supplied conditions.
+* Name, email, address, interview notes, and source searches are case-insensitive partial matches. Phone searches match part of the phone number.
+* `YEARS_OF_EXPERIENCE` must match the applicant’s value exactly.
+* For `-t`, enter one or more space-separated search terms. Each term must partially match at least one skill tag on the applicant. Matching is case-insensitive; different terms may match different tags.
+* A tag search must include at least one term.
 
 Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+
+* `find -n Alice` finds applicants whose names contain `Alice`, ignoring case.
+* `find -t java kaf` finds applicants with a skill tag matching `java` and a skill tag matching `kaf`.
+* `find -n Alice -s LinkedIn -y 5` finds applicants whose name contains `Alice`, whose source contains `LinkedIn`, and whose years of experience is exactly `5`.
+* `find -a jurong west -n Alice Pauline` searches by both address and name. Attribute order does not matter.
 
 ### Deleting an applicant: `delete`
 
@@ -247,7 +253,7 @@ Format: `delete INDEX`
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd applicant in the displayed list.
-* `find Betsy` followed by `delete 1` deletes the 1st applicant in the results of the `find` command.
+* `find -n Betsy` followed by `delete 1` deletes the 1st applicant in the results of the `find` command.
 
 ### Clearing all entries: `clear`
 
@@ -309,11 +315,11 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]...` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd y/5 s/LinkedIn t/Java t/Kafka`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [i/INTERVIEW_NOTES] [y/YEARS_OF_EXPERIENCE] [s/SOURCE] [t/SKILL]...`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
+**Add**    | `add -nNAME -pPHONE_NUMBER -eEMAIL -aADDRESS [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...` <br> e.g., `add -nJames Ho -p22224444 -ejamesho@example.com -a123, Clementi Rd -y5 -sLinkedIn -tJava -tKafka`
+**Edit**   | `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`<br> e.g., `edit 2 -nJames Lee -ejameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find**   | `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`<br> e.g., `find -n Alice -t java kaf`
 **Clear**  | `clear`
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`

@@ -92,7 +92,7 @@ public class LogicManagerTest {
     public void execute_compareAdd_updatesRankingAndPersistsMembership() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
-        logic.execute("find Benson");
+        logic.execute("find -n Benson");
 
         CommandResult result = logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
 
@@ -138,7 +138,7 @@ public class LogicManagerTest {
         model.getApplicantRegistry().add(BENSON);
         logic.execute("compare-add 1");
         logic.execute("compare-add 2");
-        logic.execute("find Alice");
+        logic.execute("find -n Alice");
         ComparisonPair presentedPair = logic.getCurrentPairProperty().get().orElseThrow();
         Applicant winner = model.getApplicantRegistry().get(presentedPair.getFirstApplicantId());
         Applicant loser = model.getApplicantRegistry().get(presentedPair.getSecondApplicantId());
@@ -200,7 +200,7 @@ public class LogicManagerTest {
         ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
         model.getComparisonList().getComparisonState().setCurrentPair(pair);
 
-        logic.execute("find Alice");
+        logic.execute("find -n Alice");
 
         JsonRecruitDexDataStorage saved =
                 new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
@@ -228,7 +228,7 @@ public class LogicManagerTest {
         logic.execute(AddToComparisonCommand.COMMAND_WORD + " 2");
         logic.execute("choose a");
         List<ComparisonDecision> historyBefore = List.copyOf(model.getComparisonList().getDecisionHistory());
-        logic.execute("find Benson");
+        logic.execute("find -n Benson");
         ObservableList<RankingEntry> ranking = logic.getRanking();
 
         CommandResult result = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
@@ -274,7 +274,7 @@ public class LogicManagerTest {
         logic.execute("choose a");
         ComparisonDecision decision = model.getComparisonList().getDecisionHistory().get(0);
         logic.execute(AddToComparisonCommand.COMMAND_WORD + " 3");
-        logic.execute("find Benson");
+        logic.execute("find -n Benson");
 
         logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
 
