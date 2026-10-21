@@ -9,6 +9,7 @@ import static seedu.recruitdex.testutil.TypicalApplicants.ALICE;
 import static seedu.recruitdex.testutil.TypicalApplicants.BENSON;
 import static seedu.recruitdex.testutil.TypicalApplicants.CARL;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +17,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.recruitdex.model.applicant.ApplicantId;
@@ -140,6 +142,32 @@ public class ComparisonListTest {
         assertSame(decisionHistory, comparisonList.getDecisionHistory());
         assertEquals(Set.of(ALICE.getId(), BENSON.getId()), memberIds);
         assertEquals(1, decisionHistory.size());
+    }
+
+    @Test
+    public void getComparisonState_returnsLiveReadOnlyState() {
+        ReadOnlyComparisonState state = comparisonList.getComparisonState();
+        var pairProperty = state.currentPairProperty();
+        List<Optional<ComparisonPair>> observedPairs = new ArrayList<>();
+        pairProperty.addListener((observable, oldValue, newValue) -> observedPairs.add(newValue));
+        assertTrue(state.getCurrentPair().isEmpty());
+
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        Optional<ComparisonPair> selectedPair = comparisonList.getCurrentPair();
+
+        assertTrue(selectedPair.isPresent());
+        assertSame(state, comparisonList.getComparisonState());
+        assertSame(pairProperty, state.currentPairProperty());
+        assertEquals(selectedPair, state.getCurrentPair());
+        assertEquals(selectedPair, pairProperty.get());
+        assertTrue(!(pairProperty instanceof WritableValue<?>));
+
+        comparisonList.remove(ALICE.getId());
+
+        assertTrue(state.getCurrentPair().isEmpty());
+        assertTrue(pairProperty.get().isEmpty());
+        assertEquals(List.of(selectedPair, Optional.empty()), observedPairs);
     }
 
     @Test
@@ -350,22 +378,22 @@ public class ComparisonListTest {
 
     @Test
     public void resetData_validDataRestoresMembershipHistoryAndPendingPair() {
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
         ComparisonDecision decision =
                 new ComparisonDecision(ALICE.getId(), BENSON.getId(), ALICE.getId());
         ComparisonPair pendingPair = new ComparisonPair(BENSON.getId(), CARL.getId());
 
         comparisonList.resetData(
-                Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()),
+                Set.of(BENSON.getId(), CARL.getId()),
                 List.of(decision),
                 Optional.of(pendingPair));
 
-        assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()),
-                comparisonList.getMemberIds());
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()), comparisonList.getMemberIds());
         assertEquals(List.of(decision), comparisonList.getDecisionHistory());
         assertEquals(Optional.of(pendingPair), comparisonList.getCurrentPair());
-        assertEquals(1, rankingEngine.recalculationCount);
-        assertEquals(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()),
-                rankingEngine.lastActiveMembers);
+        assertEquals(3, rankingEngine.recalculationCount);
+        assertEquals(Set.of(BENSON.getId(), CARL.getId()), rankingEngine.lastActiveMembers);
         assertEquals(List.of(decision), rankingEngine.lastDecisions);
     }
 
@@ -404,17 +432,33 @@ public class ComparisonListTest {
 
     @Test
     public void resetData_pendingPairWithInactiveApplicant_throwsIllegalArgumentException() {
-        ComparisonPair pendingPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        comparisonList.add(ALICE.getId());
+        comparisonList.add(BENSON.getId());
+        ComparisonDecision decision = comparisonList.recordDecision(ALICE.getId());
+        Optional<ComparisonPair> pairBefore = comparisonList.getCurrentPair();
+        ReadOnlyComparisonState state = comparisonList.getComparisonState();
+        List<Optional<ComparisonPair>> observedPairs = new ArrayList<>();
+        state.currentPairProperty().addListener((observable, oldValue, newValue) -> observedPairs.add(newValue));
+        List<ComparisonPair> invalidPairs = List.of(
+                new ComparisonPair(ALICE.getId(), BENSON.getId()),
+                new ComparisonPair(BENSON.getId(), ALICE.getId()));
 
-        assertThrows(IllegalArgumentException.class, () ->
-                comparisonList.resetData(
-                        Set.of(ALICE.getId()),
-                        List.of(),
-                        Optional.of(pendingPair)));
+        for (ComparisonPair pendingPair : invalidPairs) {
+            assertThrows(IllegalArgumentException.class, () ->
+                    comparisonList.resetData(
+                            Set.of(ALICE.getId(), CARL.getId()),
+                            List.of(),
+                            Optional.of(pendingPair)));
+        }
 
-        assertTrue(comparisonList.getMemberIds().isEmpty());
-        assertTrue(comparisonList.getCurrentPair().isEmpty());
-        assertEquals(0, rankingEngine.recalculationCount);
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()), comparisonList.getMemberIds());
+        assertEquals(List.of(decision), comparisonList.getDecisionHistory());
+        assertEquals(pairBefore, state.getCurrentPair());
+        assertEquals(pairBefore, state.currentPairProperty().get());
+        assertTrue(observedPairs.isEmpty());
+        assertEquals(3, rankingEngine.recalculationCount);
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()), rankingEngine.lastActiveMembers);
+        assertEquals(List.of(decision), rankingEngine.lastDecisions);
     }
 
     private void assertCurrentPairContains(Set<ApplicantId> expectedMembers) {

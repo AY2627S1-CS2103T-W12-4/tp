@@ -18,7 +18,7 @@ import seedu.recruitdex.model.applicant.exceptions.ApplicantNotFoundException;
  * comparison list is checked by {@link ComparisonList}, which coordinates membership with this state.
  * Applicant details are resolved from the registry by ID, so record edits appear without changing the pair.
  */
-public class ComparisonState {
+public class ComparisonState implements ReadOnlyComparisonState {
 
     private final ApplicantRegistry applicantRegistry;
     private final ReadOnlyObjectWrapper<Optional<ComparisonPair>> currentPair =
@@ -32,11 +32,13 @@ public class ComparisonState {
     }
 
     /** Returns the pending pair, or empty when no pair is available. */
+    @Override
     public Optional<ComparisonPair> getCurrentPair() {
         return currentPair.get();
     }
 
     /** Returns a live, read-only observable property containing the same pending pair. */
+    @Override
     public ReadOnlyObjectProperty<Optional<ComparisonPair>> currentPairProperty() {
         return currentPair.getReadOnlyProperty();
     }
@@ -47,7 +49,7 @@ public class ComparisonState {
      *
      * @throws ApplicantNotFoundException if either applicant of {@code pair} has no record in the registry.
      */
-    public void setCurrentPair(ComparisonPair pair) {
+    void setCurrentPair(ComparisonPair pair) {
         requireNonNull(pair);
         requireRecord(pair.getFirstApplicantId());
         requireRecord(pair.getSecondApplicantId());
@@ -55,7 +57,7 @@ public class ComparisonState {
     }
 
     /** Clears the pending pair without recording a decision. */
-    public void clearCurrentPair() {
+    void clearCurrentPair() {
         currentPair.set(Optional.empty());
     }
 

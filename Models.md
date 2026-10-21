@@ -105,7 +105,7 @@ model/comparison/
 
 Owns a unique set of applicant IDs representing the active pool, together with an ordered history of comparison decisions and the pending `ComparisonState`. It coordinates the runtime `PairSelector` and ranking refreshes. Start with one comparison list; the overview does not require multiple recruitment campaigns or independent rankings.
 
-`getComparisonState()` provides access to pending-pair observation. Pair changes must still enforce active membership through `ComparisonList`; exposing state must not provide a way to bypass that rule.
+`getComparisonState()` returns a live `ReadOnlyComparisonState` for pending-pair observation. `ComparisonList` selects and clears pairs internally; it exposes no separate pair setter or clearer. Restoring data through `resetData()` validates the pending pair against the restored membership before changing state. State mutators are package-private so callers outside the comparison package cannot bypass these operations.
 
 An applicant must exist in the registry before joining. Adding a record does not automatically add membership, and removing membership does not delete the record. A search filter only changes what is displayed; it does not change this pool.
 

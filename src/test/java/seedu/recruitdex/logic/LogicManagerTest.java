@@ -196,9 +196,15 @@ public class LogicManagerTest {
         model.getComparisonList().add(ALICE.getId());
         model.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
 
         logic.execute("find -n Alice");
 
@@ -500,13 +506,14 @@ public class LogicManagerTest {
     public void getCurrentPairProperty_followsTheModelState() {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
-        ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
+        model.getComparisonList().add(ALICE.getId());
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
 
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().add(BENSON.getId());
+        ComparisonPair pair = model.getComparisonList().getCurrentPair().orElseThrow();
         assertEquals(Optional.of(pair), logic.getCurrentPairProperty().get());
 
-        model.getComparisonList().getComparisonState().clearCurrentPair();
+        model.getComparisonList().remove(BENSON.getId());
         assertEquals(Optional.empty(), logic.getCurrentPairProperty().get());
     }
 
@@ -514,13 +521,13 @@ public class LogicManagerTest {
     public void getCurrentPairProperty_notifiesListeners() {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
         List<Optional<ComparisonPair>> seen = new ArrayList<>();
         logic.getCurrentPairProperty().addListener((observable, oldValue, newValue) -> seen.add(newValue));
-        ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
 
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().add(BENSON.getId());
 
-        assertEquals(List.of(Optional.of(pair)), seen);
+        assertEquals(List.of(model.getComparisonList().getCurrentPair()), seen);
     }
 
     @Test

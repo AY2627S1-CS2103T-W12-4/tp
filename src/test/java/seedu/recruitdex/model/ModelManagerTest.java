@@ -30,6 +30,7 @@ import seedu.recruitdex.model.comparison.ComparisonDecision;
 import seedu.recruitdex.model.comparison.ComparisonList;
 import seedu.recruitdex.model.comparison.ComparisonPair;
 import seedu.recruitdex.model.comparison.ComparisonState;
+import seedu.recruitdex.model.comparison.ReadOnlyComparisonState;
 import seedu.recruitdex.model.ranking.RankingEngine;
 import seedu.recruitdex.model.ranking.RankingEntry;
 import seedu.recruitdex.model.userprefs.UserPrefs;
@@ -174,14 +175,16 @@ public class ModelManagerTest {
     }
 
     @Test
-    public void getComparisonState_validatesAgainstTheModelRegistry() {
+    public void comparisonResetData_validatesAgainstTheModelRegistry() {
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
         assertThrows(ApplicantNotFoundException.class, () ->
-                modelManager.getComparisonList().getComparisonState().setCurrentPair(pair));
+                modelManager.getComparisonList().resetData(
+                        Set.of(ALICE.getId(), BENSON.getId()), List.of(), Optional.of(pair)));
 
         modelManager.getApplicantRegistry().add(ALICE);
         modelManager.getApplicantRegistry().add(BENSON);
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(pair);
+        modelManager.getComparisonList().resetData(
+                Set.of(ALICE.getId(), BENSON.getId()), List.of(), Optional.of(pair));
 
         assertEquals(Optional.of(pair), modelManager.getComparisonList().getCurrentPair());
     }
@@ -190,8 +193,13 @@ public class ModelManagerTest {
     public void getComparisonState_ignoresTheSearchFilter() {
         modelManager.getApplicantRegistry().add(ALICE);
         modelManager.getApplicantRegistry().add(BENSON);
+        modelManager.getComparisonList().add(ALICE.getId());
+        modelManager.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(pair);
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
 
         modelManager.updateFilteredApplicantList(new NameContainsKeywordsPredicate(List.of("Alice")));
 
@@ -202,8 +210,12 @@ public class ModelManagerTest {
     public void setRecruitDexData_clearsPendingPair() {
         modelManager.getApplicantRegistry().add(ALICE);
         modelManager.getApplicantRegistry().add(BENSON);
-        modelManager.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        modelManager.getComparisonList().add(ALICE.getId());
+        modelManager.getComparisonList().add(BENSON.getId());
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId())));
 
         modelManager.setRecruitDexData(new RecruitDexData());
 
@@ -265,7 +277,7 @@ public class ModelManagerTest {
     @Test
     public void setRecruitDexData_comparisons_restoresDataAndRetainsComponentsAndViews() {
         ComparisonList comparisons = modelManager.getComparisonList();
-        ComparisonState state = comparisons.getComparisonState();
+        ReadOnlyComparisonState state = comparisons.getComparisonState();
         ObservableSet<?> members = comparisons.getMemberIds();
         ObservableList<ComparisonDecision> decisions = comparisons.getDecisionHistory();
         ObservableList<RankingEntry> ranking = modelManager.getRankingEngine().getRanking();
@@ -274,9 +286,15 @@ public class ModelManagerTest {
         replacement.getComparisonList().add(ALICE.getId());
         replacement.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(BENSON.getId(), ALICE.getId());
-        replacement.getComparisonList().getComparisonState().setCurrentPair(pair);
+        replacement.getComparisonList().resetData(
+                Set.copyOf(replacement.getComparisonList().getMemberIds()),
+                List.copyOf(replacement.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         ComparisonDecision decision = replacement.getComparisonList().recordDecision(ALICE.getId());
-        replacement.getComparisonList().getComparisonState().setCurrentPair(pair);
+        replacement.getComparisonList().resetData(
+                Set.copyOf(replacement.getComparisonList().getMemberIds()),
+                List.copyOf(replacement.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
 
         modelManager.setRecruitDexData(replacement);
 
@@ -314,9 +332,21 @@ public class ModelManagerTest {
         modelManager.getComparisonList().add(CARL.getId());
         RecruitDexData original = new RecruitDexData(modelManager.getRecruitDexData());
         List<RankingEntry> originalRanking = List.copyOf(modelManager.getRankingEngine().getRanking());
-        RecruitDexData invalid = new RecruitDexDataBuilder().withApplicant(ALICE).withApplicant(BENSON).build();
-        invalid.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        RecruitDexData invalid = new RecruitDexData() {
+            @Override
+            public ComparisonList getComparisonList() {
+                // Simulate invalid external data without bypassing the live list's validated setter.
+                return new ComparisonList(getApplicantRegistry(), new ComparisonState(getApplicantRegistry()),
+                        new RankingEngine()) {
+                    @Override
+                    public Optional<ComparisonPair> getCurrentPair() {
+                        return Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+                    }
+                };
+            }
+        };
+        invalid.getApplicantRegistry().add(ALICE);
+        invalid.getApplicantRegistry().add(BENSON);
 
         assertThrows(IllegalArgumentException.class, () -> modelManager.setRecruitDexData(invalid));
 
@@ -378,7 +408,10 @@ public class ModelManagerTest {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(pair);
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         Applicant editedAlice = new ApplicantBuilder(ALICE).withName("Alice Tan").build();
 
         modelManager.getApplicantRegistry().edit(ALICE.getId(), editedAlice);
@@ -397,12 +430,20 @@ public class ModelManagerTest {
         comparisonList.add(BENSON.getId());
         comparisonList.add(CARL.getId());
         ComparisonPair affectedPair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(affectedPair);
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(affectedPair));
         comparisonList.recordDecision(ALICE.getId());
-        modelManager.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(BENSON.getId(), CARL.getId()));
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(new ComparisonPair(BENSON.getId(), CARL.getId())));
         ComparisonDecision retainedDecision = comparisonList.recordDecision(BENSON.getId());
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(affectedPair);
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(affectedPair));
         ObservableList<RankingEntry> ranking = modelManager.getRankingEngine().getRanking();
 
         modelManager.getApplicantRegistry().delete(ALICE.getId());
@@ -429,12 +470,17 @@ public class ModelManagerTest {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
         comparisonList.add(CARL.getId());
-        modelManager.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId())));
         comparisonList.recordDecision(ALICE.getId());
         comparisonList.remove(ALICE.getId());
         ComparisonPair unaffectedPair = new ComparisonPair(BENSON.getId(), CARL.getId());
-        modelManager.getComparisonList().getComparisonState().setCurrentPair(unaffectedPair);
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(unaffectedPair));
 
         modelManager.getApplicantRegistry().delete(ALICE.getId());
 
@@ -457,8 +503,10 @@ public class ModelManagerTest {
         ComparisonList currentList = modelManager.getComparisonList();
         currentList.add(BENSON.getId());
         currentList.add(CARL.getId());
-        modelManager.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(BENSON.getId(), CARL.getId()));
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(new ComparisonPair(BENSON.getId(), CARL.getId())));
 
         registry.delete(BENSON.getId());
 
@@ -476,8 +524,10 @@ public class ModelManagerTest {
         ComparisonList comparisonList = modelManager.getComparisonList();
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());
-        modelManager.getComparisonList().getComparisonState()
-                .setCurrentPair(new ComparisonPair(ALICE.getId(), BENSON.getId()));
+        modelManager.getComparisonList().resetData(
+                Set.copyOf(modelManager.getComparisonList().getMemberIds()),
+                List.copyOf(modelManager.getComparisonList().getDecisionHistory()),
+                Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId())));
 
         ComparisonDecision decision = comparisonList.recordDecision(ALICE.getId());
 

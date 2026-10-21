@@ -95,9 +95,15 @@ public class DeleteCommandTest {
         model.getComparisonList().add(ALICE.getId());
         model.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         model.getComparisonList().recordDecision(ALICE.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         int recordCountBefore = model.getApplicantRegistry().getApplicantList().size();
 
@@ -125,9 +131,15 @@ public class DeleteCommandTest {
         model.getComparisonList().add(ALICE.getId());
         model.getComparisonList().add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         ComparisonDecision decision = model.getComparisonList().recordDecision(ALICE.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(pair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         List<Applicant> recordsBefore = List.copyOf(model.getApplicantRegistry().getApplicantList());
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());

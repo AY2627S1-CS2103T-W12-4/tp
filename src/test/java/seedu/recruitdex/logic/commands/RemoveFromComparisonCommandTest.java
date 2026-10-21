@@ -17,6 +17,7 @@ import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -217,9 +218,15 @@ public class RemoveFromComparisonCommandTest {
         realComparisonList.add(BENSON.getId());
         realComparisonList.add(CARL.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().resetData(
+                Set.copyOf(connectedModel.getComparisonList().getMemberIds()),
+                List.copyOf(connectedModel.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         ComparisonDecision decision = realComparisonList.recordDecision(ALICE.getId());
-        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().resetData(
+                Set.copyOf(connectedModel.getComparisonList().getMemberIds()),
+                List.copyOf(connectedModel.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         connectedModel.updateFilteredApplicantList(applicant -> applicant.getId().equals(BENSON.getId()));
         List<Applicant> recordsBefore = List.copyOf(connectedModel.getApplicantRegistry().getApplicantList());
 
