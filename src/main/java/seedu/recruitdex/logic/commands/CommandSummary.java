@@ -30,6 +30,7 @@ public final class CommandSummary {
             CompareCommand.MESSAGE_USAGE);
 
     private static final List<String> GENERAL_COMMANDS = List.of(
+            SwitchTabCommand.MESSAGE_USAGE,
             HelpCommand.MESSAGE_USAGE,
             ExitCommand.MESSAGE_USAGE);
 

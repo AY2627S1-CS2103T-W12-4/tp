@@ -100,7 +100,8 @@ public class CommandSummaryTest {
                 DeleteCommand.COMMAND_WORD, ListCommand.COMMAND_WORD, FindCommand.COMMAND_WORD,
                 ClearCommand.COMMAND_WORD, AddToComparisonCommand.COMMAND_WORD,
                 RemoveFromComparisonCommand.COMMAND_WORD, CompareCommand.COMMAND_WORD,
-                HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD);
+                HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD,
+                SwitchTabCommand.COMMAND_WORD, HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD);
         assertTrue(documented.containsAll(expected));
     }
 
@@ -158,7 +159,7 @@ public class CommandSummaryTest {
                 words(CommandSummary.getGroups().get(CommandSummary.APPLICANTS_HEADING)));
         assertEquals(List.of(AddToComparisonCommand.COMMAND_WORD, RemoveFromComparisonCommand.COMMAND_WORD,
                 CompareCommand.COMMAND_WORD), words(CommandSummary.getGroups().get(CommandSummary.COMPARISON_HEADING)));
-        assertEquals(List.of(HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD),
+        assertEquals(List.of(SwitchTabCommand.COMMAND_WORD, HelpCommand.COMMAND_WORD, ExitCommand.COMMAND_WORD),
                 words(CommandSummary.getGroups().get(CommandSummary.GENERAL_HEADING)));
     }
 
@@ -185,7 +186,7 @@ public class CommandSummaryTest {
 
     @Test
     public void getGroups_commandsWithoutParametersHaveNone() {
-        for (String word : List.of("list", "clear", "help", "exit")) {
+        for (String word : List.of("list", "clear", "sw", "help", "exit")) {
             assertEquals("", infoOf(word).parameters(), word);
         }
     }

@@ -19,13 +19,24 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
+    /** The main window should switch to its other tab. */
+    private final boolean switchTab;
+
     /**
      * Constructs a {@code CommandResult} with the specified fields.
      */
-    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit, boolean switchTab) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
         this.showHelp = showHelp;
         this.exit = exit;
+        this.switchTab = switchTab;
+    }
+
+    /**
+     * Constructs a {@code CommandResult} with the specified fields, leaving the tab unchanged.
+     */
+    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+        this(feedbackToUser, showHelp, exit, false);
     }
 
     /**
@@ -48,6 +59,10 @@ public class CommandResult {
         return exit;
     }
 
+    public boolean isSwitchTab() {
+        return switchTab;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -61,12 +76,13 @@ public class CommandResult {
 
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
-                && exit == otherCommandResult.exit;
+                && exit == otherCommandResult.exit
+                && switchTab == otherCommandResult.switchTab;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit);
+        return Objects.hash(feedbackToUser, showHelp, exit, switchTab);
     }
 
     @Override
@@ -75,6 +91,7 @@ public class CommandResult {
                 .add("feedbackToUser", feedbackToUser)
                 .add("showHelp", showHelp)
                 .add("exit", exit)
+                .add("switchTab", switchTab)
                 .toString();
     }
 

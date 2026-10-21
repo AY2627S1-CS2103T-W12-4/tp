@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
@@ -15,6 +17,7 @@ import seedu.recruitdex.commons.core.GuiSettings;
 import seedu.recruitdex.commons.core.LogsCenter;
 import seedu.recruitdex.logic.Logic;
 import seedu.recruitdex.logic.commands.CommandResult;
+import seedu.recruitdex.logic.commands.SwitchTabCommand;
 import seedu.recruitdex.logic.commands.exceptions.CommandException;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 
@@ -44,6 +47,15 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private Menu helpMenu;
+
+    @FXML
+    private TabPane mainTabPane;
+
+    @FXML
+    private Tab compareTab;
+
+    @FXML
+    private Tab applicantsTab;
 
     @FXML
     private StackPane applicantListPanelPlaceholder;
@@ -176,6 +188,15 @@ public class MainWindow extends UiPart<Stage> {
         }
     }
 
+    /**
+     * Shows the other tab of the main window and names it in the result display.
+     */
+    private void handleSwitchTab() {
+        Tab target = mainTabPane.getSelectionModel().getSelectedItem() == compareTab ? applicantsTab : compareTab;
+        mainTabPane.getSelectionModel().select(target);
+        resultDisplay.setFeedbackToUser(String.format(SwitchTabCommand.MESSAGE_SHOWING_TAB, target.getText()));
+    }
+
     void show() {
         primaryStage.show();
     }
@@ -210,6 +231,10 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+
+            if (commandResult.isSwitchTab()) {
+                handleSwitchTab();
+            }
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

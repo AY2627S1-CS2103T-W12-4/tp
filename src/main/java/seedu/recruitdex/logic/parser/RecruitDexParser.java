@@ -20,6 +20,7 @@ import seedu.recruitdex.logic.commands.FindCommand;
 import seedu.recruitdex.logic.commands.HelpCommand;
 import seedu.recruitdex.logic.commands.ListCommand;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
+import seedu.recruitdex.logic.commands.SwitchTabCommand;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 
 /**
@@ -59,6 +60,7 @@ public class RecruitDexParser {
             case AddToComparisonCommand.COMMAND_WORD -> new AddToComparisonCommandParser().parse(arguments);
             case RemoveFromComparisonCommand.COMMAND_WORD -> new RemoveFromComparisonCommandParser().parse(arguments);
             case CompareCommand.COMMAND_WORD -> new CompareCommandParser().parse(arguments);
+            case SwitchTabCommand.COMMAND_WORD -> new SwitchTabCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
