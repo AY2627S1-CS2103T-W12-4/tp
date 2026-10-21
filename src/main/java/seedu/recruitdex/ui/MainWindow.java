@@ -189,14 +189,12 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     /**
-     * Shows the given tab of the main window.
+     * Shows the other tab of the main window and names it in the result display.
      */
-    private void handleSwitchTab(SwitchTabCommand.Tab tab) {
-        Tab target = switch (tab) {
-            case COMPARE -> compareTab;
-            case APPLICANTS -> applicantsTab;
-        };
+    private void handleSwitchTab() {
+        Tab target = mainTabPane.getSelectionModel().getSelectedItem() == compareTab ? applicantsTab : compareTab;
         mainTabPane.getSelectionModel().select(target);
+        resultDisplay.setFeedbackToUser(String.format(SwitchTabCommand.MESSAGE_SHOWING_TAB, target.getText()));
     }
 
     void show() {
@@ -233,7 +231,10 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
-            commandResult.getTabToShow().ifPresent(this::handleSwitchTab);
+
+            if (commandResult.isSwitchTab()) {
+                handleSwitchTab();
+            }
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

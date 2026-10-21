@@ -3,10 +3,8 @@ package seedu.recruitdex.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import seedu.recruitdex.commons.util.ToStringBuilder;
-import seedu.recruitdex.logic.commands.SwitchTabCommand.Tab;
 
 /**
  * Represents the result of a command execution.
@@ -21,33 +19,24 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
-    /** The tab of the main window to show, or null to leave the tab unchanged. */
-    private final Tab tabToShow;
+    /** The main window should switch to its other tab. */
+    private final boolean switchTab;
 
     /**
      * Constructs a {@code CommandResult} with the specified fields.
-     * {@code tabToShow} may be null to leave the tab unchanged.
      */
-    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Tab tabToShow) {
+    public CommandResult(String feedbackToUser, boolean showHelp, boolean exit, boolean switchTab) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
         this.showHelp = showHelp;
         this.exit = exit;
-        this.tabToShow = tabToShow;
+        this.switchTab = switchTab;
     }
 
     /**
      * Constructs a {@code CommandResult} with the specified fields, leaving the tab unchanged.
      */
     public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
-        this(feedbackToUser, showHelp, exit, null);
-    }
-
-    /**
-     * Constructs a {@code CommandResult} that shows {@code tabToShow},
-     * with other fields set to their default value.
-     */
-    public CommandResult(String feedbackToUser, Tab tabToShow) {
-        this(feedbackToUser, false, false, requireNonNull(tabToShow));
+        this(feedbackToUser, showHelp, exit, false);
     }
 
     /**
@@ -70,9 +59,8 @@ public class CommandResult {
         return exit;
     }
 
-    /** Returns the tab of the main window to show, if the command asks for one. */
-    public Optional<Tab> getTabToShow() {
-        return Optional.ofNullable(tabToShow);
+    public boolean isSwitchTab() {
+        return switchTab;
     }
 
     @Override
@@ -89,12 +77,12 @@ public class CommandResult {
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
                 && exit == otherCommandResult.exit
-                && Objects.equals(tabToShow, otherCommandResult.tabToShow);
+                && switchTab == otherCommandResult.switchTab;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit, tabToShow);
+        return Objects.hash(feedbackToUser, showHelp, exit, switchTab);
     }
 
     @Override
@@ -103,7 +91,7 @@ public class CommandResult {
                 .add("feedbackToUser", feedbackToUser)
                 .add("showHelp", showHelp)
                 .add("exit", exit)
-                .add("tabToShow", tabToShow)
+                .add("switchTab", switchTab)
                 .toString();
     }
 

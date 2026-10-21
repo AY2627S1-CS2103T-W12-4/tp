@@ -181,14 +181,12 @@ public class CommandSummaryTest {
         assertTrue(add.parameters().contains("-nNAME"));
         assertTrue(add.parameters().contains("[-tSKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
-        assertTrue(infoOf("find").parameters().startsWith("KEYWORD"));
-        assertTrue(infoOf("switch").parameters().startsWith("TAB"));
         assertTrue(infoOf("find").parameters().startsWith("-n"));
     }
 
     @Test
     public void getGroups_commandsWithoutParametersHaveNone() {
-        for (String word : List.of("list", "clear", "help", "exit")) {
+        for (String word : List.of("list", "clear", "sw", "help", "exit")) {
             assertEquals("", infoOf(word).parameters(), word);
         }
     }
