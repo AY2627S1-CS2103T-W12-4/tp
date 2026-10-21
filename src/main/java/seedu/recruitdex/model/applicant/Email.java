@@ -9,8 +9,9 @@ import static seedu.recruitdex.commons.util.AppUtil.checkArgument;
  */
 public class Email {
 
+    public static final String DEFAULT_VALUE = "";
     private static final String SPECIAL_CHARACTERS = "+_.-";
-    public static final String MESSAGE_CONSTRAINTS = "Emails should be of the format local-part@domain "
+    public static final String MESSAGE_CONSTRAINTS = "Emails should be empty or of the format local-part@domain "
             + "and adhere to the following constraints:\n"
             + "1. The local-part should only contain alphanumeric characters and these special characters, excluding "
             + "the parentheses, (" + SPECIAL_CHARACTERS + "). The local-part may not start or end with any special "
@@ -36,7 +37,7 @@ public class Email {
     /**
      * Constructs an {@code Email}.
      *
-     * @param email A valid email address.
+     * @param email A valid email address, or empty if not provided.
      */
     public Email(String email) {
         requireNonNull(email);
@@ -45,10 +46,10 @@ public class Email {
     }
 
     /**
-     * Returns true if a given string is a valid email.
+     * Returns true if a given string is empty or a valid email.
      */
     public static boolean isValidEmail(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test.isEmpty() || test.matches(VALIDATION_REGEX);
     }
 
     @Override

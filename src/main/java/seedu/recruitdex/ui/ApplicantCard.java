@@ -55,9 +55,9 @@ public class ApplicantCard extends UiPart<Region> {
         this.applicant = applicant;
         id.setText(displayedIndex + ". ");
         name.setText(applicant.getName().fullName);
-        phone.setText(applicant.getPhone().value);
-        address.setText(applicant.getAddress().value);
-        email.setText(applicant.getEmail().value);
+        setOptionalLabel(phone, "", applicant.getPhone().value, "");
+        setOptionalLabel(address, "", applicant.getAddress().value, "");
+        setOptionalLabel(email, "", applicant.getEmail().value, "");
         setOptionalLabel(yearsOfExperience, "Experience: ", applicant.getYearsOfExperience().value, " years");
         setOptionalLabel(source, "Source: ", applicant.getSource().value, "");
         setOptionalLabel(interviewNotes, "Notes: ", applicant.getInterviewNotes().value, "");

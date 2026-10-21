@@ -113,16 +113,20 @@ Format: `help`
 
 Adds an applicant record to RecruitDex.
 
-Format: `add -nNAME -pPHONE_NUMBER -eEMAIL -aADDRESS [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
+Format: `add -nNAME [-pPHONE_NUMBER] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
 
 * `INTERVIEW_NOTES` is free text, for example `Strong system design`.
 * `YEARS_OF_EXPERIENCE` is a whole number from 0 to 60.
 * `SOURCE` is free text saying where the applicant came from, for example `LinkedIn` or `Referral`.
 * `SKILL` is entered with the `-t` prefix. An applicant can have any number of skills, including zero. A skill can contain only letters and numbers, so `C++` is not accepted.
-* The name, phone number, email, and address are required. Optional fields can be left out, or given with nothing after the prefix (for example `-i`), which leaves them empty.
+* Only the name is required. Phone number, email, address, interview notes, years of experience, source, and skills can all be omitted. Omitted fields are saved as empty values and can be filled in later with `edit`.
+* Optional fields other than skills can also be given with nothing after the prefix (for example `-p` or `-i`), which leaves them empty. To add an applicant without skills, omit `-t`; a bare `-t` is not accepted by `add`.
+* When provided, a phone number must contain at least 3 digits and only digits, and an email must be a valid email address. Other validation rules still apply to supplied values.
 
 Examples:
 
+* `add -nAlex Tan`
+* `add -nSam Lee -esam@example.com -tJava`
 * `add -nJohn Doe -p98765432 -ejohnd@example.com -aJohn street, block 123, #01-01`
 * `add -nBetsy Crowe -tfriend -ebetsycrowe@example.com -aNewgate Prison -p1234567 -tcriminal`
 * `add -nJane Doe -p91234567 -ejane@example.com -aBlk 1 Clementi -y6 -sLinkedIn -iGreat system design -tJava -tKafka`
@@ -208,7 +212,7 @@ Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES]
 * Existing values will be updated to the input values.
 * When editing skills (`-t`), all of the applicant's existing skills are removed; adding skills is not cumulative.
 * To remove all of an applicant's skills, enter `-t` without a skill after it.
-* To clear the interview notes, years of experience or source, enter its prefix with nothing after it, for example `-i`.
+* To clear the phone number, email, address, interview notes, years of experience or source, enter its prefix with nothing after it, for example `-p` or `-i`.
 
 Examples:
 
@@ -315,7 +319,7 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add -nNAME -pPHONE_NUMBER -eEMAIL -aADDRESS [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...` <br> e.g., `add -nJames Ho -p22224444 -ejamesho@example.com -a123, Clementi Rd -y5 -sLinkedIn -tJava -tKafka`
+**Add**    | `add -nNAME [-pPHONE_NUMBER] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...` <br> e.g., `add -nJames Ho` or `add -nJames Ho -p22224444 -ejamesho@example.com -a123, Clementi Rd -y5 -sLinkedIn -tJava -tKafka`
 **Edit**   | `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`<br> e.g., `edit 2 -nJames Lee -ejameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`

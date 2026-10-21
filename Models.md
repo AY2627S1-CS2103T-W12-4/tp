@@ -77,7 +77,7 @@ Names are not identifiers: two applicants can share a name. Comparisons and memb
 
 ### Applicant
 
-An applicant's ID, name, phone number, email, interview notes, and optional tags. Existing AB3 value classes such as `Name`, `Phone`, `Email`, and `Tag` can be reused where their validation fits RecruitDex.
+An applicant's ID, name, phone number, email, address, interview notes, years of experience, source, and optional tags. Only the name is required when adding an applicant; all other details can be omitted and supplied later. The model represents missing details with empty values and missing tags with an empty set. Existing AB3 value classes such as `Name`, `Phone`, `Email`, and `Tag` can be reused where their validation fits RecruitDex.
 
 Keep applicant records immutable, following the existing `Person` approach. An edit replaces the record while preserving its ID. Rank and ranking score do not belong here: they depend on comparison decisions and the active pool.
 
