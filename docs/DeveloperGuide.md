@@ -136,6 +136,10 @@ How the parsing works:
 * When called upon to parse a user command, the `RecruitDexParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `RecruitDexParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
+For `add`, only `-nNAME` is required. `AddCommandParser` supplies empty defaults for omitted phone, email, address, interview notes, years of experience, and source, and an empty set for omitted skills. `Phone`, `Email`, and `Address` accept empty strings to represent missing details while retaining validation for non-empty values. Explicitly empty prefixes also produce empty values, except that `add` requires each supplied `-t` to contain a valid skill. Duplicate single-valued prefixes remain invalid.
+
+These empty values are stored in the existing JSON fields and restored on load. Applicant and comparison cards hide missing details. The shared value parsers also allow `edit` to clear contact details by supplying an empty prefix.
+
 ### Model component
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/java/seedu/recruitdex/model/Model.java)
 

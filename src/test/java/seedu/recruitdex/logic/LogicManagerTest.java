@@ -89,6 +89,35 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addNameOnly_persistsEmptyOptionalDetails() throws Exception {
+        CommandResult result = logic.execute("add -nJane Doe");
+        assertEquals("New applicant added: Jane Doe", result.getFeedbackToUser());
+
+        Applicant added = model.getApplicantRegistry().getApplicantList().get(0);
+        assertEquals("Jane Doe", added.getName().fullName);
+        assertEquals("", added.getPhone().value);
+        assertEquals("", added.getEmail().value);
+        assertEquals("", added.getAddress().value);
+        assertEquals("", added.getInterviewNotes().value);
+        assertEquals("", added.getYearsOfExperience().value);
+        assertEquals("", added.getSource().value);
+        assertTrue(added.getTags().isEmpty());
+
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        Applicant reopened = savedRecords.readRecruitDexData().orElseThrow().getApplicantList().get(0);
+        assertEquals(added, reopened);
+        assertEquals(added.getId(), reopened.getId());
+
+        logic.execute("edit 1 -p91234567 -ejane@example.com -aBlk 1 Clementi");
+        Applicant edited = model.getApplicantRegistry().getApplicantList().get(0);
+        assertEquals(added.getId(), edited.getId());
+        assertEquals("91234567", edited.getPhone().value);
+        assertEquals("jane@example.com", edited.getEmail().value);
+        assertEquals("Blk 1 Clementi", edited.getAddress().value);
+    }
+
+    @Test
     public void execute_compareAdd_updatesRankingAndPersistsMembership() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);

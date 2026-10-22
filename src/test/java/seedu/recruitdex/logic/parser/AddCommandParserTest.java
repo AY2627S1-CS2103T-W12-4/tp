@@ -6,9 +6,9 @@ import static seedu.recruitdex.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.ADDRESS_DESC_BOB;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.EMAIL_DESC_BOB;
+import static seedu.recruitdex.logic.commands.CommandTestUtil.EMPTY_ADDRESS_DESC;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.INTERVIEW_NOTES_DESC_AMY;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.INTERVIEW_NOTES_DESC_BOB;
-import static seedu.recruitdex.logic.commands.CommandTestUtil.INVALID_ADDRESS_DESC;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.INVALID_EMAIL_DESC;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.INVALID_NAME_DESC;
 import static seedu.recruitdex.logic.commands.CommandTestUtil.INVALID_PHONE_DESC;
@@ -51,7 +51,6 @@ import org.junit.jupiter.api.Test;
 
 import seedu.recruitdex.logic.Messages;
 import seedu.recruitdex.logic.commands.AddCommand;
-import seedu.recruitdex.model.applicant.Address;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.applicant.Email;
 import seedu.recruitdex.model.applicant.Name;
@@ -108,7 +107,7 @@ public class AddCommandParserTest {
                         + validExpectedApplicantString,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME, PREFIX_ADDRESS, PREFIX_EMAIL, PREFIX_PHONE));
 
-        // invalid value followed by valid value
+        // invalid or empty value followed by valid value
 
         // invalid name
         assertParseFailure(parser, INVALID_NAME_DESC + validExpectedApplicantString,
@@ -122,11 +121,11 @@ public class AddCommandParserTest {
         assertParseFailure(parser, INVALID_PHONE_DESC + validExpectedApplicantString,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
 
-        // invalid address
-        assertParseFailure(parser, INVALID_ADDRESS_DESC + validExpectedApplicantString,
+        // empty address
+        assertParseFailure(parser, EMPTY_ADDRESS_DESC + validExpectedApplicantString,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
 
-        // valid value followed by invalid value
+        // valid value followed by invalid or empty value
 
         // invalid name
         assertParseFailure(parser, validExpectedApplicantString + INVALID_NAME_DESC,
@@ -140,8 +139,8 @@ public class AddCommandParserTest {
         assertParseFailure(parser, validExpectedApplicantString + INVALID_PHONE_DESC,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
 
-        // invalid address
-        assertParseFailure(parser, validExpectedApplicantString + INVALID_ADDRESS_DESC,
+        // empty address
+        assertParseFailure(parser, validExpectedApplicantString + EMPTY_ADDRESS_DESC,
                 Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
     }
 
@@ -161,17 +160,13 @@ public class AddCommandParserTest {
         assertParseFailure(parser, VALID_NAME_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
                 expectedMessage);
 
-        // missing phone prefix
-        assertParseFailure(parser, NAME_DESC_BOB + VALID_PHONE_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
+        // all optional fields without a name
+        assertParseFailure(parser, PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + INTERVIEW_NOTES_DESC_BOB + YEARS_OF_EXPERIENCE_DESC_BOB + SOURCE_DESC_BOB + TAG_DESC_FRIEND,
                 expectedMessage);
 
-        // missing email prefix
-        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + VALID_EMAIL_BOB + ADDRESS_DESC_BOB,
-                expectedMessage);
-
-        // missing address prefix
-        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + VALID_ADDRESS_BOB,
-                expectedMessage);
+        assertParseFailure(parser, "", expectedMessage);
+        assertParseFailure(parser, " -n   ", Name.MESSAGE_CONSTRAINTS);
 
         // all prefixes missing
         assertParseFailure(parser, VALID_NAME_BOB + VALID_PHONE_BOB + VALID_EMAIL_BOB + VALID_ADDRESS_BOB,
@@ -192,16 +187,12 @@ public class AddCommandParserTest {
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + INVALID_EMAIL_DESC + ADDRESS_DESC_BOB
                 + TAG_DESC_HUSBAND + TAG_DESC_FRIEND, Email.MESSAGE_CONSTRAINTS);
 
-        // invalid address
-        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + INVALID_ADDRESS_DESC
-                + TAG_DESC_HUSBAND + TAG_DESC_FRIEND, Address.MESSAGE_CONSTRAINTS);
-
         // invalid tag
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
                 + INVALID_TAG_DESC + VALID_TAG_FRIEND, Tag.MESSAGE_CONSTRAINTS);
 
         // two invalid values, only first invalid value reported
-        assertParseFailure(parser, INVALID_NAME_DESC + PHONE_DESC_BOB + EMAIL_DESC_BOB + INVALID_ADDRESS_DESC,
+        assertParseFailure(parser, INVALID_NAME_DESC + INVALID_PHONE_DESC,
                 Name.MESSAGE_CONSTRAINTS);
 
         // non-empty preamble
@@ -245,9 +236,12 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_optionalFieldsAbsent_usesEmptyDefaults() {
-        Applicant expectedApplicant = new ApplicantBuilder(BOB).withTags().build();
-        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB,
-                new AddCommand(expectedApplicant));
+        Applicant expectedApplicant = new ApplicantBuilder(BOB).withPhone("").withEmail("").withAddress("")
+                .withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB, new AddCommand(expectedApplicant));
+        assertEquals("", expectedApplicant.getPhone().value);
+        assertEquals("", expectedApplicant.getEmail().value);
+        assertEquals("", expectedApplicant.getAddress().value);
         assertEquals("", expectedApplicant.getInterviewNotes().value);
         assertEquals("", expectedApplicant.getYearsOfExperience().value);
         assertEquals("", expectedApplicant.getSource().value);
@@ -255,11 +249,10 @@ public class AddCommandParserTest {
 
     @Test
     public void parse_optionalFieldsEmpty_success() {
-        Applicant expectedApplicant = new ApplicantBuilder(BOB).withTags().build();
-        String emptyOptionalFields = " " + PREFIX_INTERVIEW_NOTES + " " + PREFIX_YEARS_OF_EXPERIENCE + " "
-                + PREFIX_SOURCE;
-        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
-                + emptyOptionalFields, new AddCommand(expectedApplicant));
+        Applicant expectedApplicant = new ApplicantBuilder(BOB).withPhone("").withEmail("").withAddress("")
+                .withTags().build();
+        String emptyOptionalFields = " -p   -e   -a   -i   -y   -s   ";
+        assertParseSuccess(parser, NAME_DESC_BOB + emptyOptionalFields, new AddCommand(expectedApplicant));
     }
 
     @Test
@@ -271,11 +264,48 @@ public class AddCommandParserTest {
     }
 
     @Test
-    public void parse_optionalFieldMissingFromRequiredFields_failure() {
-        // optional fields cannot stand in for the compulsory ones
-        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
-        assertParseFailure(parser, NAME_DESC_BOB + INTERVIEW_NOTES_DESC_BOB + YEARS_OF_EXPERIENCE_DESC_BOB
-                + SOURCE_DESC_BOB, expectedMessage);
+    public void parse_contactFieldsOmittedWithOtherDetails_success() {
+        Applicant expectedApplicant = new ApplicantBuilder(BOB).withPhone("").withEmail("").withAddress("")
+                .withInterviewNotes(VALID_INTERVIEW_NOTES_BOB).withYearsOfExperience(VALID_YEARS_OF_EXPERIENCE_BOB)
+                .withSource(VALID_SOURCE_BOB).withTags(VALID_TAG_FRIEND).build();
+        assertParseSuccess(parser, NAME_DESC_BOB + INTERVIEW_NOTES_DESC_BOB + YEARS_OF_EXPERIENCE_DESC_BOB
+                + SOURCE_DESC_BOB + TAG_DESC_FRIEND, new AddCommand(expectedApplicant));
+    }
+
+    @Test
+    public void parse_contactFieldsIndependentlyOptional_success() {
+        // All combinations of omitted and supplied contact fields.
+        for (int fields = 0; fields < 8; fields++) {
+            boolean hasPhone = (fields & 1) != 0;
+            boolean hasEmail = (fields & 2) != 0;
+            boolean hasAddress = (fields & 4) != 0;
+            Applicant expectedApplicant = new ApplicantBuilder(BOB)
+                    .withPhone(hasPhone ? VALID_PHONE_BOB : "")
+                    .withEmail(hasEmail ? VALID_EMAIL_BOB : "")
+                    .withAddress(hasAddress ? VALID_ADDRESS_BOB : "").withTags().build();
+            assertParseSuccess(parser, NAME_DESC_BOB + (hasPhone ? PHONE_DESC_BOB : "")
+                    + (hasEmail ? EMAIL_DESC_BOB : "") + (hasAddress ? ADDRESS_DESC_BOB : ""),
+                    new AddCommand(expectedApplicant));
+        }
+    }
+
+    @Test
+    public void parse_invalidOptionalValueWithOtherFieldsOmitted_failure() {
+        assertParseFailure(parser, NAME_DESC_BOB + INVALID_PHONE_DESC, Phone.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + INVALID_EMAIL_DESC, Email.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + INVALID_YEARS_OF_EXPERIENCE_DESC,
+                YearsOfExperience.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, NAME_DESC_BOB + INVALID_TAG_DESC, Tag.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_repeatedContactFieldWithOtherFieldsOmitted_failure() {
+        assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + PHONE_DESC_AMY,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+        assertParseFailure(parser, NAME_DESC_BOB + EMAIL_DESC_BOB + EMAIL_DESC_AMY,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_EMAIL));
+        assertParseFailure(parser, NAME_DESC_BOB + ADDRESS_DESC_BOB + EMPTY_ADDRESS_DESC,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_ADDRESS));
     }
 
     @Test

@@ -32,19 +32,24 @@ public class Messages {
     }
 
     /**
-     * Formats the {@code applicant} for display to the user.
+     * Formats the {@code applicant} for display to the user, omitting empty fields.
      */
     public static String format(Applicant applicant) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(applicant.getName())
-                .append("; Phone: ")
-                .append(applicant.getPhone())
-                .append("; Email: ")
-                .append(applicant.getEmail())
-                .append("; Address: ")
-                .append(applicant.getAddress())
-                .append("; Tags: ");
-        applicant.getTags().forEach(builder::append);
+        builder.append(applicant.getName());
+        if (!applicant.getPhone().value.isEmpty()) {
+            builder.append("; Phone: ").append(applicant.getPhone());
+        }
+        if (!applicant.getEmail().value.isEmpty()) {
+            builder.append("; Email: ").append(applicant.getEmail());
+        }
+        if (!applicant.getAddress().value.isEmpty()) {
+            builder.append("; Address: ").append(applicant.getAddress());
+        }
+        if (!applicant.getTags().isEmpty()) {
+            builder.append("; Tags: ");
+            applicant.getTags().forEach(builder::append);
+        }
         return builder.toString();
     }
 

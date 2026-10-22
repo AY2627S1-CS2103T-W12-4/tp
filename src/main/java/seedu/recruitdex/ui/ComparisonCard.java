@@ -1,6 +1,8 @@
 package seedu.recruitdex.ui;
 
 import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -37,7 +39,12 @@ public class ComparisonCard extends UiPart<Region> {
         super(FXML);
         styleForSlot(slotLabel);
         name.setText(applicant.getName().fullName);
-        contact.setText(applicant.getPhone().value + "  |  " + applicant.getEmail().value);
+        String contactText = Stream.of(applicant.getPhone().value, applicant.getEmail().value)
+                .filter(value -> !value.isEmpty())
+                .collect(Collectors.joining("  |  "));
+        contact.setText(contactText);
+        contact.setVisible(!contactText.isEmpty());
+        contact.setManaged(!contactText.isEmpty());
         applicant.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> skills.getChildren().add(createTagLabel(tag.tagName)));

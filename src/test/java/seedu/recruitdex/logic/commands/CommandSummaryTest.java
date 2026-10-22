@@ -179,6 +179,9 @@ public class CommandSummaryTest {
     public void getGroups_commandsWithParametersShowThem() {
         CommandInfo add = infoOf("add");
         assertTrue(add.parameters().contains("-nNAME"));
+        assertTrue(add.parameters().contains("[-pPHONE]"));
+        assertTrue(add.parameters().contains("[-eEMAIL]"));
+        assertTrue(add.parameters().contains("[-aADDRESS]"));
         assertTrue(add.parameters().contains("[-tSKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
         assertTrue(infoOf("find").parameters().startsWith("-n"));
