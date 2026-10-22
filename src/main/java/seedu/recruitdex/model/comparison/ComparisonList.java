@@ -71,8 +71,8 @@ public class ComparisonList implements ReadOnlyComparisonList {
         return unmodifiableDecisionHistory;
     }
 
-    /** Returns the live state holding the pending comparison pair. */
-    public ComparisonState getComparisonState() {
+    /** Returns read-only access to the live state holding the pending comparison pair. */
+    public ReadOnlyComparisonState getComparisonState() {
         return comparisonState;
     }
 

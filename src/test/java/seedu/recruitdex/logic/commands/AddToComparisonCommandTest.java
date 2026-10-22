@@ -214,9 +214,15 @@ public class AddToComparisonCommandTest {
         realComparisonList.add(ALICE.getId());
         realComparisonList.add(BENSON.getId());
         ComparisonPair pair = new ComparisonPair(ALICE.getId(), BENSON.getId());
-        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().resetData(
+                Set.copyOf(connectedModel.getComparisonList().getMemberIds()),
+                List.copyOf(connectedModel.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         ComparisonDecision decision = realComparisonList.recordDecision(ALICE.getId());
-        connectedModel.getComparisonList().getComparisonState().setCurrentPair(pair);
+        connectedModel.getComparisonList().resetData(
+                Set.copyOf(connectedModel.getComparisonList().getMemberIds()),
+                List.copyOf(connectedModel.getComparisonList().getDecisionHistory()),
+                Optional.of(pair));
         connectedModel.updateFilteredApplicantList(applicant -> applicant.getId().equals(CARL.getId()));
         List<Applicant> recordsBefore = List.copyOf(connectedModel.getApplicantRegistry().getApplicantList());
         ObservableList<RankingEntry> ranking = connectedModel.getRankingEngine().getRanking();

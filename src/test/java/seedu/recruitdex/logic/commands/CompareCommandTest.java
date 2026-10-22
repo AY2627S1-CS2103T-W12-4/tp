@@ -38,7 +38,10 @@ public class CompareCommandTest {
         model.getComparisonList().add(BENSON.getId());
         // Deliberately reverse registry order: A/B refer to the panel's sides, not displayed indices.
         presentedPair = new ComparisonPair(BENSON.getId(), ALICE.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(presentedPair);
+        model.getComparisonList().resetData(
+                Set.copyOf(model.getComparisonList().getMemberIds()),
+                List.copyOf(model.getComparisonList().getDecisionHistory()),
+                Optional.of(presentedPair));
     }
 
     @Test
@@ -66,7 +69,7 @@ public class CompareCommandTest {
 
     @Test
     public void execute_noPendingPair_throwsCommandExceptionWithoutChangingData() {
-        model.getComparisonList().getComparisonState().clearCurrentPair();
+        model.getComparisonList().remove(BENSON.getId());
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
 
         assertThrows(CommandException.class, CompareCommand.MESSAGE_NO_PENDING_PAIR, () ->
@@ -78,18 +81,17 @@ public class CompareCommandTest {
     }
 
     @Test
-    public void execute_inactivePairMember_throwsCommandExceptionWithoutChangingHistoryOrRanking() {
+    public void execute_pairMemberRemoved_throwsCommandExceptionWithoutChangingHistoryOrRanking() {
         ComparisonDecision priorDecision = model.getComparisonList().recordDecision(ALICE.getId());
-        ComparisonPair invalidPair = new ComparisonPair(ALICE.getId(), CARL.getId());
-        model.getComparisonList().getComparisonState().setCurrentPair(invalidPair);
+        model.getComparisonList().remove(BENSON.getId());
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
 
-        assertThrows(CommandException.class, "The pending pair is no longer valid.", () ->
+        assertThrows(CommandException.class, CompareCommand.MESSAGE_NO_PENDING_PAIR, () ->
                 new CompareCommand(Side.A).execute(model));
 
         assertEquals(List.of(priorDecision), model.getComparisonList().getDecisionHistory());
         assertEquals(rankingBefore, model.getRankingEngine().getRanking());
-        assertEquals(Optional.of(invalidPair), model.getComparisonList().getCurrentPair());
+        assertEquals(Optional.empty(), model.getComparisonList().getCurrentPair());
     }
 
     @Test
