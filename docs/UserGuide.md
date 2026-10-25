@@ -79,6 +79,16 @@ RecruitDex is a desktop application for managing applicant records through comma
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
 
+### Navigating command history
+
+The command box keeps a history of commands you have submitted, including commands that were invalid.
+
+- Press the **Up Arrow** key to display the most recently submitted command. Press it again to move to older commands.
+- Press the **Down Arrow** key to move back toward newer commands.
+- Press **Down Arrow** past the most recent command to restore the text you had in the command box before browsing history.
+
+The recalled command appears in the command box and can be edited before you submit it. If you submit a command that fails, it remains in the command box so you can correct it.
+
 ### Ranking leaderboard
 
 The **RANKING** panel displays applicants in the active comparison list.
