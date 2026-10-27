@@ -1,0 +1,22 @@
+@startuml
+left to right direction
+
+actor Recruiter
+
+rectangle RecruitDex {
+  usecase "UC01: Add an applicant record" as UC01
+  usecase "UC02: Add an existing applicant\nto the active comparison list" as UC02
+  usecase "UC03: Remove an applicant from\nthe active comparison list" as UC03
+  usecase "UC04: Compare two applicants\nand update the ranking" as UC04
+  usecase "UC05: Review the full applicant ranking" as UC05
+  usecase "UC06: Delete an applicant record" as UC06
+}
+
+Recruiter -- UC01
+Recruiter -- UC02
+Recruiter -- UC03
+Recruiter -- UC04
+Recruiter -- UC05
+Recruiter -- UC06
+
+@enduml
