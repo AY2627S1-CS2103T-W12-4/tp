@@ -91,6 +91,8 @@ The UI consists of a `MainWindow` and its parts, including `CommandBox`, `Result
 
 The main window has two tabs. The **Compare** tab shows the `ComparisonPanel` (applicants A and B) beside the `RankingPanel`, and the **All applicants** tab shows the `ApplicantListPanel`, whose index numbers are the `INDEX` that commands such as `edit` and `delete` use. `HelpWindow` is a separate window that lists every command in a table. It opens when the user types `help`, presses `F1` or clicks **Help** in the menu bar. See [Help window command table](#help-window-command-table) for how its rows are produced.
 
+The `sw` command switches between the two tabs. `SwitchTabCommand` does not change the model; it returns a `CommandResult` whose `isSwitchTab()` is true. `MainWindow` checks this flag after each command, in the same way as `isShowHelp()` and `isExit()`, selects the other tab and shows its name in the result display.
+
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/java/seedu/recruitdex/ui/MainWindow.java).
 
 The `UI` component,
@@ -197,7 +199,9 @@ This section describes some noteworthy details on how certain features are imple
 
 `ModelManager` owns the shared engine. `Logic.getRanking()` exposes its view to `RankingPanel`, which refreshes names from the full applicant list independently of search filtering. UI-bound observable updates must run on the JavaFX application thread.
 
-**Current scope:** Comparison-list and decision commands are not connected to the running app yet. The leaderboard starts empty, and ranking progress is not persisted. Replacing application data clears the ranking while retaining its observable view.
+`ComparisonList` holds the active members, the decision history and the unanswered pair. When membership or decisions change (for example through `compare-add`, `compare-remove`, `choose`, `delete` or `clear`), it recalculates the ranking and, when a new pair is needed, asks `PairSelector` for one. `PairSelector` prefers applicants with fewer comparisons and partners with close scores. It discourages repeated pairs but never forbids them.
+
+Members, decisions and the unanswered pair are saved in `data/recruitdex.json` through `JsonAdaptedComparisonList`, and restored at launch, so the ranking is rebuilt from the saved decisions. `RecruitDexData#resetData` checks the incoming comparison data against the new applicant records before replacing the current data.
 
 ### Atomic saving
 
@@ -717,6 +721,21 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Switching tabs
+
+1. Switching between the two tabs
+
+   1. Prerequisites: Launch RecruitDex. The **Compare** tab is showing.
+
+   1. Test case: `sw`<br>
+      Expected: The **All applicants** tab is shown. The status message shows `Showing the All applicants tab.`
+
+   1. Test case: `sw` again<br>
+      Expected: The **Compare** tab is shown again. The applicant list, comparison list and ranking are unchanged.
+
+   1. Test case: `sw 1`<br>
+      Expected: The tab does not change. The status message shows an invalid command format error with the `sw` usage.
 
 ### Saving data
 
