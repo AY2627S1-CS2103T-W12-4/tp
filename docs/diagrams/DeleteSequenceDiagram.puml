@@ -12,6 +12,7 @@ end box
 
 box Model MODEL_COLOR_T1
 participant "m:Model" as Model MODEL_COLOR
+participant "registry:ApplicantRegistry" as ApplicantRegistry MODEL_COLOR
 end box
 
 [-> LogicManager : execute("delete 1")
@@ -49,11 +50,29 @@ deactivate RecruitDexParser
 LogicManager -> DeleteCommand : execute(m)
 activate DeleteCommand
 
-DeleteCommand -> Model : deleteApplicant(1)
+DeleteCommand -> Model : getFilteredApplicantList()
 activate Model
 
-Model --> DeleteCommand
+Model --> DeleteCommand : lastShownList
 deactivate Model
+
+note right of DeleteCommand
+  Validate the displayed index, then resolve
+  applicantToDelete = lastShownList.get(0).
+  applicantId = applicantToDelete.getId().
+end note
+
+DeleteCommand -> Model : getApplicantRegistry()
+activate Model
+
+Model --> DeleteCommand : registry
+deactivate Model
+
+DeleteCommand -> ApplicantRegistry : delete(applicantId)
+activate ApplicantRegistry
+
+ApplicantRegistry --> DeleteCommand
+deactivate ApplicantRegistry
 
 create CommandResult
 DeleteCommand -> CommandResult
@@ -65,6 +84,6 @@ deactivate CommandResult
 DeleteCommand --> LogicManager : r
 deactivate DeleteCommand
 
-[<--LogicManager
+[<--LogicManager : r
 deactivate LogicManager
 @enduml

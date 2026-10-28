@@ -110,7 +110,7 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <puml src="diagrams/LogicClassDiagram.puml" width="550"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The sequence diagram below illustrates command parsing and deletion for a successful `execute("delete 1")` call. It shows how the displayed index is resolved to an applicant ID before calling `ApplicantRegistry.delete`. Snapshotting, saving, and model-internal cleanup are omitted; see [Atomic saving](#atomic-saving) for the persistence behavior.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
