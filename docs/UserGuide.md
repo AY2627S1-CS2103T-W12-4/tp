@@ -26,6 +26,13 @@ RecruitDex is a desktop application for managing applicant records through comma
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
    ![Ui](images/Ui.png)
 
+   <box type="warning" seamless>
+
+   **Notes about launching:**<br>
+   * Launch the JAR with `java -jar`. Double-clicking the JAR file might not work on your computer, because it can open with a different Java version.
+   * The home folder must be **writable**. RecruitDex creates a `data` folder next to the JAR to save your records, so do not put the JAR in a write-protected folder.
+   </box>
+
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the Help window, which lists every command.<br>
    Some example commands you can try:
 
@@ -51,6 +58,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 * **Result box (below it):** shows what the last command did, or why it failed.
 * **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
 * **All applicants tab:** lists every applicant record, numbered. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
+* **Switching tabs:** type `sw` to jump between the **Compare** tab and the **All applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
 --------------------------------------------------------------------------------------------------------------------
@@ -63,6 +71,9 @@ RecruitDex is a desktop application for managing applicant records through comma
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add -nNAME`, replace `NAME` with a value such as `John Doe`.
+
+* A space between a prefix and its value is optional.<br>
+  For example, `-nJohn Doe` and `-n John Doe` mean the same thing.
 
 * Items in square brackets are optional.<br>
   For example, `-nNAME [-tSKILL]` can be used as `-nJohn Doe -tJava` or as `-nJohn Doe`.
@@ -194,6 +205,17 @@ Format: `choose a` or `choose b`
 
 For example, run `list`, `compare-add 1`, and `compare-add 2`, review the pair in the comparison panel, then enter
 `choose a` to choose the applicant currently labelled **A**. Review the next pair before choosing again.
+
+### Switching tabs: `sw`
+
+Switches between the **Compare** tab and the **All applicants** tab.
+
+Format: `sw`
+
+* If the **Compare** tab is showing, `sw` shows the **All applicants** tab, and the other way round.
+* The result box tells you which tab is now showing, for example `Showing the All applicants tab.`
+* Only the display changes. Applicant records, the comparison list and the search filter stay the same.
+* Unlike `help` or `list`, `sw` does not accept extra text after it. Typing `sw 1` shows an error with the correct format.
 
 ### Listing all applicants: `list`
 
@@ -328,5 +350,6 @@ Action     | Format, Examples
 **Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
 **Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
 **Choose stronger applicant** | `choose a` or `choose b`
+**Switch tabs** | `sw`
 **Help**   | `help`
 **Exit**   | `exit`
