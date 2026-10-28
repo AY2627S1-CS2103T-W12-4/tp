@@ -34,13 +34,17 @@ import seedu.recruitdex.logic.commands.AddToComparisonCommand;
 import seedu.recruitdex.logic.commands.CommandResult;
 import seedu.recruitdex.logic.commands.CompareCommand;
 import seedu.recruitdex.logic.commands.DeleteCommand;
+import seedu.recruitdex.logic.commands.ExitCommand;
+import seedu.recruitdex.logic.commands.HelpCommand;
 import seedu.recruitdex.logic.commands.ListCommand;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
+import seedu.recruitdex.logic.commands.SwitchTabCommand;
 import seedu.recruitdex.logic.commands.exceptions.CommandException;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 import seedu.recruitdex.model.Model;
 import seedu.recruitdex.model.ModelManager;
 import seedu.recruitdex.model.ReadOnlyRecruitDexData;
+import seedu.recruitdex.model.RecruitDexData;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.applicant.NameContainsKeywordsPredicate;
 import seedu.recruitdex.model.comparison.ComparisonDecision;
@@ -345,6 +349,24 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_helpWithFailingStorage_returnsHelpResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(HelpCommand.COMMAND_WORD,
+                new CommandResult(HelpCommand.SHOWING_HELP_MESSAGE, true, false));
+    }
+
+    @Test
+    public void execute_switchTabWithFailingStorage_returnsSwitchTabResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(SwitchTabCommand.COMMAND_WORD,
+                new CommandResult(SwitchTabCommand.MESSAGE_SUCCESS, false, false, true));
+    }
+
+    @Test
+    public void execute_exitWithFailingStorage_returnsExitResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(ExitCommand.COMMAND_WORD,
+                new CommandResult(ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT, false, true));
+    }
+
+    @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
@@ -492,6 +514,27 @@ public class LogicManagerTest {
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         logic.execute(addCommand);
         assertEquals(1, model.getApplicantRegistry().getApplicantList().size());
+    }
+
+    /** Checks that a UI action survives save failures without changing recruitment data or the search results. */
+    private void assertUiCommandSucceedsWithFailingStorage(String command, CommandResult expected) throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        model.getComparisonList().recordDecision(ALICE.getId());
+        logic.execute("find -n Benson");
+        ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
+        List<RankingEntry> rankingBeforeCommand = List.copyOf(logic.getRanking());
+
+        for (IOException exception : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            failingStorageLogic(exception);
+
+            assertEquals(expected, logic.execute(command));
+            assertEquals(dataBeforeCommand, model.getRecruitDexData());
+            assertEquals(rankingBeforeCommand, logic.getRanking());
+            assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+        }
     }
 
     /** Points {@code logic} at a storage whose saves always throw {@code exception}. */
