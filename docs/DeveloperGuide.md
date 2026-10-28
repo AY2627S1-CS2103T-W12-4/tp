@@ -732,7 +732,7 @@ testers are expected to do more *exploratory* testing.
       Expected: The **All applicants** tab is shown. The status message shows `Showing the All applicants tab.`
 
    1. Test case: `sw` again<br>
-      Expected: The **Compare** tab is shown again. The applicant list, comparison list and ranking are unchanged.
+      Expected: The **Compare** tab is shown again. The status message shows `Showing the Compare tab.` The applicant list, comparison list and ranking are unchanged.
 
    1. Test case: `sw 1`<br>
       Expected: The tab does not change. The status message shows an invalid command format error with the `sw` usage.
