@@ -56,14 +56,15 @@ public class CommandBox extends UiPart<Region> {
      * Handles Up and Down key presses for command history navigation.
      */
     private void handleHistoryNavigation(KeyEvent event) {
-        setStyleToDefault();
         if (event.getCode() == KeyCode.UP) {
+            setStyleToDefault();
             String previousCommand = commandHistoryList.previous(commandTextField.getText());
             if (previousCommand != null) {
                 this.setTextFromHistory(previousCommand);
                 event.consume();
             }
         } else if (event.getCode() == KeyCode.DOWN) {
+            setStyleToDefault();
             String nextCommand = commandHistoryList.next();
             if (nextCommand != null) {
                 this.setTextFromHistory(nextCommand);
@@ -78,7 +79,7 @@ public class CommandBox extends UiPart<Region> {
     @FXML
     private void handleCommandEntered() {
         String commandText = commandTextField.getText();
-        if (commandText.equals("")) {
+        if (commandText.trim().isEmpty()) {
             return;
         }
 

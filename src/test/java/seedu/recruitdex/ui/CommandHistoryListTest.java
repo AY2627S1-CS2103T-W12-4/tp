@@ -15,27 +15,6 @@ import org.junit.jupiter.api.Test;
 public class CommandHistoryListTest {
 
     @Test
-    public void constructor_historyIsEmpty() {
-        CommandHistoryList history = new CommandHistoryList();
-
-        assertTrue(history.isEmpty());
-        assertEquals(List.of(), history.getCommands());
-        assertEquals(null, history.previous("draft"));
-        assertEquals(null, history.next());
-    }
-
-    @Test
-    public void add_commandsInSubmissionOrder() {
-        CommandHistoryList history = new CommandHistoryList();
-
-        history.add("first");
-        history.add("second");
-
-        assertFalse(history.isEmpty());
-        assertEquals(List.of("first", "second"), history.getCommands());
-    }
-
-    @Test
     public void add_nullOrEmptyCommand_throwsIllegalArgumentException() {
         CommandHistoryList history = new CommandHistoryList();
 
@@ -109,17 +88,6 @@ public class CommandHistoryListTest {
 
         assertEquals("latest", history.previous("another draft"));
         assertEquals("newer", history.previous("latest"));
-    }
-
-    @Test
-    public void getCommands_returnsCopy() {
-        CommandHistoryList history = new CommandHistoryList();
-        history.add("command");
-
-        List<String> commands = history.getCommands();
-        commands.add("external change");
-
-        assertEquals(List.of("command"), history.getCommands());
     }
 
     @Test

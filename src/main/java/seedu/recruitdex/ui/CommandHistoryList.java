@@ -90,14 +90,4 @@ public class CommandHistoryList {
         historyIndex = -1;
         draft = "";
     }
-
-    /** Returns a copy of the commands in submission order. */
-    public List<String> getCommands() {
-        return new ArrayList<>(commands);
-    }
-
-    /** Returns whether there are any recorded commands. */
-    public boolean isEmpty() {
-        return commands.isEmpty();
-    }
 }
