@@ -439,6 +439,10 @@ An applicant record stores an applicant's details. The active comparison list is
 
 For all use cases below, the **System** is RecruitDex and the **Actor** is a recruiter. **MSS** means Main Success Scenario. These use cases describe intended product behaviour rather than the current implementation. Requests are entered as commands.
 
+<puml src="diagrams/UseCaseDiagram.puml" alt="UseCaseDiagram" />
+
+The diagram above summarizes the six recruiter use cases described below. Their extensions are detailed in the individual use case descriptions.
+
 **UC01: Add an applicant record**
 
 **MSS**
