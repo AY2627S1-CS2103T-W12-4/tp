@@ -89,6 +89,8 @@ The command box keeps a history of commands you have submitted, including comman
 
 The recalled command appears in the command box and can be edited before you submit it. If you submit a command that fails, it remains in the command box so you can correct it.
 
+The command history does not persist between sessions, so it is cleared once you exit the application.
+
 ### Ranking leaderboard
 
 The **RANKING** panel displays applicants in the active comparison list.
