@@ -294,14 +294,33 @@ public class LogicManagerTest {
         assertEquals(ranking, reopened.getRankingEngine().getRanking());
         assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
 
-        CommandResult repeatedResult = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
-
-        assertEquals(RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, repeatedResult.getFeedbackToUser());
+        assertThrows(CommandException.class, RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, () ->
+                logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1"));
         assertEquals(Set.of(ALICE.getId()), model.getComparisonList().getMemberIds());
         assertEquals(1, ranking.size());
         assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
         assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
         assertEquals(reopened.getRecruitDexData(), savedRecords.readRecruitDexData().orElseThrow());
+    }
+
+    @Test
+    public void execute_comparisonMembershipErrors_throwsBeforeSaving() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
+        ReadOnlyRecruitDexData dataBefore = new RecruitDexData(model.getRecruitDexData());
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        failingStorageLogic(DUMMY_IO_EXCEPTION);
+
+        assertCommandException(AddToComparisonCommand.COMMAND_WORD + " 1",
+                AddToComparisonCommand.MESSAGE_DUPLICATE_MEMBER);
+        assertCommandException(RemoveFromComparisonCommand.COMMAND_WORD + " 2",
+                RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER);
+
+        assertEquals(dataBefore, model.getRecruitDexData());
+        assertEquals(dataBefore, savedRecords.readRecruitDexData().orElseThrow());
+        assertEquals(List.of(ALICE, BENSON), logic.getFilteredApplicantList());
     }
 
     @Test
