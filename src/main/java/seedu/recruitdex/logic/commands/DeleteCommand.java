@@ -41,7 +41,11 @@ public class DeleteCommand extends Command {
         }
 
         Applicant applicantToDelete = lastShownList.get(targetIndex.getZeroBased());
-        model.getApplicantRegistry().delete(applicantToDelete.getId());
+        try {
+            model.getApplicantRegistry().delete(applicantToDelete.getId());
+        } catch (IllegalStateException e) {
+            throw new CommandException(String.format(Messages.MESSAGE_RANKING_UPDATE_FAILED, e.getMessage()), e);
+        }
         return new CommandResult(String.format(MESSAGE_DELETE_APPLICANT_SUCCESS, Messages.format(applicantToDelete)));
     }
 
