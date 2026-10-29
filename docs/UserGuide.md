@@ -42,7 +42,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
    * `delete 3` : Deletes the 3rd applicant shown in the current list.
 
-   * `compare-add 1` : Adds the 1st applicant to the comparison list. Add at least two applicants, then use `choose a` or `choose b` to pick the stronger one of the pair shown in the **Compare** tab.
+   * `cadd 1` : Adds the 1st applicant to the comparison list. Add at least two applicants, then use `choose a` or `choose b` to pick the stronger one of the pair shown in the **Compare** tab.
 
    * `clear` : Deletes all applicant records.
 
@@ -56,8 +56,8 @@ RecruitDex is a desktop application for managing applicant records through comma
 
 * **Command box (top):** type a command here and press Enter. Everything in RecruitDex is done with commands.
 * **Result box (below it):** shows what the last command did, or why it failed.
-* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
-* **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
+* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `cremove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
+* **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `cadd` and `cremove` use these numbers as `INDEX`.
 * **Switching tabs:** type `sw` or press the up/down or left/right arrow keys when the command bar is not selected to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
@@ -125,11 +125,11 @@ even when the applicant list is filtered. Ties share a rank, and applicants with
 **Unassessed** instead of a rank. These positions update with the leaderboard and are not the indices used by applicant commands.
 
 With the initial sample data, the leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
-Use `compare-add INDEX` to include an existing applicant in the leaderboard.
+Use `cadd INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
 Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
-If `compare-add`, `compare-remove` or `delete` cannot update the ranking, RecruitDex reports an error and keeps your data, current pair, ranking and search unchanged. Other commands remain available.
+If `cadd`, `cremove` or `delete` cannot update the ranking, RecruitDex reports an error and keeps your data, current pair, ranking and search unchanged. Other commands remain available.
 
 ### Viewing help: `help`
 
@@ -171,11 +171,11 @@ Examples:
 * `add -n Betsy Crowe -t Python -e betsycrowe@example.com -a Clementi Ave 2 -p 1234567 -t SQL`
 * `add -n Jane Doe -p 91234567 -e jane@example.com -a Blk 1 Clementi -y 6 -s LinkedIn -i Great system design -t Java -t Kafka`
 
-### Adding an applicant to the comparison list: `compare-add`
+### Adding an applicant to the comparison list: `cadd`
 
 Adds an existing applicant to the active comparison list.
 
-Format: `compare-add INDEX`
+Format: `cadd INDEX`
 
 * `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
 * After `find`, the index refers to the filtered results.
@@ -184,19 +184,19 @@ Format: `compare-add INDEX`
 
 Examples:
 
-* `list` followed by `compare-add 2` selects the second applicant in the displayed list.
-* `find -n Betsy` followed by `compare-add 1` selects the first applicant in the search results.
+* `list` followed by `cadd 2` selects the second applicant in the displayed list.
+* `find -n Betsy` followed by `cadd 1` selects the first applicant in the search results.
 
 Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records and restored when the application reopens. Using `clear` also resets membership.
 Once two applicants are in the comparison list, a pair appears in the comparison panel.
 Adding more applicants keeps the current pair. Applicants can be compared repeatedly.
 
-### Removing an applicant from the comparison list: `compare-remove`
+### Removing an applicant from the comparison list: `cremove`
 
 Removes an existing applicant from the active comparison list while keeping their record and comparison history.
 
-Format: `compare-remove INDEX`
+Format: `cremove INDEX`
 
 * `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
 * After `find`, the index refers to the filtered results.
@@ -210,8 +210,8 @@ Format: `compare-remove INDEX`
 
 Examples:
 
-* `list` followed by `compare-remove 2` selects the second applicant in the displayed list.
-* `find -n Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
+* `list` followed by `cremove 2` selects the second applicant in the displayed list.
+* `find -n Betsy` followed by `cremove 1` selects the first applicant in the search results.
 
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records. If the applicant is in the unanswered pair, a replacement pair is selected.
@@ -226,14 +226,14 @@ Format: `choose a` or `choose b`
 * `a` selects the applicant labelled **A**; `b` selects the applicant labelled **B**.
   Uppercase `A` and `B` are also accepted.
 * These labels refer to the current comparison pair. Searching the applicant list does not change their meaning.
-* A pending pair is required. Add at least two applicants using `compare-add INDEX` to start comparisons.
+* A pending pair is required. Add at least two applicants using `cadd INDEX` to start comparisons.
 * The decision is added to the history, the ranking updates immediately, and the next pair appears.
   RecruitDex favours applicants with fewer comparisons and opponents with similar scores, while reducing repeated pairings. With more than two active applicants, it avoids immediately repeating the last compared pair. With only two, the same applicants appear again. Their A/B sides may change, so review each new pair before choosing.
 * Each repeated choice records a separate decision. Applicant records, membership, and the search filter are retained.
 * The decision history and the new pending pair are saved automatically after a successful command.
 * Missing or invalid sides, extra arguments, and choices without a valid pending pair are rejected.
 
-For example, run `list`, `compare-add 1`, and `compare-add 2`, review the pair in the comparison panel, then enter
+For example, run `list`, `cadd 1`, and `cadd 2`, review the pair in the comparison panel, then enter
 `choose a` to choose the applicant currently labelled **A**. Review the next pair before choosing again.
 
 ### Switching tabs: `sw`
@@ -310,7 +310,7 @@ Format: `delete INDEX`
 * The index **must be a positive integer** 1, 2, 3, ...
 * The ranking updates immediately. An unanswered comparison involving the deleted applicant is replaced,
   or cleared when fewer than two comparison-list members remain.
-* Use `compare-remove` to remove an applicant from the ranking while keeping their record and comparison history.
+* Use `cremove` to remove an applicant from the ranking while keeping their record and comparison history.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd applicant in the displayed list.
@@ -383,8 +383,8 @@ Action     | Format, Examples
 **List**   | `list`
 **Find**   | `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`<br> e.g., `find -n Alice -t java kaf`
 **Clear**  | `clear`
-**Add to comparison list** | `compare-add INDEX`<br> e.g., `compare-add 2`
-**Remove from comparison list** | `compare-remove INDEX`<br> e.g., `compare-remove 2`
+**Add to comparison list** | `cadd INDEX`<br> e.g., `cadd 2`
+**Remove from comparison list** | `cremove INDEX`<br> e.g., `cremove 2`
 **Choose stronger applicant** | `choose a` or `choose b`
 **Switch tabs** | `sw`
 **Help**   | `help`

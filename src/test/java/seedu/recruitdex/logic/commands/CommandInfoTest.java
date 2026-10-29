@@ -55,11 +55,11 @@ public class CommandInfoTest {
 
     @Test
     public void fromUsage_commandWordWithHyphen_isKept() {
-        CommandInfo info = CommandInfo.fromUsage("compare-add: Adds an applicant.\n"
-                + "Parameters: INDEX\nExample: compare-add 1");
+        CommandInfo info = CommandInfo.fromUsage("sample-command: Adds an applicant.\n"
+                + "Parameters: INDEX\nExample: sample-command 1");
 
-        assertEquals("compare-add", info.commandWord());
-        assertEquals("compare-add 1", info.example());
+        assertEquals("sample-command", info.commandWord());
+        assertEquals("sample-command 1", info.example());
     }
 
     @Test

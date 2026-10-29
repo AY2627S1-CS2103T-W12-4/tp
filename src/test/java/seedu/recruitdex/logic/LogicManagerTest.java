@@ -167,10 +167,10 @@ public class LogicManagerTest {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
         var pairProperty = logic.getCurrentPairProperty();
-        logic.execute("compare-add 1");
+        logic.execute("cadd 1");
         assertTrue(pairProperty.get().isEmpty());
 
-        logic.execute("compare-add 2");
+        logic.execute("cadd 2");
 
         ComparisonPair selectedPair = pairProperty.get().orElseThrow();
         assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
@@ -187,8 +187,8 @@ public class LogicManagerTest {
     public void execute_choose_recordsDisplayedSideAndPersistsHistoryRankingAndNextPair() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
-        logic.execute("compare-add 1");
-        logic.execute("compare-add 2");
+        logic.execute("cadd 1");
+        logic.execute("cadd 2");
         logic.execute("find -n Alice");
         ComparisonPair presentedPair = logic.getCurrentPairProperty().get().orElseThrow();
         Applicant winner = model.getApplicantRegistry().get(presentedPair.getFirstApplicantId());
@@ -229,7 +229,7 @@ public class LogicManagerTest {
     @Test
     public void execute_chooseWithoutPair_rejectsCommandAndPreservesSavedData() throws Exception {
         model.getApplicantRegistry().add(ALICE);
-        logic.execute("compare-add 1");
+        logic.execute("cadd 1");
         JsonRecruitDexDataStorage saved =
                 new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
         ReadOnlyRecruitDexData savedBefore = saved.readRecruitDexData().orElseThrow();

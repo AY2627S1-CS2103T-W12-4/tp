@@ -18,7 +18,7 @@ RecruitDex helps recruiters rank applicants through a series of side-by-side com
 The workflow has three distinct parts:
 
 1. **Manage applicant records.** Add applicants and maintain details such as names, contact information, and interview notes. Records can be edited or deleted.
-2. **Manage the active comparison list.** Use `compare-add` or `compare-remove` to change the set to be ranked. Creating an applicant record with `add` is a separate operation.
+2. **Manage the active comparison list.** Use `cadd` or `cremove` to change the set to be ranked. Creating an applicant record with `add` is a separate operation.
 3. **Compare applicants.** Open the comparison view, review the two applicants RecruitDex presents, and choose the stronger one. The ranking updates immediately so the recruiter can see the effect of each decision.
 
 These parts can be revisited as recruitment progresses. An applicant must have a record before joining the comparison list and must join the list before being compared, but recruiters can compare existing applicants before adding more. RecruitDex is designed for command-line input, with a graphical interface primarily for displaying applicants, comparisons, and ranking changes.
@@ -209,7 +209,7 @@ This section describes some noteworthy details on how certain features are imple
 
 `ComparisonList` recalculates rankings after membership or decision changes and asks `PairSelector` for a new pair when needed. Adding a member preserves a valid pending pair. Removing or deleting a participant replaces the affected pair, or clears it if fewer than two members remain. `recordDecision` validates the winner, recalculates the ranking with a new UUID-identified, timestamped decision, appends it to history, and selects the next pair.
 
-Membership changes and permanent-deletion cleanup calculate the ranking from proposed membership and history snapshots before changing the live saved data. If ranking calculation fails, applicant records, membership, history, the pending pair and ranking remain unchanged, with no observable updates. The `compare-add`, `compare-remove` and `delete` commands convert the ranking engine's `IllegalStateException` into a `CommandException` for normal UI error feedback. The search filter is retained and subsequent commands remain usable.
+Membership changes and permanent-deletion cleanup calculate the ranking from proposed membership and history snapshots before changing the live saved data. If ranking calculation fails, applicant records, membership, history, the pending pair and ranking remain unchanged, with no observable updates. The `cadd`, `cremove` and `delete` commands convert the ranking engine's `IllegalStateException` into a `CommandException` for normal UI error feedback. The search filter is retained and subsequent commands remain usable.
 
 `PairSelector` uses weighted randomness, favouring applicants with fewer eligible comparisons and partners with close scores. It penalizes repeated pairings and excludes the most recently answered eligible pair when more than two applicants are active. With two members, it reuses that pair. A/B ordering balances previous side appearances, breaking ties randomly. Only decisions with both participants active affect selection statistics.
 
@@ -442,7 +442,7 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 1. Recruiter enters `list` to obtain applicant indices and reviews the ranking in the Compare tab.
 2. RecruitDex displays the applicant records and the active ranking.
-3. Recruiter enters `compare-remove INDEX` using the applicant index, not their rank.
+3. Recruiter enters `cremove INDEX` using the applicant index, not their rank.
 4. RecruitDex removes the applicant from the active comparison list and displays the ranking of the remaining applicants.
 
    Use case ends. The applicant's record and comparison history remain available. Decisions involving an inactive applicant are excluded from the current ranking.
@@ -632,11 +632,11 @@ Use a separate writable folder and a copy of the JAR so that testing does not af
 
 ### Comparisons, ranking and persistence
 
-1. Start with at least three records and enter `list`. Enter `compare-add 1` and `compare-add 2`. Expect two applicants in the Unassessed group and an A/B pair. Enter `compare-add 1` again; expect a duplicate-membership error.
-2. Enter `compare-add 3`. Expect a third unassessed applicant and the same pending pair. Enter `choose a`. Expect the displayed A applicant to win, both participants to move into the assessed ranking with updated comparison counts, and a new pair. The remaining applicant stays unassessed without a displayed rank or score. With three active applicants the immediately preceding pair should not repeat.
+1. Start with at least three records and enter `list`. Enter `cadd 1` and `cadd 2`. Expect two applicants in the Unassessed group and an A/B pair. Enter `cadd 1` again; expect a duplicate-membership error.
+2. Enter `cadd 3`. Expect a third unassessed applicant and the same pending pair. Enter `choose a`. Expect the displayed A applicant to win, both participants to move into the assessed ranking with updated comparison counts, and a new pair. The remaining applicant stays unassessed without a displayed rank or score. With three active applicants the immediately preceding pair should not repeat.
 3. Enter `choose c` and `choose a extra`. Expect errors without a new decision or pair change. Enter `find -n Test One`; expect the ranking and pending pair to remain unchanged while command indices reflect the filtered list.
 4. Close and reopen the app. Expect the same membership, decisions, ranking and pending A/B sides; the search filter resets. Further choices may change the A/B sides.
-5. Enter `list`, identify a member's applicant index and enter `compare-remove INDEX`. Expect the record to remain, its ranking entry to disappear, and an affected pair to be replaced or cleared. Remove it again; expect an error. Add it back; expect retained decisions to count again when both participants are active.
+5. Enter `list`, identify a member's applicant index and enter `cremove INDEX`. Expect the record to remain, its ranking entry to disappear, and an affected pair to be replaced or cleared. Remove it again; expect an error. Add it back; expect retained decisions to count again when both participants are active.
 6. Delete a member using its displayed applicant index. Expect its record, membership and decisions involving it to be removed. An affected pair is replaced or cleared. Enter `clear`; expect no records, members, decisions, pair or ranking, including after restart.
 
 ### Saving and recovery

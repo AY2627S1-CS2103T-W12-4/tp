@@ -17,7 +17,7 @@ import seedu.recruitdex.model.comparison.exceptions.DuplicateComparisonMemberExc
  * Adds an existing applicant identified by its displayed index to the active comparison list.
  */
 public class AddToComparisonCommand extends Command {
-    public static final String COMMAND_WORD = "compare-add";
+    public static final String COMMAND_WORD = "cadd";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Adds an existing applicant to the comparison list.\n"
