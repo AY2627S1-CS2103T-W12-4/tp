@@ -67,7 +67,7 @@
               <StackPane fx:id="rankingPanelPlaceholder" GridPane.columnIndex="1" />
             </GridPane>
           </Tab>
-          <Tab fx:id="applicantsTab" text="All applicants">
+          <Tab fx:id="applicantsTab" text="Applicants">
             <VBox fx:id="applicantList" styleClass="pane-with-border">
               <padding>
                 <Insets top="10" right="10" bottom="10" left="10" />

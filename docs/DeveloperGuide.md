@@ -89,7 +89,7 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, `ComparisonPanel` (made of two `ComparisonCard`s), `RankingPanel`, `HelpWindow` and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
 
-The main window has two tabs. The **Compare** tab shows the `ComparisonPanel` (applicants A and B) beside the `RankingPanel`, and the **All applicants** tab shows the `ApplicantListPanel`, whose index numbers are the `INDEX` that commands such as `edit` and `delete` use. `HelpWindow` is a separate window that lists every command in a table. It opens when the user types `help`, presses `F1` or clicks **Help** in the menu bar. See [Help window command table](#help-window-command-table) for how its rows are produced.
+The main window has two tabs. The **Compare** tab shows the `ComparisonPanel` (applicants A and B) beside the `RankingPanel`, and the **Applicants** tab shows the `ApplicantListPanel`, whose index numbers are the `INDEX` that commands such as `edit` and `delete` use. `HelpWindow` is a separate window that lists every command in a table. It opens when the user types `help`, presses `F1` or clicks **Help** in the menu bar. See [Help window command table](#help-window-command-table) for how its rows are produced.
 
 The `sw` command switches between the two tabs. `SwitchTabCommand` does not change the model; it returns a `CommandResult` whose `isSwitchTab()` is true. `MainWindow` checks this flag after each command, in the same way as `isShowHelp()` and `isExit()`, selects the other tab and shows its name in the result display.
 
@@ -733,7 +733,7 @@ testers are expected to do more *exploratory* testing.
    1. Prerequisites: Launch RecruitDex. The **Compare** tab is showing.
 
    1. Test case: `sw`<br>
-      Expected: The **All applicants** tab is shown. The status message shows `Showing the All applicants tab.`
+      Expected: The **Applicants** tab is shown. The status message shows `Showing the Applicants tab.`
 
    1. Test case: `sw` again<br>
       Expected: The **Compare** tab is shown again. The status message shows `Showing the Compare tab.` The applicant list, comparison list and ranking are unchanged.
