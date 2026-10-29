@@ -178,11 +178,11 @@ public class CommandSummaryTest {
     @Test
     public void getGroups_commandsWithParametersShowThem() {
         CommandInfo add = infoOf("add");
-        assertTrue(add.parameters().contains("-nNAME"));
-        assertTrue(add.parameters().contains("[-pPHONE]"));
-        assertTrue(add.parameters().contains("[-eEMAIL]"));
-        assertTrue(add.parameters().contains("[-aADDRESS]"));
-        assertTrue(add.parameters().contains("[-tSKILL]..."));
+        assertTrue(add.parameters().contains("-n NAME"));
+        assertTrue(add.parameters().contains("[-p PHONE]"));
+        assertTrue(add.parameters().contains("[-e EMAIL]"));
+        assertTrue(add.parameters().contains("[-a ADDRESS]"));
+        assertTrue(add.parameters().contains("[-t SKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
         assertTrue(infoOf("find").parameters().startsWith("-n"));
     }

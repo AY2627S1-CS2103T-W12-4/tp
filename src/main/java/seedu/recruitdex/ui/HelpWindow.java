@@ -9,7 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import seedu.recruitdex.commons.core.LogsCenter;
 import seedu.recruitdex.logic.commands.CommandInfo;
@@ -46,6 +49,12 @@ public class HelpWindow extends UiPart<Stage> {
         super(FXML, root);
         helpMessage.setText(HELP_MESSAGE);
         fillCommandTable();
+        getRoot().getScene().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                hide();
+                event.consume();
+            }
+        });
     }
 
     /**
@@ -105,10 +114,14 @@ public class HelpWindow extends UiPart<Stage> {
      */
     @FXML
     private void copyUrl() {
+        copyText(USERGUIDE_URL);
+    }
+
+    private static void copyText(String text) {
         final Clipboard clipboard = Clipboard.getSystemClipboard();
-        final ClipboardContent url = new ClipboardContent();
-        url.putString(USERGUIDE_URL);
-        clipboard.setContent(url);
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(text);
+        clipboard.setContent(content);
     }
 
     /** Fills the table with a header row, then each group heading followed by its commands. */
@@ -128,7 +141,7 @@ public class HelpWindow extends UiPart<Stage> {
                 commandTable.add(createCell(info.commandWord(), "help-command", rowStyle), 0, row);
                 commandTable.add(createCell(info.description(), "help-text", rowStyle), 1, row);
                 commandTable.add(createCell(displayed(info.parameters()), "help-code", rowStyle), 2, row);
-                commandTable.add(createCell(info.example(), "help-code", rowStyle), 3, row);
+                commandTable.add(createExampleCell(info, rowStyle), 3, row);
                 row++;
             }
         }
@@ -136,6 +149,17 @@ public class HelpWindow extends UiPart<Stage> {
 
     private static String displayed(String parameters) {
         return parameters.isEmpty() ? NO_PARAMETERS : parameters;
+    }
+
+    private static VBox createExampleCell(CommandInfo info, String rowStyle) {
+        Label example = createCell(info.example(), "help-code");
+        Button copy = new Button("Copy");
+        copy.getStyleClass().add("help-copy-button");
+        copy.setAccessibleText("Copy " + info.commandWord() + " example");
+        copy.setOnAction(event -> copyText(info.example()));
+        VBox cell = new VBox(4, example, copy);
+        cell.getStyleClass().addAll("help-example", rowStyle);
+        return cell;
     }
 
     private static Label createCell(String text, String... styleClasses) {

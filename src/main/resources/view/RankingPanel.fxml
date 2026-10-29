@@ -8,7 +8,7 @@
   <Label text="RANKING" styleClass="ranking-title" />
   <Label fx:id="subtitle" styleClass="ranking-subtitle" />
   <!-- Keep all wrapped lines visible; -Infinity uses the label's preferred height as its minimum. -->
-  <Label text="Ties share a rank. Use Applicant index for compare-remove. Clear the search with list to index hidden applicants."
+  <Label text="Ties share a rank. Applicant commands use the Applicants list. Use Applicant index for compare-remove. Clear the search with list to index hidden applicants."
          styleClass="ranking-note" wrapText="true" minHeight="-Infinity" />
   <ListView fx:id="rankingListView" styleClass="ranking-list-view" VBox.vgrow="ALWAYS">
     <placeholder>

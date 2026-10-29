@@ -50,6 +50,7 @@ import seedu.recruitdex.model.applicant.NameContainsKeywordsPredicate;
 import seedu.recruitdex.model.comparison.ComparisonDecision;
 import seedu.recruitdex.model.comparison.ComparisonPair;
 import seedu.recruitdex.model.ranking.RankingEntry;
+import seedu.recruitdex.model.tag.Tag;
 import seedu.recruitdex.model.userprefs.UserPrefs;
 import seedu.recruitdex.storage.JsonRecruitDexDataStorage;
 import seedu.recruitdex.storage.JsonUserPrefsStorage;
@@ -91,6 +92,21 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_addAndEditPunctuatedSkills_persistAfterReopening() throws Exception {
+        logic.execute("add -n Alice -t C++ -t node.js");
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        Applicant added = savedRecords.readRecruitDexData().orElseThrow().getApplicantList().get(0);
+        assertEquals("Alice", added.getName().fullName);
+        assertEquals(Set.of(new Tag("C++"), new Tag("node.js")), added.getTags());
+
+        logic.execute("edit 1 -t C# -t .NET");
+        Applicant edited = savedRecords.readRecruitDexData().orElseThrow().getApplicantList().get(0);
+        assertEquals(added.getId(), edited.getId());
+        assertEquals(Set.of(new Tag("C#"), new Tag(".NET")), edited.getTags());
     }
 
     @Test

@@ -38,7 +38,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
    * `list` : Lists all applicants.
 
-   * `add -nJohn Doe -p98765432 -ejohnd@example.com -aJohn street, block 123, #01-01` : Adds an applicant named `John Doe`.
+   * `add -n John Doe -p 98765432 -e johnd@example.com -a John street, block 123, #01-01` : Adds an applicant named `John Doe`.
 
    * `delete 3` : Deletes the 3rd applicant shown in the current list.
 
@@ -56,9 +56,9 @@ RecruitDex is a desktop application for managing applicant records through comma
 
 * **Command box (top):** type a command here and press Enter. Everything in RecruitDex is done with commands.
 * **Result box (below it):** shows what the last command did, or why it failed.
-* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **All applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
-* **All applicants tab:** lists every applicant record, numbered. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
-* **Switching tabs:** type `sw` to jump between the **Compare** tab and the **All applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
+* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
+* **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
+* **Switching tabs:** type `sw` to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
 --------------------------------------------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 **Notes about the command format:**<br>
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add -nNAME`, replace `NAME` with a value such as `John Doe`.
+  For example, in `add -n NAME`, replace `NAME` with a value such as `John Doe`.
 
 * A space between a prefix and its value is optional.<br>
   For example, `-nJohn Doe` and `-n John Doe` mean the same thing.
@@ -111,7 +111,12 @@ The **RANKING** panel displays applicants in the active comparison list.
 * **Comparisons:** The number of comparisons used for that applicant's ranking. Zero comparisons is marked **Unassessed**.
 
 Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
-Commands such as `edit` and `delete` use indices from the **All applicants** list.
+Commands such as `edit` and `delete` use indices from the **Applicants** list.
+
+Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
+their standing without searching the leaderboard. The total includes everyone in the active comparison list,
+even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons are marked
+**Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
 
 Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
 their standing without searching the leaderboard. The total includes everyone in the active comparison list,
@@ -134,6 +139,8 @@ Format: `help`
 * The table has four columns: **Command**, **What it does**, **Parameters** and **Example**. The commands are grouped under **Applicants**, **Comparison** and **General**, and the window scrolls if your screen is small.
 * In the **Parameters** column, items in square brackets are optional, and `...` means you can repeat the item. A command that takes no parameters shows `-`.
 * You can also open the window by clicking **Help** in the menu bar, or by pressing `F1`.
+* Each example has a **Copy** button that copies the complete command to the clipboard.
+* Press `Esc` to close Help.
 * The window ends with a link to this user guide, and a **Copy URL** button to copy it.
 
 
@@ -141,23 +148,23 @@ Format: `help`
 
 Adds an applicant record to RecruitDex.
 
-Format: `add -nNAME [-pPHONE_NUMBER] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
+Format: `add -n NAME [-p PHONE_NUMBER] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...`
 
 * `INTERVIEW_NOTES` is free text, for example `Strong system design`.
 * `YEARS_OF_EXPERIENCE` is a whole number from 0 to 60.
 * `SOURCE` is free text saying where the applicant came from, for example `LinkedIn` or `Referral`.
-* `SKILL` is entered with the `-t` prefix. An applicant can have any number of skills, including zero. A skill can contain only letters and numbers, so `C++` is not accepted.
+* `SKILL` is entered with the `-t` prefix. An applicant can have any number of skills, including zero. A skill must contain at least one letter or number and may also contain `+`, `#`, and `.`, for example `C++`, `C#`, or `node.js`.
 * Only the name is required. Phone number, email, address, interview notes, years of experience, source, and skills can all be omitted. Omitted fields are saved as empty values and can be filled in later with `edit`.
 * Optional fields other than skills can also be given with nothing after the prefix (for example `-p` or `-i`), which leaves them empty. To add an applicant without skills, omit `-t`; a bare `-t` is not accepted by `add`.
 * When provided, a phone number must contain at least 3 digits and only digits, and an email must be a valid email address. Other validation rules still apply to supplied values.
 
 Examples:
 
-* `add -nAlex Tan`
-* `add -nSam Lee -esam@example.com -tJava`
-* `add -nJohn Doe -p98765432 -ejohnd@example.com -aJohn street, block 123, #01-01`
-* `add -nBetsy Crowe -tfriend -ebetsycrowe@example.com -aNewgate Prison -p1234567 -tcriminal`
-* `add -nJane Doe -p91234567 -ejane@example.com -aBlk 1 Clementi -y6 -sLinkedIn -iGreat system design -tJava -tKafka`
+* `add -n Alex Tan`
+* `add -n Sam Lee -e sam@example.com -t Java`
+* `add -n John Doe -p 98765432 -e johnd@example.com -a John street, block 123, #01-01`
+* `add -n Betsy Crowe -t friend -e betsycrowe@example.com -a Newgate Prison -p 1234567 -t criminal`
+* `add -n Jane Doe -p 91234567 -e jane@example.com -a Blk 1 Clementi -y 6 -s LinkedIn -i Great system design -t Java -t Kafka`
 
 ### Adding an applicant to the comparison list: `compare-add`
 
@@ -226,12 +233,12 @@ For example, run `list`, `compare-add 1`, and `compare-add 2`, review the pair i
 
 ### Switching tabs: `sw`
 
-Switches between the **Compare** tab and the **All applicants** tab.
+Switches between the **Compare** tab and the **Applicants** tab.
 
 Format: `sw`
 
-* If the **Compare** tab is showing, `sw` shows the **All applicants** tab, and the other way round.
-* The result box tells you which tab is now showing, for example `Showing the All applicants tab.`
+* If the **Compare** tab is showing, `sw` shows the **Applicants** tab, and the other way round.
+* The result box tells you which tab is now showing, for example `Showing the Applicants tab.`
 * Only the display changes. Applicant records, the comparison list and the search filter stay the same.
 * Unlike `help` or `list`, `sw` does not accept extra text after it. Typing `sw 1` shows an error with the correct format.
 
@@ -364,7 +371,7 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add -nNAME [-pPHONE_NUMBER] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...` <br> e.g., `add -nJames Ho` or `add -nJames Ho -p22224444 -ejamesho@example.com -a123, Clementi Rd -y5 -sLinkedIn -tJava -tKafka`
+**Add**    | `add -n NAME [-p PHONE_NUMBER] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...` <br> e.g., `add -n James Ho` or `add -n James Ho -p 22224444 -e jamesho@example.com -a 123, Clementi Rd -y 5 -s LinkedIn -t Java -t Kafka`
 **Edit**   | `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`<br> e.g., `edit 2 -nJames Lee -ejameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`

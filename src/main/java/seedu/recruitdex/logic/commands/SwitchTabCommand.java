@@ -5,14 +5,14 @@ import static java.util.Objects.requireNonNull;
 import seedu.recruitdex.model.Model;
 
 /**
- * Switches the main window between the Compare tab and the All applicants tab.
+ * Switches the main window between the Compare tab and the Applicants tab.
  * Only the display changes; the model is not modified.
  */
 public class SwitchTabCommand extends Command {
     public static final String COMMAND_WORD = "sw";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Switches between the Compare tab and the All applicants tab.\n"
+            + ": Switches between the Compare tab and the Applicants tab.\n"
             + "Example: " + COMMAND_WORD;
 
     /** Shown if the UI does not replace it with the name of the tab it switched to. */

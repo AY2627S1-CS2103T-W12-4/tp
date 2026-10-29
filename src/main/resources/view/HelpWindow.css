@@ -1,4 +1,4 @@
-#copyButton, #helpMessage, #commandsTitle {
+#copyButton, .help-copy-button, #helpMessage, #commandsTitle {
     -fx-text-fill: white;
 }
 
@@ -7,15 +7,15 @@
     -fx-font-weight: bold;
 }
 
-#copyButton {
+#copyButton, .help-copy-button {
     -fx-background-color: dimgray;
 }
 
-#copyButton:hover {
+#copyButton:hover, .help-copy-button:hover {
     -fx-background-color: gray;
 }
 
-#copyButton:armed {
+#copyButton:armed, .help-copy-button:armed {
     -fx-background-color: darkgray;
 }
 
@@ -74,4 +74,15 @@
 .help-code {
     -fx-font-family: "Menlo", "Consolas", monospace;
     -fx-font-size: 11px;
+}
+
+.help-example {
+    -fx-padding: 6 10 6 10;
+    -fx-border-color: #333333;
+    -fx-border-width: 0 0 1 0;
+}
+
+.help-example .help-code {
+    -fx-padding: 0;
+    -fx-border-width: 0;
 }
