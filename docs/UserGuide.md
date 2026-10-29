@@ -73,16 +73,16 @@ RecruitDex is a desktop application for managing applicant records through comma
   For example, in `add -n NAME`, replace `NAME` with a value such as `John Doe`.
 
 * A space between a prefix and its value is optional.<br>
-  For example, `-nJohn Doe` and `-n John Doe` mean the same thing.
+  The command formats and examples in this guide consistently include a space for readability.
 
 * Items in square brackets are optional.<br>
-  For example, `-nNAME [-tSKILL]` can be used as `-nJohn Doe -tJava` or as `-nJohn Doe`.
+  For example, `-n NAME [-t SKILL]` can be used as `-n John Doe -t Java` or as `-n John Doe`.
 
 * Items followed by `...` can appear zero or more times.<br>
-  For example, `[-tSKILL]...` may be omitted, or written as `-tJava` or `-tJava -tKafka`.
+  For example, `[-t SKILL]...` may be omitted, or written as `-t Java` or `-t Java -t Kafka`.
 
 * Parameters can be in any order.<br>
-  For example, if the command specifies `-nNAME -pPHONE_NUMBER`, `-pPHONE_NUMBER -nNAME` is also acceptable.
+  For example, if the command specifies `-n NAME -p PHONE_NUMBER`, `-p PHONE_NUMBER -n NAME` is also acceptable.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -252,7 +252,7 @@ Format: `list`
 
 Edits an existing applicant record.
 
-Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
+Format: `edit INDEX [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...`
 
 * Edits the applicant at the specified `INDEX`. The index refers to the index number shown in the displayed applicant list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
@@ -263,9 +263,9 @@ Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES]
 
 Examples:
 
-* `edit 1 -p91234567 -ejohndoe@example.com` edits the phone number and email address of the 1st applicant.
-* `edit 2 -nBetsy Crower -t` edits the name of the 2nd applicant and clears all existing skills.
-* `edit 1 -y7 -sReferral` sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
+* `edit 1 -p 91234567 -e johndoe@example.com` edits the phone number and email address of the 1st applicant.
+* `edit 2 -n Betsy Crower -t` edits the name of the 2nd applicant and clears all existing skills.
+* `edit 1 -y 7 -s Referral` sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
 * `edit 3 -i` clears the interview notes of the 3rd applicant.
 
 ### Finding applicants: `find`
@@ -374,7 +374,7 @@ _Details coming soon ..._
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add -n NAME [-p PHONE_NUMBER] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...` <br> e.g., `add -n James Ho` or `add -n James Ho -p 22224444 -e jamesho@example.com -a 123, Clementi Rd -y 5 -s LinkedIn -t Java -t Kafka`
-**Edit**   | `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`<br> e.g., `edit 2 -nJames Lee -ejameslee@example.com`
+**Edit**   | `edit INDEX [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...`<br> e.g., `edit 2 -n James Lee -e jameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
 **Find**   | `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`<br> e.g., `find -n Alice -t java kaf`
