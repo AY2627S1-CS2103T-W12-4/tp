@@ -14,8 +14,18 @@ activate ui UI_COLOR
 ui -[UI_COLOR]> logic : execute("delete 1")
 activate logic LOGIC_COLOR
 
-logic -[LOGIC_COLOR]> model : deleteApplicant(p)
+note right of logic
+  Resolve applicantId from the displayed list.
+  Snapshot data and filter before executing deletion.
+end note
+
+logic -[LOGIC_COLOR]> model : getApplicantRegistry().delete(applicantId)
 activate model MODEL_COLOR
+
+note right of model
+  Registry deletion cleans up comparisons
+  and refreshes ranking and any affected pair.
+end note
 
 model -[MODEL_COLOR]-> logic
 deactivate model
