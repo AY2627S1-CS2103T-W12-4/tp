@@ -22,9 +22,9 @@ Class StorageManager
 Class HiddenOutside #FFFFFF
 HiddenOutside ..> Logic
 
-LogicManager .up.|> Logic
-ModelManager .up.|> Model
-StorageManager .up.|> Storage
+LogicManager .up.|> Logic : implements
+ModelManager .up.|> Model : implements
+StorageManager .up.|> Storage : implements
 
 LogicManager --> Model
 LogicManager --> Storage
