@@ -58,7 +58,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 * **Result box (below it):** shows what the last command did, or why it failed.
 * **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
 * **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
-* **Switching tabs:** type `sw` to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
+* **Switching tabs:** type `sw` or press the up and down arrow keys when the command bar is not selected to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
 --------------------------------------------------------------------------------------------------------------------
