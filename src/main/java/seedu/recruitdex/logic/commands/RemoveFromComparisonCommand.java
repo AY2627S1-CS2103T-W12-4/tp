@@ -15,8 +15,7 @@ import seedu.recruitdex.model.comparison.ComparisonList;
 /**
  * Removes an applicant identified by its displayed index from the active comparison list.
  * The model retains the applicant record and decision history and coordinates ranking and pair updates.
- * Removing a non-member succeeds without changing membership. The command observes membership
- * only to describe the outcome; the model owns removal behavior in both cases.
+ * Removing a non-member is reported as a command error without changing model state.
  */
 public class RemoveFromComparisonCommand extends Command {
     public static final String COMMAND_WORD = "compare-remove";
@@ -49,11 +48,10 @@ public class RemoveFromComparisonCommand extends Command {
         Applicant applicant = displayedApplicants.get(targetIndex.getZeroBased());
         ComparisonList comparisonList = model.getComparisonList();
 
-        boolean wasMember = comparisonList.getMemberIds().contains(applicant.getId());
-        comparisonList.remove(applicant.getId());
-        if (!wasMember) {
-            return new CommandResult(MESSAGE_NOT_A_MEMBER);
+        if (!comparisonList.getMemberIds().contains(applicant.getId())) {
+            throw new CommandException(MESSAGE_NOT_A_MEMBER);
         }
+        comparisonList.remove(applicant.getId());
 
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(applicant)));
     }
