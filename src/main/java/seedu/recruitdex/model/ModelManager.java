@@ -40,7 +40,8 @@ public class ModelManager implements Model {
         rankingEngine = new RankingEngine();
         this.recruitDexData = new RecruitDexData(recruitDexData, rankingEngine);
         this.userPrefs = new UserPrefs(userPrefs);
-        filteredApplicants = new FilteredList<>(getApplicantRegistry().getApplicantList());
+        filteredApplicants = new FilteredList<>(getApplicantRegistry().getApplicantList(),
+                PREDICATE_SHOW_ALL_APPLICANTS);
         unmodifiableFilteredApplicants = FXCollections.unmodifiableObservableList(filteredApplicants);
     }
 
@@ -85,7 +86,12 @@ public class ModelManager implements Model {
     }
 
     @Override
-    public void updateFilteredApplicantList(Predicate<Applicant> predicate) {
+    public Predicate<? super Applicant> getFilteredApplicantPredicate() {
+        return filteredApplicants.getPredicate();
+    }
+
+    @Override
+    public void updateFilteredApplicantList(Predicate<? super Applicant> predicate) {
         requireNonNull(predicate);
         filteredApplicants.setPredicate(predicate);
     }

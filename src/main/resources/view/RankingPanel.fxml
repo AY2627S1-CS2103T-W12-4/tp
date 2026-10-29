@@ -7,8 +7,9 @@
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="ranking-panel" spacing="4">
   <Label text="RANKING" styleClass="ranking-title" />
   <Label fx:id="subtitle" styleClass="ranking-subtitle" />
-  <Label text="Ties share a rank. Applicant commands use the Applicants list."
-         styleClass="ranking-note" wrapText="true" />
+  <!-- Keep all wrapped lines visible; -Infinity uses the label's preferred height as its minimum. -->
+  <Label text="Ties share a rank. Applicant commands use the Applicants list. Use Applicant index for compare-remove. Clear the search with list to index hidden applicants."
+         styleClass="ranking-note" wrapText="true" minHeight="-Infinity" />
   <ListView fx:id="rankingListView" styleClass="ranking-list-view" VBox.vgrow="ALWAYS">
     <placeholder>
       <Label text="No applicants in the comparison list." styleClass="ranking-empty-message" wrapText="true" />

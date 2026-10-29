@@ -34,13 +34,17 @@ import seedu.recruitdex.logic.commands.AddToComparisonCommand;
 import seedu.recruitdex.logic.commands.CommandResult;
 import seedu.recruitdex.logic.commands.CompareCommand;
 import seedu.recruitdex.logic.commands.DeleteCommand;
+import seedu.recruitdex.logic.commands.ExitCommand;
+import seedu.recruitdex.logic.commands.HelpCommand;
 import seedu.recruitdex.logic.commands.ListCommand;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
+import seedu.recruitdex.logic.commands.SwitchTabCommand;
 import seedu.recruitdex.logic.commands.exceptions.CommandException;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
 import seedu.recruitdex.model.Model;
 import seedu.recruitdex.model.ModelManager;
 import seedu.recruitdex.model.ReadOnlyRecruitDexData;
+import seedu.recruitdex.model.RecruitDexData;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.applicant.NameContainsKeywordsPredicate;
 import seedu.recruitdex.model.comparison.ComparisonDecision;
@@ -51,6 +55,7 @@ import seedu.recruitdex.model.userprefs.UserPrefs;
 import seedu.recruitdex.storage.JsonRecruitDexDataStorage;
 import seedu.recruitdex.storage.JsonUserPrefsStorage;
 import seedu.recruitdex.storage.StorageManager;
+import seedu.recruitdex.testutil.ApplicantBuilder;
 
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
@@ -305,14 +310,33 @@ public class LogicManagerTest {
         assertEquals(ranking, reopened.getRankingEngine().getRanking());
         assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
 
-        CommandResult repeatedResult = logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1");
-
-        assertEquals(RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, repeatedResult.getFeedbackToUser());
+        assertThrows(CommandException.class, RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, () ->
+                logic.execute(RemoveFromComparisonCommand.COMMAND_WORD + " 1"));
         assertEquals(Set.of(ALICE.getId()), model.getComparisonList().getMemberIds());
         assertEquals(1, ranking.size());
         assertEquals(ALICE.getId(), ranking.get(0).getApplicantId());
         assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
         assertEquals(reopened.getRecruitDexData(), savedRecords.readRecruitDexData().orElseThrow());
+    }
+
+    @Test
+    public void execute_comparisonMembershipErrors_throwsBeforeSaving() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute(AddToComparisonCommand.COMMAND_WORD + " 1");
+        ReadOnlyRecruitDexData dataBefore = new RecruitDexData(model.getRecruitDexData());
+        JsonRecruitDexDataStorage savedRecords =
+                new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
+        failingStorageLogic(DUMMY_IO_EXCEPTION);
+
+        assertCommandException(AddToComparisonCommand.COMMAND_WORD + " 1",
+                AddToComparisonCommand.MESSAGE_DUPLICATE_MEMBER);
+        assertCommandException(RemoveFromComparisonCommand.COMMAND_WORD + " 2",
+                RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER);
+
+        assertEquals(dataBefore, model.getRecruitDexData());
+        assertEquals(dataBefore, savedRecords.readRecruitDexData().orElseThrow());
+        assertEquals(List.of(ALICE, BENSON), logic.getFilteredApplicantList());
     }
 
     @Test
@@ -358,6 +382,24 @@ public class LogicManagerTest {
         assertEquals(1, reopenedLogic.getRanking().get(0).getComparisonCount());
         assertEquals(2, reopenedLogic.getRanking().stream().mapToInt(RankingEntry::getComparisonCount).sum());
         assertEquals(reopened.getRecruitDexData(), savedRecords.readRecruitDexData().orElseThrow());
+    }
+
+    @Test
+    public void execute_helpWithFailingStorage_returnsHelpResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(HelpCommand.COMMAND_WORD,
+                new CommandResult(HelpCommand.SHOWING_HELP_MESSAGE, true, false));
+    }
+
+    @Test
+    public void execute_switchTabWithFailingStorage_returnsSwitchTabResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(SwitchTabCommand.COMMAND_WORD,
+                new CommandResult(SwitchTabCommand.MESSAGE_SUCCESS, false, false, true));
+    }
+
+    @Test
+    public void execute_exitWithFailingStorage_returnsExitResult() throws Exception {
+        assertUiCommandSucceedsWithFailingStorage(ExitCommand.COMMAND_WORD,
+                new CommandResult(ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT, false, true));
     }
 
     @Test
@@ -503,11 +545,77 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_failedAddWithIoException_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("add -nCarol Lee", DUMMY_IO_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedAddWithAccessDenied_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("add -nCarol Lee", DUMMY_AD_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedEditWithIoException_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("edit 1 -nOther Name", DUMMY_IO_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedEditWithAccessDenied_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("edit 1 -nOther Name", DUMMY_AD_EXCEPTION);
+    }
+
+    /** Checks both the restored search results and whether the original filter still matches future edits. */
+    private void assertFailedCommandPreservesSearchFilter(String command, IOException exception) throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        model.getComparisonList().recordDecision(ALICE.getId());
+        logic.execute("find -n Benson");
+        ObservableList<Applicant> displayed = logic.getFilteredApplicantList();
+        ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
+        List<RankingEntry> rankingBeforeCommand = List.copyOf(logic.getRanking());
+        failingStorageLogic(exception);
+
+        assertThrows(CommandException.class, () -> logic.execute(command));
+
+        assertSame(displayed, logic.getFilteredApplicantList());
+        assertEquals(List.of(BENSON), displayed);
+        assertEquals(dataBeforeCommand, model.getRecruitDexData());
+        assertEquals(rankingBeforeCommand, logic.getRanking());
+
+        Applicant matchingAlice = new ApplicantBuilder(ALICE).withName("Benson Pauline").build();
+        model.getApplicantRegistry().edit(ALICE.getId(), matchingAlice);
+        assertEquals(List.of(matchingAlice, BENSON), displayed);
+    }
+
+    @Test
     public void execute_storageWorks_keepsTheChange() throws Exception {
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
         logic.execute(addCommand);
         assertEquals(1, model.getApplicantRegistry().getApplicantList().size());
+    }
+
+    /** Checks that a UI action survives save failures without changing recruitment data or the search results. */
+    private void assertUiCommandSucceedsWithFailingStorage(String command, CommandResult expected) throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        model.getComparisonList().recordDecision(ALICE.getId());
+        logic.execute("find -n Benson");
+        ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
+        List<RankingEntry> rankingBeforeCommand = List.copyOf(logic.getRanking());
+
+        for (IOException exception : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            failingStorageLogic(exception);
+
+            assertEquals(expected, logic.execute(command));
+            assertEquals(dataBeforeCommand, model.getRecruitDexData());
+            assertEquals(rankingBeforeCommand, logic.getRanking());
+            assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+        }
     }
 
     /** Points {@code logic} at a storage whose saves always throw {@code exception}. */

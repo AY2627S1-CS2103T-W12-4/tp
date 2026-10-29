@@ -122,7 +122,7 @@ public class RemoveFromComparisonCommandTest {
     }
 
     @Test
-    public void execute_defaultModelManager_nonMemberLeavesStateUnchanged() throws Exception {
+    public void execute_defaultModelManager_nonMemberThrowsAndLeavesStateUnchanged() {
         ModelManager connectedModel = new ModelManager(getTypicalRecruitDexData(), new UserPrefs());
         ComparisonList realComparisonList = connectedModel.getComparisonList();
         assertSame(connectedModel.getRecruitDexData().getComparisonList(), realComparisonList);
@@ -133,9 +133,8 @@ public class RemoveFromComparisonCommandTest {
         ObservableList<RankingEntry> ranking = connectedModel.getRankingEngine().getRanking();
         List<RankingEntry> rankingBefore = List.copyOf(ranking);
 
-        CommandResult result = new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT).execute(connectedModel);
-
-        assertEquals(RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, result.getFeedbackToUser());
+        assertCommandFailure(new RemoveFromComparisonCommand(INDEX_FIRST_APPLICANT), connectedModel,
+                RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER);
         assertEquals(dataBefore, connectedModel.getRecruitDexData());
         assertSame(ranking, connectedModel.getRankingEngine().getRanking());
         assertEquals(rankingBefore, ranking);
@@ -196,16 +195,15 @@ public class RemoveFromComparisonCommandTest {
     }
 
     @Test
-    public void execute_nonMember_stillDelegatesRemovalToModel() throws Exception {
+    public void execute_nonMember_throwsWithoutCallingRemoval() {
         model.getApplicantRegistry().add(HOON);
         RecruitDexData dataBefore = new RecruitDexData(model.getRecruitDexData());
         Index index = Index.fromOneBased(model.getFilteredApplicantList().size());
         assertFalse(comparisonList.getMemberIds().contains(HOON.getId()));
 
-        CommandResult result = new RemoveFromComparisonCommand(index).execute(model);
-
-        assertEquals(RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER, result.getFeedbackToUser());
-        assertEquals(List.of(HOON.getId()), comparisonList.removedApplicantIds);
+        assertCommandFailure(new RemoveFromComparisonCommand(index), model,
+                RemoveFromComparisonCommand.MESSAGE_NOT_A_MEMBER);
+        assertTrue(comparisonList.removedApplicantIds.isEmpty());
         assertEquals(dataBefore, model.getRecruitDexData());
     }
 

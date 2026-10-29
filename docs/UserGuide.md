@@ -56,7 +56,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
 * **Command box (top):** type a command here and press Enter. Everything in RecruitDex is done with commands.
 * **Result box (below it):** shows what the last command did, or why it failed.
-* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
+* **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
 * **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
 * **Switching tabs:** type `sw` to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
@@ -112,6 +112,11 @@ The **RANKING** panel displays applicants in the active comparison list.
 
 Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
 Commands such as `edit` and `delete` use indices from the **Applicants** list.
+
+Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
+their standing without searching the leaderboard. The total includes everyone in the active comparison list,
+even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons are marked
+**Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
 
 **Current iteration:** The leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
@@ -186,8 +191,9 @@ Format: `compare-remove INDEX`
 * `INDEX` is a positive integer referring to the applicant's position in the displayed applicant list.
 * After `find`, the index refers to the filtered results.
 * The current search filter is kept unchanged.
-* Removing an applicant who is already outside the comparison list succeeds without changing membership
-  and reports `This applicant is not in the comparison list.`
+* Removing an applicant who is already outside the comparison list reports the error
+  `This applicant is not in the comparison list.` without changing membership.
+  The command stays in the command box so you can correct the index.
 * Decisions involving the removed applicant are retained but excluded from the current ranking.
   Adding the applicant back makes those decisions eligible again when both participants are active.
 * An unanswered comparison involving the removed applicant is cleared or replaced.
@@ -312,8 +318,10 @@ Format: `exit`
 ### Saving the data
 
 RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
-comparison after every successful command. Reopening RecruitDex restores this data and rebuilds the ranking.
+comparison after successful changes. Reopening RecruitDex restores the saved data and rebuilds the ranking.
 You do not need to save manually.
+
+`help`, `sw`, and `exit` don't change your data, so they still work even if saving fails.
 
 RecruitDex writes the data to a temporary file first and only then replaces the data file, so a crash during a save cannot leave a half-written file. If a save fails, for example because the folder is not writable, the command is undone and RecruitDex shows an error message.
 
@@ -322,7 +330,10 @@ RecruitDex writes the data to a temporary file first and only then replaces the 
 Applicant records and comparison data are saved automatically as a JSON file
 `[JAR file location]/data/recruitdex.json`. Advanced users are welcome to update records directly by editing that
 data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
-comparison-list members. Existing files without comparison data load with an empty comparison list.
+comparison-list members. If the file has no unanswered pair but has at least two active comparison-list members,
+RecruitDex selects a pair on loading without adding a decision or changing the existing history.
+A saved valid pair keeps its original A/B sides. Existing files without comparison data load with an empty
+comparison list.
 
 <box type="warning" seamless>
 

@@ -377,6 +377,29 @@ public class ComparisonListTest {
     }
 
     @Test
+    public void resetData_missingPendingPair_selectsPairWithoutAddingDecision() {
+        ComparisonDecision decision = new ComparisonDecision(ALICE.getId(), BENSON.getId(), ALICE.getId());
+
+        comparisonList.resetData(Set.of(ALICE.getId(), BENSON.getId()), List.of(decision), Optional.empty());
+
+        assertCurrentPairContains(Set.of(ALICE.getId(), BENSON.getId()));
+        assertEquals(List.of(decision), comparisonList.getDecisionHistory());
+        assertEquals(1, rankingEngine.recalculationCount);
+        assertEquals(List.of(decision), rankingEngine.lastDecisions);
+    }
+
+    @Test
+    public void resetData_fewerThanTwoMembers_keepsPairEmpty() {
+        for (Set<ApplicantId> members : List.of(Set.<ApplicantId>of(), Set.of(ALICE.getId()))) {
+            comparisonList.resetData(members, List.of(), Optional.empty());
+
+            assertEquals(members, comparisonList.getMemberIds());
+            assertTrue(comparisonList.getCurrentPair().isEmpty());
+            assertTrue(comparisonList.getDecisionHistory().isEmpty());
+        }
+    }
+
+    @Test
     public void resetData_validDataRestoresMembershipHistoryAndPendingPair() {
         comparisonList.add(ALICE.getId());
         comparisonList.add(BENSON.getId());

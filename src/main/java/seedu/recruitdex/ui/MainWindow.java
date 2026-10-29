@@ -145,10 +145,12 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        comparisonPanel = new ComparisonPanel(logic.getCurrentPairProperty(), logic.getApplicantList());
+        comparisonPanel = new ComparisonPanel(logic.getCurrentPairProperty(), logic.getApplicantList(),
+                logic.getRanking());
         comparisonPanelPlaceholder.getChildren().add(comparisonPanel.getRoot());
 
-        rankingPanel = new RankingPanel(logic.getRanking(), logic.getApplicantList());
+        rankingPanel = new RankingPanel(logic.getRanking(), logic.getApplicantList(),
+                logic.getFilteredApplicantList());
         rankingPanelPlaceholder.getChildren().add(rankingPanel.getRoot());
 
         applicantListPanel = new ApplicantListPanel(logic.getFilteredApplicantList());

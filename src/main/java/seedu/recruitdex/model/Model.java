@@ -42,9 +42,12 @@ public interface Model {
     /** Returns an unmodifiable observable view of the displayed applicants. */
     ObservableList<Applicant> getFilteredApplicantList();
 
+    /** Returns the current non-null display filter, which can be restored after a failed command. */
+    Predicate<? super Applicant> getFilteredApplicantPredicate();
+
     /**
      * Updates the display filter without changing saved applicant records.
      * @throws NullPointerException if {@code predicate} is null.
      */
-    void updateFilteredApplicantList(Predicate<Applicant> predicate);
+    void updateFilteredApplicantList(Predicate<? super Applicant> predicate);
 }

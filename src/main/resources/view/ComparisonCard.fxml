@@ -18,6 +18,8 @@
     </Label>
     <Label fx:id="badge" styleClass="comparison-badge" />
   </HBox>
+  <Label fx:id="rank" styleClass="comparison-rank" wrapText="true" minHeight="-Infinity"
+         visible="false" managed="false" />
   <FlowPane fx:id="skills" hgap="5" vgap="3" minHeight="-Infinity" />
   <Label fx:id="contact" styleClass="comparison-contact" wrapText="true" minHeight="-Infinity" />
   <VBox fx:id="details" spacing="2" styleClass="comparison-details" minHeight="-Infinity" />
