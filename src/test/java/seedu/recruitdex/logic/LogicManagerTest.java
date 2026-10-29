@@ -54,6 +54,7 @@ import seedu.recruitdex.model.userprefs.UserPrefs;
 import seedu.recruitdex.storage.JsonRecruitDexDataStorage;
 import seedu.recruitdex.storage.JsonUserPrefsStorage;
 import seedu.recruitdex.storage.StorageManager;
+import seedu.recruitdex.testutil.ApplicantBuilder;
 
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
@@ -506,6 +507,51 @@ public class LogicManagerTest {
         // both the record and its membership of the comparison list are back
         assertEquals(List.of(ALICE), model.getApplicantRegistry().getApplicantList());
         assertTrue(model.getComparisonList().getMemberIds().contains(ALICE.getId()));
+    }
+
+    @Test
+    public void execute_failedAddWithIoException_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("add -nCarol Lee", DUMMY_IO_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedAddWithAccessDenied_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("add -nCarol Lee", DUMMY_AD_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedEditWithIoException_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("edit 1 -nOther Name", DUMMY_IO_EXCEPTION);
+    }
+
+    @Test
+    public void execute_failedEditWithAccessDenied_preservesSearchFilter() throws Exception {
+        assertFailedCommandPreservesSearchFilter("edit 1 -nOther Name", DUMMY_AD_EXCEPTION);
+    }
+
+    /** Checks both the restored search results and whether the original filter still matches future edits. */
+    private void assertFailedCommandPreservesSearchFilter(String command, IOException exception) throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        model.getComparisonList().add(ALICE.getId());
+        model.getComparisonList().add(BENSON.getId());
+        model.getComparisonList().recordDecision(ALICE.getId());
+        logic.execute("find -n Benson");
+        ObservableList<Applicant> displayed = logic.getFilteredApplicantList();
+        ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
+        List<RankingEntry> rankingBeforeCommand = List.copyOf(logic.getRanking());
+        failingStorageLogic(exception);
+
+        assertThrows(CommandException.class, () -> logic.execute(command));
+
+        assertSame(displayed, logic.getFilteredApplicantList());
+        assertEquals(List.of(BENSON), displayed);
+        assertEquals(dataBeforeCommand, model.getRecruitDexData());
+        assertEquals(rankingBeforeCommand, logic.getRanking());
+
+        Applicant matchingAlice = new ApplicantBuilder(ALICE).withName("Benson Pauline").build();
+        model.getApplicantRegistry().edit(ALICE.getId(), matchingAlice);
+        assertEquals(List.of(matchingAlice, BENSON), displayed);
     }
 
     @Test

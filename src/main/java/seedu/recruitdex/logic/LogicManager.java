@@ -3,6 +3,7 @@ package seedu.recruitdex.logic;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -54,6 +55,8 @@ public class LogicManager implements Logic {
         Command command = recruitDexParser.parseCommand(commandText);
         // kept so that a command whose changes cannot be saved is undone, leaving screen and file in agreement
         ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
+        // The search filter is runtime state, so the saved-data snapshot does not include it.
+        Predicate<? super Applicant> filterBeforeCommand = model.getFilteredApplicantPredicate();
         commandResult = command.execute(model);
 
         // Interface actions must remain available even if saving fails.
@@ -65,9 +68,11 @@ public class LogicManager implements Logic {
             storage.saveRecruitDexData(model.getRecruitDexData());
         } catch (AccessDeniedException e) {
             model.setRecruitDexData(dataBeforeCommand);
+            model.updateFilteredApplicantList(filterBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
             model.setRecruitDexData(dataBeforeCommand);
+            model.updateFilteredApplicantList(filterBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
