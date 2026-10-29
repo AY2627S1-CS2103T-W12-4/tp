@@ -114,7 +114,7 @@ The sequence diagram below illustrates command parsing and deletion for a succes
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
-`LogicManager.execute` also keeps the data file and the screen in agreement. It copies the application data before running the command and saves the result afterwards. If the save fails, it restores the copy and reports the error, so the user never sees a change that was not saved. See [Atomic saving](#atomic-saving).
+`LogicManager.execute` also keeps the data file and the screen in agreement. It copies the application data before running the command and, if the command changed that data, saves the result afterwards. If the save fails, it restores the copy and reports the error, so the user never sees a change that was not saved. See [Atomic saving](#atomic-saving).
 
 <box type="info" seamless>
 
@@ -217,6 +217,13 @@ A data file that is cut off part way through a save would lose the recruiter's w
 
 A save can also fail after the command has already changed the model, for example when the disk is full. `LogicManager.execute` handles this by copying the application data before the command runs (`new RecruitDexData(model.getRecruitDexData())`). If saving throws an `IOException`, it puts the copy back with `Model#setRecruitDexData` and throws a `CommandException`, so the screen shows the data as it was.
 
+`LogicManager.execute` saves only when the command changed the data, that is, when `model.getRecruitDexData()` no longer equals the copy. Commands such as `list`, `find`, `help`, `sw` and `exit` therefore never save. They keep working while saving fails, and they cannot overwrite a data file that failed to load. `RecruitDexData` equality covers every saved field except applicant IDs, which `Applicant#equals` ignores; no command changes only an ID.
+
+At startup, `MainApp` treats the data file as follows:
+
+* If the file loads, or is missing and the sample data is used, `MainApp` saves the loaded data once. This creates the file for new users, and records any pending pair chosen while loading.
+* If the file cannot be loaded, `MainApp` starts with empty data and does not save. It calls `Storage#backUpRecruitDexDataFile()`, which copies the file to `recruitdex.invalid-yyyyMMdd-HHmmss.json` in the same folder without replacing an existing file. `UiManager` then shows a message in the result display naming the backup, or asking the user to copy the file if the backup failed. The user's first change replaces the invalid file.
+
 **Design considerations:**
 
 **Aspect: How to write the file.**
@@ -239,6 +246,18 @@ A save can also fail after the command has already changed the model, for exampl
 * **Alternative 2:** Keep the change in memory and only show an error.
   * Pros: No copy needed.
   * Cons: The user sees a change that the file does not have, and loses it when the app closes.
+
+**Aspect: Which commands save.**
+
+* **Alternative 1 (current choice):** Save when the data after the command differs from the copy taken before it.
+  * Pros: New commands are handled correctly without extra work. Commands that end up changing nothing, such as an `edit` with the same values, also skip saving.
+  * Cons: Every command compares the data once, which is cheap for this application. The comparison must cover every saved field.
+* **Alternative 2:** Mark each command, or its result, as changing data or not.
+  * Pros: Explicit, and no comparison is needed.
+  * Cons: A developer who forgets the mark on a new read-only command makes it fail during save failures and overwrite an unloadable file.
+* **Alternative 3:** Save after every command.
+  * Pros: Simplest.
+  * Cons: `list` or `find` can replace a data file that failed to load with an empty one, and fail whenever saving fails.
 
 ### Help window command table
 
@@ -755,11 +774,17 @@ testers are expected to do more *exploratory* testing.
    1. Close RecruitDex, open `data/recruitdex.json` in a text editor, delete its last `}` and save the file.
 
    1. Launch RecruitDex again.<br>
-      Expected: The GUI opens with an empty applicant list. The corrupted file stays as it is until a command saves new data.
+      Expected: The GUI opens with an empty applicant list. The result box says the file could not be loaded and names a copy, `data/recruitdex.invalid-DATE-TIME.json`, which matches the corrupted file.
+
+   1. Enter `list`, `find -n Alex` and `help`, then close RecruitDex.<br>
+      Expected: `data/recruitdex.json` is unchanged.
+
+   1. Launch RecruitDex again and enter `add -nTest Zero`.<br>
+      Expected: `data/recruitdex.json` now contains only `Test Zero`, and the earlier copy is still in the `data` folder.
 
 1. Checking that saving is atomic
 
-   1. Launch RecruitDex, add an applicant, for example `add n/Test One p/91234567 e/t1@example.com a/Blk 1`, and close the app.
+   1. Launch RecruitDex, add an applicant, for example `add -nTest One -p91234567 -et1@example.com -aBlk 1`, and close the app.
 
    1. List the `data` folder.<br>
       Expected: It contains `recruitdex.json` and no `.tmp` file, and `recruitdex.json` contains `Test One`.
@@ -768,8 +793,11 @@ testers are expected to do more *exploratory* testing.
 
    1. Close RecruitDex and make the `data` folder read-only. On macOS and Linux, run `chmod a-w data`.
 
-   1. Launch RecruitDex and enter `add n/Test Two p/92345678 e/t2@example.com a/Blk 2`.<br>
+   1. Launch RecruitDex and enter `add -nTest Two -p92345678 -et2@example.com -aBlk 2`.<br>
       Expected: The result box shows a "Could not save data" error, and `Test Two` is **not** in the applicant list.
+
+   1. Enter `find -n Alex`, then `list`.<br>
+      Expected: Both commands work as usual, without a save error.
 
    1. Close RecruitDex, make the folder writable again (`chmod u+w data`) and check `recruitdex.json`.<br>
       Expected: The file does not contain `Test Two`.

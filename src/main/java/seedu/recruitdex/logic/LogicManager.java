@@ -59,8 +59,9 @@ public class LogicManager implements Logic {
         Predicate<? super Applicant> filterBeforeCommand = model.getFilteredApplicantPredicate();
         commandResult = command.execute(model);
 
-        // Interface actions must remain available even if saving fails.
-        if (commandResult.isUiOnly()) {
+        // Commands that leave the saved data unchanged, such as list, find and help, skip saving, so they keep
+        // working when saving fails and cannot overwrite a data file that failed to load.
+        if (model.getRecruitDexData().equals(dataBeforeCommand)) {
             return commandResult;
         }
 

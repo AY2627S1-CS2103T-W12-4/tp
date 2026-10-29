@@ -316,9 +316,9 @@ Format: `exit`
 
 RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
 comparison after successful changes. Reopening RecruitDex restores the saved data and rebuilds the ranking.
-You do not need to save manually.
+You do not need to save manually. If there is no data file yet, RecruitDex creates one with the sample data when it starts.
 
-`help`, `sw`, and `exit` don't change your data, so they still work even if saving fails.
+Commands that don't change your data, such as `list`, `find`, `help`, `sw` and `exit`, don't save, so they still work even if saving fails.
 
 RecruitDex writes the data to a temporary file first and only then replaces the data file, so a crash during a save cannot leave a half-written file. If a save fails, for example because the folder is not writable, the command is undone and RecruitDex shows an error message.
 
@@ -335,7 +335,7 @@ comparison list.
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, RecruitDex starts with an empty applicant list at the next run. The invalid file remains on disk until you run a successful command that saves records. We recommend backing up the file before editing it.<br>
+If your changes make the data file invalid, RecruitDex starts with an empty applicant list at the next run. It copies the invalid file to `data/recruitdex.invalid-DATE-TIME.json` (for example `recruitdex.invalid-20261029-190623.json`) and shows a message saying so. The invalid `recruitdex.json` stays on disk until you make a change, such as `add`, which replaces it. To recover your data, close RecruitDex, fix the copy, and rename it back to `recruitdex.json`. We still recommend backing up the file before editing it.<br>
 Certain edits can cause RecruitDex to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Edit the data file only if you are confident that you can update it correctly.
 </box>
 

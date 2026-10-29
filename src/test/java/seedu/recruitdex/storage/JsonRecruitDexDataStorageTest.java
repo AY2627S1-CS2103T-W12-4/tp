@@ -155,6 +155,19 @@ public class JsonRecruitDexDataStorageTest {
     }
 
     @Test
+    public void backUpRecruitDexDataFile_copiesFileWithoutChangingIt() throws Exception {
+        Path dataFile = testFolder.resolve("recruitdex.json");
+        Files.writeString(dataFile, "{ unloadable");
+
+        Path backup = new JsonRecruitDexDataStorage(dataFile).backUpRecruitDexDataFile();
+
+        assertEquals(testFolder, backup.getParent());
+        assertTrue(backup.getFileName().toString().matches("recruitdex\\.invalid-\\d{8}-\\d{6}\\.json"));
+        assertEquals("{ unloadable", Files.readString(backup));
+        assertEquals("{ unloadable", Files.readString(dataFile));
+    }
+
+    @Test
     public void readRecruitDexData_nullFilePath_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> readRecruitDexData(null));
     }

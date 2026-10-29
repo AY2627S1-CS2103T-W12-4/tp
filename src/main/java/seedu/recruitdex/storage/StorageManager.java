@@ -65,4 +65,10 @@ public class StorageManager implements Storage {
         recruitDexDataStorage.saveRecruitDexData(recruitDexData);
     }
 
+    @Override
+    public Path backUpRecruitDexDataFile() throws IOException {
+        logger.fine("Attempting to back up data file: " + recruitDexDataStorage.getRecruitDexDataFilePath());
+        return recruitDexDataStorage.backUpRecruitDexDataFile();
+    }
+
 }

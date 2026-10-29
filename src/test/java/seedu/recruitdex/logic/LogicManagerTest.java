@@ -17,6 +17,7 @@ import static seedu.recruitdex.testutil.TypicalApplicants.CARL;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -224,7 +225,7 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_savesCurrentHistoryAndPendingPairAfterEveryCommand() throws Exception {
+    public void execute_savesCurrentHistoryAndPendingPairAfterDataChange() throws Exception {
         model.getApplicantRegistry().add(ALICE);
         model.getApplicantRegistry().add(BENSON);
         model.getComparisonList().add(ALICE.getId());
@@ -240,7 +241,7 @@ public class LogicManagerTest {
                 List.copyOf(model.getComparisonList().getDecisionHistory()),
                 Optional.of(pair));
 
-        logic.execute("find -n Alice");
+        logic.execute("add -nCarol Lee");
 
         JsonRecruitDexDataStorage saved =
                 new JsonRecruitDexDataStorage(temporaryFolder.resolve("recruitDexData.json"));
@@ -249,7 +250,7 @@ public class LogicManagerTest {
         assertEquals(List.of(decision), reopened.getComparisonList().getDecisionHistory());
         assertEquals(Optional.of(pair), reopened.getComparisonList().getCurrentPair());
         assertEquals(model.getRankingEngine().getRanking(), reopened.getRankingEngine().getRanking());
-        assertEquals(List.of(ALICE, BENSON), reopened.getFilteredApplicantList());
+        assertEquals(model.getApplicantRegistry().getApplicantList(), reopened.getFilteredApplicantList());
 
         logic.execute("clear");
         reopened.setRecruitDexData(saved.readRecruitDexData().orElseThrow());
@@ -365,6 +366,42 @@ public class LogicManagerTest {
     public void execute_exitWithFailingStorage_returnsExitResult() throws Exception {
         assertUiCommandSucceedsWithFailingStorage(ExitCommand.COMMAND_WORD,
                 new CommandResult(ExitCommand.MESSAGE_EXIT_ACKNOWLEDGEMENT, false, true));
+    }
+
+    @Test
+    public void execute_listWithFailingStorage_showsAllApplicants() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        logic.execute("find -n Benson");
+        failingStorageLogic(DUMMY_AD_EXCEPTION);
+
+        assertEquals(new CommandResult(ListCommand.MESSAGE_SUCCESS), logic.execute(ListCommand.COMMAND_WORD));
+        assertEquals(List.of(ALICE, BENSON), logic.getFilteredApplicantList());
+    }
+
+    @Test
+    public void execute_findWithFailingStorage_filtersApplicants() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        model.getApplicantRegistry().add(BENSON);
+        failingStorageLogic(DUMMY_IO_EXCEPTION);
+
+        logic.execute("find -n Benson");
+        assertEquals(List.of(BENSON), logic.getFilteredApplicantList());
+    }
+
+    @Test
+    public void execute_commandsLeavingDataUnchanged_doNotReplaceDataFile() throws Exception {
+        model.getApplicantRegistry().add(ALICE);
+        Path dataFile = temporaryFolder.resolve("recruitDexData.json");
+        Files.writeString(dataFile, "unloadable data");
+
+        for (String command : List.of("list", "find -n Alice", "help", "sw", "exit")) {
+            logic.execute(command);
+        }
+        assertEquals("unloadable data", Files.readString(dataFile));
+
+        logic.execute("add -nCarol Lee");
+        assertNotEquals("unloadable data", Files.readString(dataFile));
     }
 
     @Test
