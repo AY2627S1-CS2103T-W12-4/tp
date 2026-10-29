@@ -3,6 +3,7 @@ package seedu.recruitdex.logic.parser;
 import static seedu.recruitdex.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseSuccess;
+import static seedu.recruitdex.logic.parser.ParserUtil.MESSAGE_NON_POSITIVE_INDEX;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 
 import org.junit.jupiter.api.Test;
@@ -28,5 +29,13 @@ public class DeleteCommandParserTest {
     @Test
     public void parse_invalidArgs_throwsParseException() {
         assertParseFailure(parser, "a", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "1.5", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_nonPositiveIndex_throwsNonPositiveIndexMessage() {
+        assertParseFailure(parser, "0", MESSAGE_NON_POSITIVE_INDEX);
+        assertParseFailure(parser, "-1", MESSAGE_NON_POSITIVE_INDEX);
     }
 }

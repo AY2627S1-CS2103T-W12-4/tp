@@ -43,6 +43,7 @@ import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_YEARS_OF_EXPERIENCE;
 import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseSuccess;
+import static seedu.recruitdex.logic.parser.ParserUtil.MESSAGE_NON_POSITIVE_INDEX;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_SECOND_APPLICANT;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_THIRD_APPLICANT;
@@ -84,10 +85,10 @@ public class EditCommandParserTest {
     @Test
     public void parse_invalidPreamble_failure() {
         // negative index
-        assertParseFailure(parser, "-5" + NAME_DESC_AMY, MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "-5" + NAME_DESC_AMY, MESSAGE_NON_POSITIVE_INDEX);
 
         // zero index
-        assertParseFailure(parser, "0" + NAME_DESC_AMY, MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "0" + NAME_DESC_AMY, MESSAGE_NON_POSITIVE_INDEX);
 
         // invalid arguments being parsed as preamble
         assertParseFailure(parser, "1 some random string", MESSAGE_INVALID_FORMAT);

@@ -1,6 +1,7 @@
 package seedu.recruitdex.logic.parser;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.recruitdex.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,6 +25,7 @@ import seedu.recruitdex.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
+    public static final String MESSAGE_NON_POSITIVE_INDEX = "The index must be a positive integer (1, 2, 3, ...).";
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -36,6 +38,23 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+    }
+
+    /**
+     * Parses {@code oneBasedIndex} like {@link #parseIndex(String)}, for a command whose usage is
+     * {@code messageUsage}.
+     * @throws ParseException with {@link #MESSAGE_NON_POSITIVE_INDEX} if the index is a whole number that is zero or
+     *         negative, or with the invalid command format message for any other invalid input.
+     */
+    public static Index parseIndex(String oneBasedIndex, String messageUsage) throws ParseException {
+        try {
+            return parseIndex(oneBasedIndex);
+        } catch (ParseException pe) {
+            if (oneBasedIndex.trim().matches("0+|-\\d+")) {
+                throw new ParseException(MESSAGE_NON_POSITIVE_INDEX, pe);
+            }
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, messageUsage), pe);
+        }
     }
 
     /**
