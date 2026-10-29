@@ -22,7 +22,7 @@ import seedu.recruitdex.model.ranking.RankingEntry;
 
 /**
  * Panel displaying the engine's complete ranking with current applicant names resolved by ID.
- * Observes ranking changes and applicant record changes independently of the search filter.
+ * Shows the complete ranking, with command indices from the current applicant search results.
  * Observable updates are supplied on the JavaFX application thread.
  */
 public class RankingPanel extends UiPart<Region> {
@@ -40,23 +40,25 @@ public class RankingPanel extends UiPart<Region> {
 
     /**
      * Creates a leaderboard observing {@code rankingEntries} and the complete applicant registry view.
-     * Applicant edits refresh names without recalculating positions or scores.
+     * Applicant edits refresh names; search changes refresh command indices without filtering the ranking.
      *
-     * @throws NullPointerException if either list is null.
+     * @throws NullPointerException if any list is null.
      */
-    public RankingPanel(ObservableList<RankingEntry> rankingEntries, ObservableList<Applicant> applicants) {
+    public RankingPanel(ObservableList<RankingEntry> rankingEntries, ObservableList<Applicant> applicants,
+                        ObservableList<Applicant> displayedApplicants) {
         super(FXML);
-        requireAllNonNull(rankingEntries, applicants);
+        requireAllNonNull(rankingEntries, applicants, displayedApplicants);
         this.rankingEntries = rankingEntries;
         this.applicants = applicants;
         rebuildApplicantIndex();
-        rankingListView.setCellFactory(listView -> new RankingCell(applicantsById));
+        rankingListView.setCellFactory(listView -> new RankingCell(applicantsById, displayedApplicants));
         rankingListView.setItems(rankingEntries);
         rankingEntries.addListener((ListChangeListener<RankingEntry>) change -> updateSubtitle());
         applicants.addListener((ListChangeListener<Applicant>) change -> {
             rebuildApplicantIndex();
             rankingListView.refresh();
         });
+        displayedApplicants.addListener((ListChangeListener<Applicant>) change -> rankingListView.refresh());
         updateSubtitle();
     }
 
@@ -78,14 +80,18 @@ public class RankingPanel extends UiPart<Region> {
      */
     private static class RankingCell extends ListCell<RankingEntry> {
         private final Map<ApplicantId, Applicant> applicantsById;
+        private final ObservableList<Applicant> displayedApplicants;
+        private final Label applicantIndexLabel = new Label();
         private final Label positionLabel = new Label();
         private final Label nameLabel = new Label();
         private final Label metadataLabel = new Label();
         private final Tooltip nameTooltip = new Tooltip();
         private final HBox row;
 
-        private RankingCell(Map<ApplicantId, Applicant> applicantsById) {
+        private RankingCell(Map<ApplicantId, Applicant> applicantsById,
+                            ObservableList<Applicant> displayedApplicants) {
             this.applicantsById = applicantsById;
+            this.displayedApplicants = displayedApplicants;
             // Let the viewport constrain rows instead of using long names to determine the list width.
             setPrefWidth(0);
             positionLabel.getStyleClass().add("ranking-position");
@@ -98,7 +104,9 @@ public class RankingPanel extends UiPart<Region> {
             metadataLabel.setWrapText(true);
             metadataLabel.setTooltip(new Tooltip("Relative ranking score; higher values rank earlier."));
 
-            VBox details = new VBox(3, nameLabel, metadataLabel);
+            applicantIndexLabel.getStyleClass().add("ranking-metadata");
+            applicantIndexLabel.setWrapText(true);
+            VBox details = new VBox(3, nameLabel, applicantIndexLabel, metadataLabel);
             details.setMinWidth(0);
             HBox.setHgrow(details, Priority.ALWAYS);
             row = new HBox(8, positionLabel, details);
@@ -121,15 +129,17 @@ public class RankingPanel extends UiPart<Region> {
                 positionLabel.setText(null);
                 nameLabel.setText(null);
                 metadataLabel.setText(null);
+                applicantIndexLabel.setText(null);
                 nameTooltip.setText(null);
                 setGraphic(null);
                 return;
             }
 
-            RankingEntryDisplay display = RankingEntryDisplay.create(entry, applicantsById);
+            RankingEntryDisplay display = RankingEntryDisplay.create(entry, applicantsById, displayedApplicants);
             positionLabel.setText(display.positionText());
             nameLabel.setText(display.nameText());
             metadataLabel.setText(display.metadataText());
+            applicantIndexLabel.setText(display.applicantIndexText());
             nameTooltip.setText(display.nameText());
             if (display.isFirstPosition()) {
                 row.getStyleClass().add("ranking-row-first");
