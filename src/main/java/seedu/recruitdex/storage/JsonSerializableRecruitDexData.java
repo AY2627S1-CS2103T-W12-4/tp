@@ -22,6 +22,7 @@ import seedu.recruitdex.model.applicant.exceptions.DuplicateApplicantException;
 class JsonSerializableRecruitDexData {
 
     public static final String MESSAGE_DUPLICATE_APPLICANT = "Applicants list contains duplicate applicant(s).";
+    public static final String MESSAGE_NULL_APPLICANT = "Applicants list contains a null applicant.";
 
     private final List<JsonAdaptedApplicant> applicants = new ArrayList<>();
     private final JsonAdaptedComparisonList comparisonList;
@@ -60,6 +61,10 @@ class JsonSerializableRecruitDexData {
     public RecruitDexData toModelType() throws IllegalValueException {
         RecruitDexData recruitDexData = new RecruitDexData();
         for (JsonAdaptedApplicant jsonAdaptedApplicant : applicants) {
+            // Invalid stored entries must follow the normal data-loading recovery path.
+            if (jsonAdaptedApplicant == null) {
+                throw new IllegalValueException(MESSAGE_NULL_APPLICANT);
+            }
             Applicant applicant = jsonAdaptedApplicant.toModelType();
             try {
                 recruitDexData.getApplicantRegistry().add(applicant);

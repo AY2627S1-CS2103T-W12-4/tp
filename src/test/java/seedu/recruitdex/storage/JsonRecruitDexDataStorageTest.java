@@ -132,6 +132,18 @@ public class JsonRecruitDexDataStorageTest {
     }
 
     @Test
+    public void readRecruitDexData_nullApplicant_throwsDataLoadingExceptionWithoutChangingFile() throws Exception {
+        Path filePath = testFolder.resolve("nullApplicant.json");
+        String invalidJson = "{\"applicants\":[null]}";
+        Files.writeString(filePath, invalidJson);
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+
+        assertThrows(DataLoadingException.class, storage::readRecruitDexData);
+
+        assertEquals(invalidJson, Files.readString(filePath));
+    }
+
+    @Test
     public void readRecruitDexData_duplicateIds_throwsDataLoadingException() throws Exception {
         Path filePath = testFolder.resolve("duplicateIds.json");
         Applicant duplicate = new ApplicantBuilder(ALICE).withName("Another applicant").build();
