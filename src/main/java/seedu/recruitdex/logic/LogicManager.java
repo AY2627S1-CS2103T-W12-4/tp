@@ -56,6 +56,11 @@ public class LogicManager implements Logic {
         ReadOnlyRecruitDexData dataBeforeCommand = new RecruitDexData(model.getRecruitDexData());
         commandResult = command.execute(model);
 
+        // Interface actions must remain available even if saving fails.
+        if (commandResult.isUiOnly()) {
+            return commandResult;
+        }
+
         try {
             storage.saveRecruitDexData(model.getRecruitDexData());
         } catch (AccessDeniedException e) {

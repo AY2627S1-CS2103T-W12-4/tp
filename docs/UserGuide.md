@@ -310,8 +310,10 @@ Format: `exit`
 ### Saving the data
 
 RecruitDex automatically saves applicant records, comparison-list membership, decision history, and any unanswered
-comparison after every successful command. Reopening RecruitDex restores this data and rebuilds the ranking.
+comparison after successful changes. Reopening RecruitDex restores the saved data and rebuilds the ranking.
 You do not need to save manually.
+
+`help`, `sw`, and `exit` don't change your data, so they still work even if saving fails.
 
 RecruitDex writes the data to a temporary file first and only then replaces the data file, so a crash during a save cannot leave a half-written file. If a save fails, for example because the folder is not writable, the command is undone and RecruitDex shows an error message.
 
