@@ -65,7 +65,8 @@ public class ComparisonPanel extends UiPart<ScrollPane> {
         Optional<RankingEntry> entry = applicant.flatMap(person -> ranking.stream()
                 .filter(rank -> rank.getApplicantId().equals(person.getId())).findFirst());
         ComparisonCard card = applicant.isPresent()
-                ? new ComparisonCard(slotLabel, applicant.get(), entry, ranking.size())
+                ? new ComparisonCard(slotLabel, applicant.get(), entry,
+                        (int) ranking.stream().filter(RankingEntry::isAssessed).count())
                 : new ComparisonCard(slotLabel);
         slot.getChildren().setAll(card.getRoot());
     }

@@ -42,15 +42,16 @@ public class ComparisonCard extends UiPart<Region> {
      * The ranking position comes from the engine and may be shared by tied applicants.
      *
      * @param rankingEntry the applicant's current ranking result, if available
-     * @param comparisonListSize the number of applicants in the full active comparison list
+     * @param assessedApplicantCount the number of assessed applicants in the active comparison list
      */
     public ComparisonCard(String slotLabel, Applicant applicant, Optional<RankingEntry> rankingEntry,
-            int comparisonListSize) {
+            int assessedApplicantCount) {
         super(FXML);
         styleForSlot(slotLabel);
         name.setText(applicant.getName().fullName);
-        rank.setText(rankingEntry.map(entry -> "Rank " + entry.getPosition() + " of " + comparisonListSize
-                + (entry.getComparisonCount() == 0 ? " \u00b7 Unassessed" : "")).orElse("Rank unavailable"));
+        rank.setText(rankingEntry.map(entry -> entry.isAssessed()
+                ? "Rank " + entry.getPosition() + " of " + assessedApplicantCount : "Unassessed")
+                .orElse("Rank unavailable"));
         rank.setVisible(true);
         rank.setManaged(true);
         String contactText = Stream.of(applicant.getPhone().value, applicant.getEmail().value)

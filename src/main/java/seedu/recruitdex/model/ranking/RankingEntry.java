@@ -58,9 +58,19 @@ public final class RankingEntry {
 
     /**
      * Returns the applicant's one-based ranking position, allowing tied positions.
+     * For unassessed entries this is only an internal position after assessed entries;
+     * callers must check {@link #isAssessed()} before displaying a rank.
      */
     public int getPosition() {
         return position;
+    }
+
+    /**
+     * Returns whether this applicant has evidence contributing to the current ranking.
+     * Unassessed entries' initial scores and positions must not be presented as an assessment.
+     */
+    public boolean isAssessed() {
+        return comparisonCount > 0;
     }
 
     /**

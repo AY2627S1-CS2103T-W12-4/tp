@@ -85,8 +85,8 @@ public class RankingEngineTest {
 
         List<RankingEntry> expectedEntries = List.of(
                 createEntry(APPLICANT_ID_A, 1, 0.287682, 1),
-                createEntry(APPLICANT_ID_C, 2, 0, 0),
-                createEntry(APPLICANT_ID_B, 3, -0.405465, 1));
+                createEntry(APPLICANT_ID_B, 2, -0.405465, 1),
+                createEntry(APPLICANT_ID_C, 3, 0, 0));
         assertEquals(List.of(expectedEntries), notifications);
     }
 
@@ -155,6 +155,41 @@ public class RankingEngineTest {
     }
 
     @Test
+    public void recalculate_assessedZeroScores_doNotTieWithUnassessedMember() {
+        engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_C), List.of(
+                createDecision(APPLICANT_ID_B, APPLICANT_ID_C, APPLICANT_ID_B),
+                createDecision(APPLICANT_ID_B, APPLICANT_ID_C, APPLICANT_ID_C)));
+
+        assertRanking(createEntry(APPLICANT_ID_B, 1, 0, 2),
+                createEntry(APPLICANT_ID_C, 1, 0, 2), createEntry(APPLICANT_ID_A, 3, 0, 0));
+    }
+
+    @Test
+    public void recalculate_unassessedMember_doesNotDisplaceAssessedRanks() {
+        List<ComparisonDecision> decisions = List.of(
+                createDecision(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_A),
+                createDecision(APPLICANT_ID_B, APPLICANT_ID_C, APPLICANT_ID_B));
+        engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_C), decisions);
+        List<RankingEntry> assessedEntries = List.copyOf(engine.getRanking());
+
+        engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_C, APPLICANT_ID_D), decisions);
+
+        assertEquals(assessedEntries, engine.getRanking().subList(0, 3));
+        assertEquals(createEntry(APPLICANT_ID_D, 4, 0, 0), engine.getRanking().get(3));
+        assertTrue(engine.getRanking().get(2).getScore().orElseThrow() < 0);
+
+        // A first comparison moves the applicant into the assessed group.
+        List<ComparisonDecision> updatedDecisions = new ArrayList<>(decisions);
+        updatedDecisions.add(createDecision(APPLICANT_ID_C, APPLICANT_ID_D, APPLICANT_ID_C));
+        engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_C, APPLICANT_ID_D), updatedDecisions);
+        assertTrue(findEntry(APPLICANT_ID_D).isAssessed());
+
+        // Removing the only opponent makes the applicant unassessed again.
+        engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_D), updatedDecisions);
+        assertEquals(createEntry(APPLICANT_ID_D, 3, 0, 0), engine.getRanking().get(2));
+    }
+
+    @Test
     public void recalculate_transitiveChain_matchesIndependentReference() {
         engine.recalculate(Set.of(APPLICANT_ID_A, APPLICANT_ID_B, APPLICANT_ID_C),
                 List.of(
@@ -209,7 +244,7 @@ public class RankingEngineTest {
         assertRanking(createEntry(APPLICANT_ID_A, 1, 0, 2),
                 createEntry(APPLICANT_ID_B, 1, 0, 2),
                 createEntry(APPLICANT_ID_C, 1, 0, 10),
-                createEntry(APPLICANT_ID_D, 1, 0, 10), createEntry(APPLICANT_ID_E, 1, 0, 0));
+                createEntry(APPLICANT_ID_D, 1, 0, 10), createEntry(APPLICANT_ID_E, 5, 0, 0));
     }
 
     @Test

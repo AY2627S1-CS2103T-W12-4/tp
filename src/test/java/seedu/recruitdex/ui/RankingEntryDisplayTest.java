@@ -128,6 +128,8 @@ public class RankingEntryDisplayTest {
         RankingEntryDisplay display = RankingEntryDisplay.create(entry, APPLICANTS_BY_ID, DISPLAYED_APPLICANTS);
 
         assertEquals("Score: 0.000000 · 2 comparisons", display.metadataText());
+        assertEquals("Rank 1", display.positionText());
+        assertTrue(display.isFirstPosition());
     }
 
     @Test
@@ -136,8 +138,9 @@ public class RankingEntryDisplayTest {
 
         RankingEntryDisplay display = RankingEntryDisplay.create(entry, APPLICANTS_BY_ID, DISPLAYED_APPLICANTS);
 
-        assertEquals("Score: 0.000000 · 0 comparisons · Unassessed", display.metadataText());
-        assertTrue(display.isFirstPosition());
+        assertEquals("Unassessed · 0 comparisons", display.metadataText());
+        assertEquals("", display.positionText());
+        assertFalse(display.isFirstPosition());
     }
 
     @Test
@@ -147,7 +150,8 @@ public class RankingEntryDisplayTest {
         RankingEntryDisplay display = RankingEntryDisplay.create(entry, Map.of(), DISPLAYED_APPLICANTS);
 
         assertEquals("Applicant unavailable", display.nameText());
-        assertEquals("Score: — · 0 comparisons · Unassessed", display.metadataText());
+        assertEquals("Unassessed · 0 comparisons", display.metadataText());
+        assertEquals("", display.positionText());
     }
 
     @Test
@@ -179,7 +183,7 @@ public class RankingEntryDisplayTest {
         RankingEntryDisplay hiddenDisplay = RankingEntryDisplay.create(entry, APPLICANTS_BY_ID, results);
         assertEquals("Not in current applicant results", hiddenDisplay.applicantIndexText());
         assertEquals(ALICE.getName().fullName, hiddenDisplay.nameText());
-        assertEquals("Rank 1", hiddenDisplay.positionText());
+        assertEquals("", hiddenDisplay.positionText());
         results.setPredicate(null);
         assertEquals("Applicant index: 2",
                 RankingEntryDisplay.create(entry, APPLICANTS_BY_ID, results).applicantIndexText());

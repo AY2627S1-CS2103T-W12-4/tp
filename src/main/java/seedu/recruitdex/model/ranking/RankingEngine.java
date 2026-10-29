@@ -27,7 +27,8 @@ import seedu.recruitdex.model.comparison.ComparisonDecision;
  * Positive strengths are fitted by maximum a posteriori estimation with independent
  * Gamma priors of shape 2 and rate 1. Unassessed applicants have strength 1 and score 0.
  * Scores are natural logarithms of fitted strengths, rounded to six decimal places.
- * Equal scores share competition positions, such as 1, 1, 3; IDs only order tied entries for display.
+ * Assessed applicants precede unassessed applicants. Within each group, equal scores share competition
+ * positions, such as 1, 1, 3; IDs only order tied entries for display.
  *
  * <p>Every eligible decision has equal weight, including repeated judgments with distinct IDs.
  * Fitting is independent of decision execution order and timestamps. Only decisions whose two
@@ -311,14 +312,17 @@ public class RankingEngine {
             scores.add(new ApplicantScore(data.applicantIds().get(index), score,
                     data.comparisonCounts()[index]));
         }
-        scores.sort(Comparator.comparingDouble(ApplicantScore::score).reversed()
+        scores.sort(Comparator.comparing((ApplicantScore applicantScore) -> applicantScore.comparisonCount() == 0)
+                .thenComparing(Comparator.comparingDouble(ApplicantScore::score).reversed())
                 .thenComparing(applicantScore -> applicantScore.applicantId().value));
 
         List<RankingEntry> entries = new ArrayList<>();
         int position = 0;
         for (int index = 0; index < scores.size(); index++) {
             ApplicantScore applicantScore = scores.get(index);
-            if (index == 0 || Double.compare(applicantScore.score(), scores.get(index - 1).score()) != 0) {
+            if (index == 0
+                    || (applicantScore.comparisonCount() == 0) != (scores.get(index - 1).comparisonCount() == 0)
+                    || Double.compare(applicantScore.score(), scores.get(index - 1).score()) != 0) {
                 position = index + 1;
             }
             entries.add(new RankingEntry(applicantScore.applicantId(), position,
