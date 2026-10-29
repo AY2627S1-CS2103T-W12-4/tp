@@ -1,6 +1,7 @@
 package seedu.recruitdex.ui;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,6 +13,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import seedu.recruitdex.model.applicant.Applicant;
+import seedu.recruitdex.model.ranking.RankingEntry;
 
 /**
  * A UI component that displays the details of one applicant in the comparison view, marked with a slot label
@@ -27,6 +29,8 @@ public class ComparisonCard extends UiPart<Region> {
     @FXML
     private Label name;
     @FXML
+    private Label rank;
+    @FXML
     private FlowPane skills;
     @FXML
     private Label contact;
@@ -35,11 +39,20 @@ public class ComparisonCard extends UiPart<Region> {
 
     /**
      * Creates a {@code ComparisonCard} showing {@code applicant} in the slot named {@code slotLabel}.
+     * The ranking position comes from the engine and may be shared by tied applicants.
+     *
+     * @param rankingEntry the applicant's current ranking result, if available
+     * @param comparisonListSize the number of applicants in the full active comparison list
      */
-    public ComparisonCard(String slotLabel, Applicant applicant) {
+    public ComparisonCard(String slotLabel, Applicant applicant, Optional<RankingEntry> rankingEntry,
+            int comparisonListSize) {
         super(FXML);
         styleForSlot(slotLabel);
         name.setText(applicant.getName().fullName);
+        rank.setText(rankingEntry.map(entry -> "Rank " + entry.getPosition() + " of " + comparisonListSize
+                + (entry.getComparisonCount() == 0 ? " \u00b7 Unassessed" : "")).orElse("Rank unavailable"));
+        rank.setVisible(true);
+        rank.setManaged(true);
         String contactText = Stream.of(applicant.getPhone().value, applicant.getEmail().value)
                 .filter(value -> !value.isEmpty())
                 .collect(Collectors.joining("  |  "));

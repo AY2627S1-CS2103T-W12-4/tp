@@ -11,6 +11,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.comparison.ComparisonPair;
+import seedu.recruitdex.model.ranking.RankingEntry;
 
 /**
  * Panel showing the two applicants of the current comparison pair side by side, labelled A and B.
@@ -22,6 +23,7 @@ public class ComparisonPanel extends UiPart<ScrollPane> {
 
     private final ObservableValue<Optional<ComparisonPair>> currentPair;
     private final ObservableList<Applicant> applicants;
+    private final ObservableList<RankingEntry> ranking;
     private ComparisonPair displayedPair;
 
     @FXML
@@ -31,16 +33,19 @@ public class ComparisonPanel extends UiPart<ScrollPane> {
 
     /**
      * Creates a {@code ComparisonPanel} that shows the applicants of {@code currentPair}, looked up in
-     * {@code applicants}. It refreshes when the pair changes or when any applicant record changes.
+     * {@code applicants}, with current positions from {@code ranking}. It refreshes when the pair, applicant
+     * records, or ranking changes.
      */
     public ComparisonPanel(ObservableValue<Optional<ComparisonPair>> currentPair,
-            ObservableList<Applicant> applicants) {
+            ObservableList<Applicant> applicants, ObservableList<RankingEntry> ranking) {
         super(FXML);
         this.currentPair = currentPair;
         this.applicants = applicants;
+        this.ranking = ranking;
         // Invalidation also reports replacement pairs with the same applicant IDs and sides.
         currentPair.addListener(observable -> refresh());
         applicants.addListener((ListChangeListener<Applicant>) change -> refresh());
+        ranking.addListener((ListChangeListener<RankingEntry>) change -> refresh());
         refresh();
     }
 
@@ -57,8 +62,10 @@ public class ComparisonPanel extends UiPart<ScrollPane> {
     }
 
     private void show(StackPane slot, String slotLabel, Optional<Applicant> applicant) {
+        Optional<RankingEntry> entry = applicant.flatMap(person -> ranking.stream()
+                .filter(rank -> rank.getApplicantId().equals(person.getId())).findFirst());
         ComparisonCard card = applicant.isPresent()
-                ? new ComparisonCard(slotLabel, applicant.get())
+                ? new ComparisonCard(slotLabel, applicant.get(), entry, ranking.size())
                 : new ComparisonCard(slotLabel);
         slot.getChildren().setAll(card.getRoot());
     }
