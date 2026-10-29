@@ -22,7 +22,7 @@ public class RemoveFromComparisonCommand extends Command {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Removes an applicant from the comparison list, keeping the applicant record.\n"
-            + "Parameters: INDEX (a positive integer from the displayed applicant list)\n"
+            + "Parameters: INDEX (a positive integer from the current applicant results, not the rank)\n"
             + "Example: " + COMMAND_WORD + " 1";
 
     public static final String MESSAGE_SUCCESS = "Applicant removed from comparison list: %1$s";
