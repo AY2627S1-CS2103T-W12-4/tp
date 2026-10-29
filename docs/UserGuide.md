@@ -241,6 +241,7 @@ Format: `sw`
 * The result box tells you which tab is now showing, for example `Showing the Applicants tab.`
 * Only the display changes. Applicant records, the comparison list and the search filter stay the same.
 * Unlike `help` or `list`, `sw` does not accept extra text after it. Typing `sw 1` shows an error with the correct format.
+* Alternatively, pressing the up and down arrow keys when the command bar is not selected also allows you to switch tabs.
 
 ### Listing all applicants: `list`
 
