@@ -5,6 +5,7 @@ import static seedu.recruitdex.commons.util.AppUtil.checkArgument;
 import static seedu.recruitdex.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -132,6 +133,7 @@ public class ComparisonList implements ReadOnlyComparisonList {
      * @throws NullPointerException if {@code applicantId} is null.
      * @throws ApplicantNotFoundException if the applicant has no record in the registry.
      * @throws DuplicateComparisonMemberException if the applicant is already an active member.
+     * @throws IllegalStateException if ranking calculation fails, leaving all model state unchanged.
      */
     public void add(ApplicantId applicantId) {
         requireNonNull(applicantId);
@@ -143,8 +145,10 @@ public class ComparisonList implements ReadOnlyComparisonList {
             throw new DuplicateComparisonMemberException();
         }
 
+        Set<ApplicantId> updatedMembers = new HashSet<>(memberIds);
+        updatedMembers.add(applicantId);
+        recalculateRanking(updatedMembers, decisionHistory);
         memberIds.add(applicantId);
-        recalculateRanking(decisionHistory);
         if (comparisonState.getCurrentPair().isEmpty()) {
             setNextPairOrClear();
         }
@@ -156,15 +160,18 @@ public class ComparisonList implements ReadOnlyComparisonList {
      * and clears or replaces a current pair that is no longer valid.
      *
      * <p>Removing an ID that is not currently a member has no effect.
+     * @throws IllegalStateException if ranking calculation fails, leaving all model state unchanged.
      */
     public void remove(ApplicantId applicantId) {
         requireNonNull(applicantId);
 
-        if (!memberIds.remove(applicantId)) {
+        Set<ApplicantId> updatedMembers = new HashSet<>(memberIds);
+        if (!updatedMembers.remove(applicantId)) {
             return;
         }
 
-        recalculateRanking(decisionHistory);
+        recalculateRanking(updatedMembers, decisionHistory);
+        memberIds.remove(applicantId);
         replaceCurrentPairIfInvalid();
     }
 
@@ -204,7 +211,7 @@ public class ComparisonList implements ReadOnlyComparisonList {
         List<ComparisonDecision> updatedHistory = new ArrayList<>(decisionHistory);
         updatedHistory.add(decision);
 
-        recalculateRanking(updatedHistory);
+        recalculateRanking(memberIds, updatedHistory);
         decisionHistory.add(decision);
         setNextPairOrClear();
 
@@ -221,27 +228,32 @@ public class ComparisonList implements ReadOnlyComparisonList {
      * for the registry to delete as part of its coordinated operation.
      *
      * @throws NullPointerException if {@code applicantId} is null
+     * @throws IllegalStateException if ranking calculation fails, leaving all model state unchanged.
      */
     public void deleteApplicantReferences(ApplicantId applicantId) {
         requireNonNull(applicantId);
 
-        memberIds.remove(applicantId);
-        decisionHistory.removeIf(decision ->
-                decision.getFirstApplicantId().equals(applicantId)
-                        || decision.getSecondApplicantId().equals(applicantId));
+        Set<ApplicantId> updatedMembers = new HashSet<>(memberIds);
+        updatedMembers.remove(applicantId);
+        List<ComparisonDecision> updatedHistory = decisionHistory.stream()
+                .filter(decision -> !decision.getFirstApplicantId().equals(applicantId)
+                        && !decision.getSecondApplicantId().equals(applicantId))
+                .toList();
 
-        recalculateRanking(decisionHistory);
+        recalculateRanking(updatedMembers, updatedHistory);
+        memberIds.remove(applicantId);
+        decisionHistory.setAll(updatedHistory);
         replaceCurrentPairIfInvalid();
     }
 
     /**
-     * Recalculates the ranking from the given decision history and current membership.
+     * Recalculates the ranking from proposed membership and history before publishing saved-data changes.
      *
+     * @param activeMembers the proposed membership to use when rebuilding the ranking
      * @param decisions the decisions to use when rebuilding the ranking
      */
-    private void recalculateRanking(List<ComparisonDecision> decisions) {
-        Set<ApplicantId> activeMembers = Set.copyOf(memberIds);
-        rankingEngine.recalculate(activeMembers, List.copyOf(decisions));
+    private void recalculateRanking(Set<ApplicantId> activeMembers, List<ComparisonDecision> decisions) {
+        rankingEngine.recalculate(Set.copyOf(activeMembers), List.copyOf(decisions));
     }
 
     /**

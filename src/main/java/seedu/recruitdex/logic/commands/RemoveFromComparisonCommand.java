@@ -51,7 +51,11 @@ public class RemoveFromComparisonCommand extends Command {
         if (!comparisonList.getMemberIds().contains(applicant.getId())) {
             throw new CommandException(MESSAGE_NOT_A_MEMBER);
         }
-        comparisonList.remove(applicant.getId());
+        try {
+            comparisonList.remove(applicant.getId());
+        } catch (IllegalStateException e) {
+            throw new CommandException(String.format(Messages.MESSAGE_RANKING_UPDATE_FAILED, e.getMessage()), e);
+        }
 
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(applicant)));
     }

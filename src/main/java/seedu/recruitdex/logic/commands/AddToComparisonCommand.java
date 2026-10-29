@@ -52,6 +52,8 @@ public class AddToComparisonCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_MEMBER, e);
         } catch (ApplicantNotFoundException e) {
             throw new CommandException(MESSAGE_APPLICANT_NOT_FOUND, e);
+        } catch (IllegalStateException e) {
+            throw new CommandException(String.format(Messages.MESSAGE_RANKING_UPDATE_FAILED, e.getMessage()), e);
         }
 
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(applicant)));

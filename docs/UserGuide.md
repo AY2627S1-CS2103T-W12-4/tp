@@ -129,6 +129,8 @@ Use `compare-add INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
 Comparison membership, decisions, and any unanswered pair are saved between sessions.
 
+If `compare-add`, `compare-remove` or `delete` cannot update the ranking, RecruitDex reports an error and keeps your data, current pair, ranking and search unchanged. Other commands remain available.
+
 ### Viewing help: `help`
 
 Opens the Help window, which lists every command in a table so you can look up a format without leaving RecruitDex.
