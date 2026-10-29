@@ -1,6 +1,14 @@
 package seedu.recruitdex.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_ADDRESS;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_INTERVIEW_NOTES;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_NAME;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_SOURCE;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.recruitdex.logic.parser.CliSyntax.PREFIX_YEARS_OF_EXPERIENCE;
 
 import java.util.function.Predicate;
 
@@ -17,11 +25,22 @@ public class FindCommand extends Command {
     public static final String COMMAND_WORD = "find";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Finds applicants matching one or more attributes and displays them as a list with index numbers.\n"
-            + "Parameters: -n NAME -p PHONE -e EMAIL -a ADDRESS -i INTERVIEW_NOTES "
-            + "-y YEARS_OF_EXPERIENCE -s SOURCE -t SKILL_TERMS\n"
-            + "Each skill search term must partially match at least one tag (case-insensitive).\n"
-            + "Example: " + COMMAND_WORD + " -n Alice Tan -p 91234567 -e alice@example.com -t java kaf";
+            + ": Finds applicants matching every given attribute and displays them as a list with index numbers. "
+            + "Give at least one attribute. Each term matches part of the attribute, ignoring case, "
+            + "except years of experience, which must match exactly. "
+            + "Each skill term must match part of at least one skill.\n"
+            + "Parameters: "
+            + "[" + PREFIX_NAME + "NAME] "
+            + "[" + PREFIX_PHONE + "PHONE] "
+            + "[" + PREFIX_EMAIL + "EMAIL] "
+            + "[" + PREFIX_ADDRESS + "ADDRESS] "
+            + "[" + PREFIX_INTERVIEW_NOTES + "INTERVIEW_NOTES] "
+            + "[" + PREFIX_YEARS_OF_EXPERIENCE + "YEARS_OF_EXPERIENCE] "
+            + "[" + PREFIX_SOURCE + "SOURCE] "
+            + "[" + PREFIX_TAG + "SKILL_TERMS]\n"
+            + "Example: " + COMMAND_WORD + " -n Alice -e example.com -t java kaf";
+
+    public static final String MESSAGE_INVALID_PHONE_TERM = "Phone search terms should contain only digits.";
 
     private final Predicate<Applicant> predicate;
 

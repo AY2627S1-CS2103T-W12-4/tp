@@ -277,14 +277,16 @@ Format: `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] 
 * Include at least one attribute prefix. The brackets indicate optional attributes; omit the brackets when entering a command.
 * Attribute values may contain spaces and can appear in any order. Each prefix may be used at most once.
 * When you supply more than one attribute, an applicant must match **all** supplied conditions.
-* Name, email, address, interview notes, and source searches are case-insensitive partial matches. Phone searches match part of the phone number.
-* `YEARS_OF_EXPERIENCE` must match the applicant’s value exactly.
+* Name, email, address, interview notes, and source searches are case-insensitive partial matches. The search term does not need to be a complete value, so `-e example.com` matches `alice@example.com`.
+* Phone searches match part of the phone number and may contain only digits, e.g. `-p 12`.
+* `YEARS_OF_EXPERIENCE` must match the applicant’s value exactly, and must be a whole number from 0 to 60.
 * For `-t`, enter one or more space-separated search terms. Each term must partially match at least one skill tag on the applicant. Matching is case-insensitive; different terms may match different tags.
-* A tag search must include at least one term.
+* Every prefix you include must be followed by a search term. For example, `find -s` is rejected.
 
 Examples:
 
 * `find -n Alice` finds applicants whose names contain `Alice`, ignoring case.
+* `find -e example.com` finds applicants whose emails contain `example.com`.
 * `find -t java kaf` finds applicants with a skill tag matching `java` and a skill tag matching `kaf`.
 * `find -n Alice -s LinkedIn -y 5` finds applicants whose name contains `Alice`, whose source contains `LinkedIn`, and whose years of experience is exactly `5`.
 * `find -a jurong west -n Alice Pauline` searches by both address and name. Attribute order does not matter.
