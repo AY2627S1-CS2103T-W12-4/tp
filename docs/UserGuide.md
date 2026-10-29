@@ -30,7 +30,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 
    **Notes about launching:**<br>
    * Launch the JAR with `java -jar`. Double-clicking the JAR file might not work on your computer, because it can open with a different Java version.
-   * The home folder must be **writable**. RecruitDex creates a `data` folder next to the JAR to save your records, so do not put the JAR in a write-protected folder.
+   * The home folder must be **writable**. RecruitDex saves records in `data/recruitdex.json` and window settings in `preferences.json`, relative to the terminal's current folder. Use `cd` as above so these files are kept beside the JAR.
    </box>
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the Help window, which lists every command.<br>
@@ -84,6 +84,12 @@ RecruitDex is a desktop application for managing applicant records through comma
 * Parameters can be in any order.<br>
   For example, if the command specifies `-n NAME -p PHONE_NUMBER`, `-p PHONE_NUMBER -n NAME` is also acceptable.
 
+* Command words and prefixes are case-sensitive. Use lowercase, for example `add -n Alex Tan`. The sides in `choose a` and `choose b` also accept uppercase `A` and `B`.
+
+* Put a space before each prefix. A value continues until the next recognised prefix, with leading and trailing spaces removed. Avoid including a space followed by a prefix such as `-n` inside free text, because it starts a new field.
+
+* Each prefix can appear only once, except `-t` in `add` and `edit`, where it supplies multiple skills. For `edit`, keep `INDEX` before the fields.
+
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
@@ -114,16 +120,11 @@ Searching filters the applicant list and leaves the leaderboard unchanged. Appli
 Commands such as `edit` and `delete` use indices from the **Applicants** list.
 
 Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
-their standing without searching the leaderboard. The total includes everyone in the active comparison list,
-even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons are marked
-**Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
-
-Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
 their standing without searching the leaderboard. The total includes assessed applicants in the active comparison list,
 even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons show
 **Unassessed** instead of a rank. These positions update with the leaderboard and are not the indices used by applicant commands.
 
-**Current iteration:** The leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
+With the initial sample data, the leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
 Comparison membership, decisions, and any unanswered pair are saved between sessions.
@@ -155,15 +156,17 @@ Format: `add -n NAME [-p PHONE_NUMBER] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOT
 * `SOURCE` is free text saying where the applicant came from, for example `LinkedIn` or `Referral`.
 * `SKILL` is entered with the `-t` prefix. An applicant can have any number of skills, including zero. A skill must contain at least one letter or number and may also contain `+`, `#`, and `.`, for example `C++`, `C#`, or `node.js`.
 * Only the name is required. Phone number, email, address, interview notes, years of experience, source, and skills can all be omitted. Omitted fields are saved as empty values and can be filled in later with `edit`.
+* A name must contain only letters, numbers and spaces, and cannot be blank. An applicant with exactly the same name as an existing record is rejected, even if their other details differ. This duplicate check is case-sensitive.
+* A successful `add` shows all applicants, clearing any search filter. It does not add the new applicant to the comparison list.
 * Optional fields other than skills can also be given with nothing after the prefix (for example `-p` or `-i`), which leaves them empty. To add an applicant without skills, omit `-t`; a bare `-t` is not accepted by `add`.
-* When provided, a phone number must contain at least 3 digits and only digits, and an email must be a valid email address. Other validation rules still apply to supplied values.
+* A non-empty phone number must contain at least 3 digits and only digits, and a non-empty email must be a valid email address. Other validation rules still apply to supplied values.
 
 Examples:
 
 * `add -n Alex Tan`
 * `add -n Sam Lee -e sam@example.com -t Java`
 * `add -n John Doe -p 98765432 -e johnd@example.com -a John street, block 123, #01-01`
-* `add -n Betsy Crowe -t friend -e betsycrowe@example.com -a Newgate Prison -p 1234567 -t criminal`
+* `add -n Betsy Crowe -t Python -e betsycrowe@example.com -a Clementi Ave 2 -p 1234567 -t SQL`
 * `add -n Jane Doe -p 91234567 -e jane@example.com -a Blk 1 Clementi -y 6 -s LinkedIn -i Great system design -t Java -t Kafka`
 
 ### Adding an applicant to the comparison list: `compare-add`
@@ -184,7 +187,7 @@ Examples:
 
 Adding an applicant updates the ranking immediately. Membership and comparison decisions are saved
 with the applicant records and restored when the application reopens. Using `clear` also resets membership.
-Once two applicants are in the comparison list, a random pair appears in the comparison panel.
+Once two applicants are in the comparison list, a pair appears in the comparison panel.
 Adding more applicants keeps the current pair. Applicants can be compared repeatedly.
 
 ### Removing an applicant from the comparison list: `compare-remove`
@@ -209,7 +212,7 @@ Examples:
 * `find -n Betsy` followed by `compare-remove 1` selects the first applicant in the search results.
 
 Removing an applicant updates the ranking immediately. Membership and comparison decisions are saved
-with the applicant records. If the applicant is in the unanswered pair, a random replacement pair is selected.
+with the applicant records. If the applicant is in the unanswered pair, a replacement pair is selected.
 The pair is cleared when fewer than two comparison-list members remain.
 
 ### Choosing the stronger applicant: `choose`
@@ -222,8 +225,8 @@ Format: `choose a` or `choose b`
   Uppercase `A` and `B` are also accepted.
 * These labels refer to the current comparison pair. Searching the applicant list does not change their meaning.
 * A pending pair is required. Add at least two applicants using `compare-add INDEX` to start comparisons.
-* The decision is added to the history, the ranking updates immediately, and a random next pair appears.
-  The next pair may contain the same applicants, and their sides may change.
+* The decision is added to the history, the ranking updates immediately, and the next pair appears.
+  RecruitDex favours applicants with fewer comparisons and opponents with similar scores, while reducing repeated pairings. With more than two active applicants, it avoids immediately repeating the last compared pair. With only two, the same applicants appear again. Their A/B sides may change, so review each new pair before choosing.
 * Each repeated choice records a separate decision. Applicant records, membership, and the search filter are retained.
 * The decision history and the new pending pair are saved automatically after a successful command.
 * Missing or invalid sides, extra arguments, and choices without a valid pending pair are rejected.
@@ -258,6 +261,8 @@ Format: `edit INDEX [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_N
 * Edits the applicant at the specified `INDEX`. The index refers to the index number shown in the displayed applicant list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* The same field rules as `add` apply. Renaming an applicant to exactly match another applicant's name is rejected.
+* A successful edit shows all applicants, clearing any search filter. The applicant keeps their comparison membership and history.
 * When editing skills (`-t`), all of the applicant's existing skills are removed; adding skills is not cumulative.
 * To remove all of an applicant's skills, enter `-t` without a skill after it.
 * To clear the phone number, email, address, interview notes, years of experience or source, enter its prefix with nothing after it, for example `-p` or `-i`.
@@ -331,12 +336,12 @@ You do not need to save manually. If there is no data file yet, RecruitDex creat
 
 Commands that don't change your data, such as `list`, `find`, `help`, `sw` and `exit`, don't save, so they still work even if saving fails.
 
-RecruitDex writes the data to a temporary file first and only then replaces the data file, so a crash during a save cannot leave a half-written file. If a save fails, for example because the folder is not writable, the command is undone and RecruitDex shows an error message.
+RecruitDex writes the data to a temporary file first, then replaces the data file. Replacement is atomic where the file system supports it. If a save fails, for example because the folder is not writable, RecruitDex restores the applicant and comparison data and the previous search filter, and shows an error message. There is no user command to undo or redo successful changes.
 
 ### Editing the data file
 
 Applicant records and comparison data are saved automatically as a JSON file
-`[JAR file location]/data/recruitdex.json`. Advanced users are welcome to update records directly by editing that
+`data/recruitdex.json` under the folder from which you launch RecruitDex. Close the app and back up the file before editing it. Advanced users can update records directly by editing that
 data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
 comparison-list members. If the file has no unanswered pair but has at least two active comparison-list members,
 RecruitDex selects a pair on loading without adding a decision or changing the existing history.
@@ -350,16 +355,12 @@ If your changes make the data file invalid, RecruitDex starts with an empty appl
 Certain edits can cause RecruitDex to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Edit the data file only if you are confident that you can update it correctly.
 </box>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous RecruitDex home folder.
+**A**: Close RecruitDex on both computers. Copy `data/recruitdex.json` from your old home folder into the same relative location in your new home folder, creating the `data` folder if needed. Launch the JAR from the new home folder. This transfers applicant records and comparison progress. Optionally copy `preferences.json` to retain window settings.
 
 --------------------------------------------------------------------------------------------------------------------
 

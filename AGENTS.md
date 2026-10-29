@@ -6,10 +6,10 @@ If `AGENTS.personal.md` exists in the same directory as this file, read and foll
 
 This project is migrating from the existing AddressBook Level 3 (AB3) app to RecruitDex. Much of the existing code is still in a transition state and may reflect the original AB3 app rather than the intended RecruitDex product.
 
-The **Overview** section of [the Developer Guide](docs/DeveloperGuide.md#overview) is up to date and represents the vision for the final product. Use it as the reference for intended RecruitDex behavior.
+The [Developer Guide](docs/DeveloperGuide.md) is up to date with the current code base. Use its **Overview**, **Design**, and **Implementation** sections as references for RecruitDex behavior and architecture. The requirements backlog includes future ideas and is labelled separately from implemented behavior.
 
-Other sections of the Developer Guide, including **Design**, are outdated. Verify their descriptions against the current code before relying on them, and do not treat them as authoritative descriptions of the final product.
+The [User Guide](docs/UserGuide.md) describes the commands and behavior available to users. Keep both guides in sync when changing the application.
 
 The project mainly lives in **Model**, with **UI** serving as the user-facing outlet, **Storage** serving as the persistent file storage outlet, and **Logic** serving as the command interpretation/execution layer between UI and Model. Logic is a misleading name because it actually only deals with commands; recruitment rules and behavior belong in Model.
 
-The intended model structure can be found in [Models.md](Models.md), while the old AB3 model structure can be found in the [Developer Guide's Model component section](docs/DeveloperGuide.md#model-component).
+The current model structure is described in the [Developer Guide's Model component section](docs/DeveloperGuide.md#model-component). [Models.md](Models.md) records the earlier model design proposal; verify it against the current guide and code before relying on it.
