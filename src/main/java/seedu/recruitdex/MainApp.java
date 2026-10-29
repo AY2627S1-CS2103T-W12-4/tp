@@ -34,6 +34,12 @@ public class MainApp extends Application {
 
     public static final String VERSION = "V1.3";
 
+    // One sentence per line, because the result display does not wrap long lines.
+    public static final String MESSAGE_DATA_FILE_BACKED_UP = "Could not load %s, so RecruitDex started with no"
+            + " applicants.\nA copy was saved as %s.\nYour next change will replace %s.";
+    public static final String MESSAGE_DATA_FILE_NOT_BACKED_UP = "Could not load %s, so RecruitDex started with no"
+            + " applicants.\nCopy the file somewhere safe now: your next change will replace it.";
+
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
     private static final Path RECRUIT_DEX_DATA_FILE_PATH = Paths.get("data", "recruitdex.json");
@@ -42,6 +48,7 @@ public class MainApp extends Application {
     protected Logic logic;
     protected Storage storage;
     protected Model model;
+    protected Optional<String> startupMessage = Optional.empty();
 
     @Override
     public void init() throws Exception {
@@ -57,7 +64,7 @@ public class MainApp extends Application {
 
         logic = new LogicManager(model, storage);
 
-        ui = new UiManager(logic, storage.getRecruitDexDataFilePath());
+        ui = new UiManager(logic, storage.getRecruitDexDataFilePath(), startupMessage);
     }
 
     /**
@@ -83,10 +90,34 @@ public class MainApp extends Application {
         } catch (DataLoadingException e) {
             logger.warning("Data file at " + storage.getRecruitDexDataFilePath() + " could not be loaded."
                     + " Will be starting with an empty RecruitDexData.");
-            initialData = new RecruitDexData();
+            startupMessage = Optional.of(backUpUnloadableDataFile(storage));
+            // The unloadable file is not saved over here; the user's first change will replace it.
+            return new ModelManager(new RecruitDexData(), userPrefs);
         }
 
-        return new ModelManager(initialData, userPrefs);
+        Model loadedModel = new ModelManager(initialData, userPrefs);
+        // Writes a new file with the sample data, and keeps any pending pair chosen while loading.
+        try {
+            storage.saveRecruitDexData(loadedModel.getRecruitDexData());
+        } catch (IOException e) {
+            logger.warning("Could not save data file at " + storage.getRecruitDexDataFilePath() + ": " + e);
+        }
+        return loadedModel;
+    }
+
+    /**
+     * Backs up the data file that could not be loaded and returns a message telling the user what happened.
+     */
+    private String backUpUnloadableDataFile(Storage storage) {
+        Path dataFilePath = storage.getRecruitDexDataFilePath();
+        try {
+            Path backupPath = storage.backUpRecruitDexDataFile();
+            logger.info("Backed up data file that could not be loaded to " + backupPath);
+            return String.format(MESSAGE_DATA_FILE_BACKED_UP, dataFilePath, backupPath, dataFilePath);
+        } catch (IOException e) {
+            logger.warning("Could not back up data file at " + dataFilePath + ": " + e);
+            return String.format(MESSAGE_DATA_FILE_NOT_BACKED_UP, dataFilePath);
+        }
     }
 
     /**

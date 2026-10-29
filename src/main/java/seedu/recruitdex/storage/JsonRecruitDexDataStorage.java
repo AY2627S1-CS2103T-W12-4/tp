@@ -3,7 +3,10 @@ package seedu.recruitdex.storage;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -18,6 +21,9 @@ import seedu.recruitdex.model.ReadOnlyRecruitDexData;
  * A class to access RecruitDexData data stored as a JSON file on the hard disk.
  */
 public class JsonRecruitDexDataStorage {
+
+    private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     private static final Logger logger = LogsCenter.getLogger(JsonRecruitDexDataStorage.class);
 
@@ -86,4 +92,19 @@ public class JsonRecruitDexDataStorage {
         JsonUtil.saveJsonFile(new JsonSerializableRecruitDexData(recruitDexData), filePath);
     }
 
+
+    /**
+     * Copies the data file to {@code NAME.invalid-TIMESTAMP.json} in the same folder.
+     *
+     * @return the path of the backup file.
+     * @throws IOException if the copy could not be made, including when a backup of that name already exists.
+     */
+    public Path backUpRecruitDexDataFile() throws IOException {
+        String fileName = filePath.getFileName().toString();
+        String baseName = fileName.endsWith(".json") ? fileName.substring(0, fileName.length() - 5) : fileName;
+        Path backupPath = filePath.resolveSibling(
+                baseName + ".invalid-" + LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT) + ".json");
+        Files.copy(filePath, backupPath);
+        return backupPath;
+    }
 }

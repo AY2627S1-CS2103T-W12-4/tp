@@ -54,4 +54,12 @@ public interface Storage {
      */
     void saveRecruitDexData(ReadOnlyRecruitDexData recruitDexData) throws IOException;
 
+    /**
+     * Copies the RecruitDexData data file to a new backup file next to it, without replacing an existing file.
+     *
+     * @return the path of the backup file.
+     * @throws IOException if the copy could not be made.
+     */
+    Path backUpRecruitDexDataFile() throws IOException;
+
 }

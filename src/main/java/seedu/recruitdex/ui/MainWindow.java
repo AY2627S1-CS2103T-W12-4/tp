@@ -190,6 +190,11 @@ public class MainWindow extends UiPart<Stage> {
         }
     }
 
+    /** Shows {@code message} in the result display. */
+    void showFeedback(String message) {
+        resultDisplay.setFeedbackToUser(message);
+    }
+
     /**
      * Shows the other tab of the main window and names it in the result display.
      */
