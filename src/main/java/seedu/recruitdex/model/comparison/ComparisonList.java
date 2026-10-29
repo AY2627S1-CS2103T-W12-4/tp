@@ -85,7 +85,8 @@ public class ComparisonList implements ReadOnlyComparisonList {
      * Restores comparison data after validating all references against the registry.
      * Retains this object and its observable views, and rebuilds the runtime ranking.
      * Decisions involving inactive applicants are retained. A pending pair must contain active members.
-     * Restoring does not record a decision or select a replacement pair.
+     * Restoring does not record a decision. A provided pair keeps its original sides;
+     * a missing pair is selected when at least two active members are available.
      */
     public void resetData(Set<ApplicantId> members, List<ComparisonDecision> decisions,
             Optional<ComparisonPair> pendingPair) {
@@ -112,7 +113,8 @@ public class ComparisonList implements ReadOnlyComparisonList {
         if (pendingPair.isPresent()) {
             comparisonState.setCurrentPair(pendingPair.get());
         } else {
-            comparisonState.clearCurrentPair();
+            // Keep active members comparable if the saved data omits the pending pair.
+            setNextPairOrClear();
         }
     }
 

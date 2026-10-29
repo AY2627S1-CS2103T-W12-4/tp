@@ -214,14 +214,16 @@ public class RecruitDexDataTest {
         first.getComparisonList().add(BENSON.getId());
         second.getComparisonList().add(ALICE.getId());
         second.getComparisonList().add(BENSON.getId());
+        // Explicit sides keep the equality checks independent of random pair selection.
+        ComparisonPair initialPair = new ComparisonPair(BENSON.getId(), ALICE.getId());
         first.getComparisonList().resetData(
                 Set.copyOf(first.getComparisonList().getMemberIds()),
                 List.copyOf(first.getComparisonList().getDecisionHistory()),
-                Optional.empty());
+                Optional.of(initialPair));
         second.getComparisonList().resetData(
                 Set.copyOf(second.getComparisonList().getMemberIds()),
                 List.copyOf(second.getComparisonList().getDecisionHistory()),
-                Optional.empty());
+                Optional.of(initialPair));
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());
 

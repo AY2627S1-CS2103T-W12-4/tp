@@ -12,6 +12,7 @@ import static seedu.recruitdex.testutil.TypicalApplicants.IDA;
 import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -39,6 +40,38 @@ public class JsonRecruitDexDataStorageTest {
 
     @TempDir
     public Path testFolder;
+
+    @Test
+    public void readAndSave_missingPendingPair_recoversPairAndPreservesHistory() throws Exception {
+        Path filePath = testFolder.resolve("missingPair.json");
+        ComparisonDecision decision = new ComparisonDecision(ALICE.getId(), BENSON.getId(), ALICE.getId());
+        JsonAdaptedComparisonList comparisons = new JsonAdaptedComparisonList(
+                List.of(ALICE.getId().value, BENSON.getId().value),
+                List.of(new JsonAdaptedComparisonDecision(decision)), null);
+        JsonUtil.saveJsonFile(new JsonSerializableRecruitDexData(
+                List.of(new JsonAdaptedApplicant(ALICE), new JsonAdaptedApplicant(BENSON)), comparisons), filePath);
+        String originalJson = Files.readString(filePath);
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+
+        ReadOnlyRecruitDexData recovered = storage.readRecruitDexData().orElseThrow();
+
+        ComparisonPair pair = recovered.getComparisonList().getCurrentPair().orElseThrow();
+        assertEquals(Set.of(ALICE.getId(), BENSON.getId()),
+                Set.of(pair.getFirstApplicantId(), pair.getSecondApplicantId()));
+        assertEquals(List.of(ALICE, BENSON), recovered.getApplicantList());
+        assertEquals(List.of(decision), recovered.getComparisonList().getDecisionHistory());
+        assertEquals(originalJson, Files.readString(filePath));
+        ModelManager model = new ModelManager(recovered, new UserPrefs());
+        assertEquals(Optional.of(pair), model.getComparisonList().getCurrentPair());
+        assertEquals(2, model.getRankingEngine().getRanking().size());
+        assertTrue(model.getRankingEngine().getRanking().stream()
+                .allMatch(entry -> entry.getComparisonCount() == 1));
+
+        storage.saveRecruitDexData(recovered);
+
+        assertEquals(Optional.of(pair), storage.readRecruitDexData().orElseThrow()
+                .getComparisonList().getCurrentPair());
+    }
 
     @Test
     public void readAndSave_comparisons_preservesHistoryPendingSidesAndRebuildsRanking() throws Exception {
