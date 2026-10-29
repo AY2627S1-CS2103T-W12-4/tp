@@ -2,12 +2,17 @@ package seedu.recruitdex.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static seedu.recruitdex.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseFailure;
+import static seedu.recruitdex.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.recruitdex.testutil.TypicalApplicants.ALICE;
 import static seedu.recruitdex.testutil.TypicalApplicants.BENSON;
 import static seedu.recruitdex.testutil.TypicalApplicants.DANIEL;
+import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalApplicants;
 import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +21,8 @@ import seedu.recruitdex.logic.parser.exceptions.ParseException;
 import seedu.recruitdex.model.Model;
 import seedu.recruitdex.model.ModelManager;
 import seedu.recruitdex.model.applicant.Applicant;
+import seedu.recruitdex.model.applicant.ApplicantMatchesSearchPredicate;
+import seedu.recruitdex.model.applicant.YearsOfExperience;
 import seedu.recruitdex.model.userprefs.UserPrefs;
 
 public class FindCommandParserTest {
@@ -43,17 +50,40 @@ public class FindCommandParserTest {
 
     @Test
     public void parse_emptyTagSearch_throwsParseException() {
-        assertInvalidFormat("-t     ");
+        assertInvalidFormat(" -t     ");
     }
 
     @Test
-    public void parse_invalidPhone_throwsParseException() {
-        assertThrows(ParseException.class, () -> parser.parse("-p not-a-phone"));
+    public void parse_blankTerm_throwsParseException() {
+        assertInvalidFormat(" -s");
+        assertInvalidFormat(" -e   ");
+        assertInvalidFormat(" -p");
+        assertInvalidFormat(" -y");
+        assertInvalidFormat(" -n Alice -i");
+    }
+
+    @Test
+    public void parse_phoneTermWithNonDigits_throwsParseException() {
+        assertParseFailure(parser, " -p not-a-phone", FindCommand.MESSAGE_INVALID_PHONE_TERM);
+        assertParseFailure(parser, " -p +65", FindCommand.MESSAGE_INVALID_PHONE_TERM);
+        assertParseFailure(parser, " -p 9123 4567", FindCommand.MESSAGE_INVALID_PHONE_TERM);
     }
 
     @Test
     public void parse_invalidYearsOfExperience_throwsParseException() {
-        assertThrows(ParseException.class, () -> parser.parse("-y many"));
+        assertParseFailure(parser, " -y many", YearsOfExperience.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " -y 61", YearsOfExperience.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_validArgs_returnsFindCommandWithTrimmedTerms() {
+        ApplicantMatchesSearchPredicate expectedPredicate = new ApplicantMatchesSearchPredicate(
+                Optional.of("Alice Pauline"), Optional.of("12"), Optional.of("example.com"), Optional.empty(),
+                Optional.empty(), Optional.of(new YearsOfExperience("5")), Optional.empty(),
+                List.of("java", "kaf"));
+
+        assertParseSuccess(parser, " -n  Alice Pauline  -p 12 -e example.com -y 5 -t  java   kaf ",
+                new FindCommand(expectedPredicate));
     }
 
     @Test
@@ -67,8 +97,19 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_phoneSearch_matchesTwoDigits() throws Exception {
+        assertMatchingApplicants(" -p 12", ALICE);
+    }
+
+    @Test
     public void parse_emailSearch_isCaseInsensitiveAndPartial() throws Exception {
         assertMatchingApplicants(" -e ALICE@EXAMPLE", ALICE);
+    }
+
+    @Test
+    public void parse_emailSearch_matchesPartsThatAreNotEmails() throws Exception {
+        assertMatchingApplicants(" -e johnd", BENSON);
+        assertMatchingApplicants(" -e @example.com", getTypicalApplicants().toArray(Applicant[]::new));
     }
 
     @Test
@@ -97,6 +138,12 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_tagSearch_doesNotMatchBrackets() throws Exception {
+        assertMatchingApplicants(" -t ]");
+        assertMatchingApplicants(" -t [friends]");
+    }
+
+    @Test
     public void parse_multipleAttributes_requiresAllToMatch() throws Exception {
         assertMatchingApplicants(" -n ALICE PAULINE -p 9435 -e alice@example.com "
                         + "-a jurong -i java -y 5 -s linkedin -t fri",
@@ -110,7 +157,7 @@ public class FindCommandParserTest {
     }
 
     private void assertInvalidFormat(String args) {
-        assertThrows(ParseException.class, () -> parser.parse(args));
+        assertParseFailure(parser, args, String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
     }
 
     private void assertMatchingApplicants(String args, Applicant... expectedApplicants) throws Exception {

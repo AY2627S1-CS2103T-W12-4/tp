@@ -184,7 +184,7 @@ public class CommandSummaryTest {
         assertTrue(add.parameters().contains("[-a ADDRESS]"));
         assertTrue(add.parameters().contains("[-t SKILL]..."));
         assertTrue(infoOf("delete").parameters().startsWith("INDEX"));
-        assertTrue(infoOf("find").parameters().startsWith("-n"));
+        assertTrue(infoOf("find").parameters().startsWith("[-nNAME]"));
     }
 
     @Test
