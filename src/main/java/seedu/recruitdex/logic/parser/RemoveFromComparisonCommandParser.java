@@ -1,7 +1,5 @@
 package seedu.recruitdex.logic.parser;
 
-import static seedu.recruitdex.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
-
 import seedu.recruitdex.commons.core.index.Index;
 import seedu.recruitdex.logic.commands.RemoveFromComparisonCommand;
 import seedu.recruitdex.logic.parser.exceptions.ParseException;
@@ -17,12 +15,7 @@ public class RemoveFromComparisonCommandParser implements Parser<RemoveFromCompa
      */
     @Override
     public RemoveFromComparisonCommand parse(String args) throws ParseException {
-        try {
-            Index index = ParserUtil.parseIndex(args);
-            return new RemoveFromComparisonCommand(index);
-        } catch (ParseException e) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                    RemoveFromComparisonCommand.MESSAGE_USAGE), e);
-        }
+        Index index = ParserUtil.parseIndex(args, RemoveFromComparisonCommand.MESSAGE_USAGE);
+        return new RemoveFromComparisonCommand(index);
     }
 }

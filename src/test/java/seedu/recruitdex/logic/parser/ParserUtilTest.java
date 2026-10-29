@@ -2,7 +2,9 @@ package seedu.recruitdex.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.recruitdex.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.recruitdex.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
+import static seedu.recruitdex.logic.parser.ParserUtil.MESSAGE_NON_POSITIVE_INDEX;
 import static seedu.recruitdex.testutil.Assert.assertThrows;
 import static seedu.recruitdex.testutil.TypicalIndexes.INDEX_FIRST_APPLICANT;
 
@@ -54,6 +56,27 @@ public class ParserUtilTest {
 
         // Leading and trailing whitespaces
         assertEquals(INDEX_FIRST_APPLICANT, ParserUtil.parseIndex("  1  "));
+    }
+
+    @Test
+    public void parseIndexWithUsage_validInput_success() throws Exception {
+        assertEquals(INDEX_FIRST_APPLICANT, ParserUtil.parseIndex("1", "usage"));
+        assertEquals(INDEX_FIRST_APPLICANT, ParserUtil.parseIndex("  1  ", "usage"));
+    }
+
+    @Test
+    public void parseIndexWithUsage_zeroOrNegative_throwsNonPositiveIndexMessage() {
+        for (String input : new String[] {"0", "-1", "  0  ", "000", "-0", "-2147483649"}) {
+            assertThrows(ParseException.class, MESSAGE_NON_POSITIVE_INDEX, () -> ParserUtil.parseIndex(input, "usage"));
+        }
+    }
+
+    @Test
+    public void parseIndexWithUsage_notAWholeNumber_throwsInvalidFormatMessage() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, "usage");
+        for (String input : new String[] {"", "a", "1.5", "+1", "1 2", "- 1", "2147483648"}) {
+            assertThrows(ParseException.class, expectedMessage, () -> ParserUtil.parseIndex(input, "usage"));
+        }
     }
 
     @Test
