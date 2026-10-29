@@ -63,6 +63,11 @@ public class CommandResult {
         return switchTab;
     }
 
+    /** Returns whether this result requests an interface action without changing applicant or comparison data. */
+    public boolean isUiOnly() {
+        return showHelp || exit || switchTab;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {
