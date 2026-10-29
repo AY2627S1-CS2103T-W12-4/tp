@@ -18,6 +18,9 @@ Class JsonRecruitDexDataStorage
 Class JsonSerializableRecruitDexData
 Class JsonAdaptedApplicant
 Class JsonAdaptedTag
+Class JsonAdaptedComparisonList
+Class JsonAdaptedComparisonDecision
+Class JsonAdaptedComparisonPair
 }
 
 }
@@ -32,5 +35,8 @@ StorageManager -down-> "1" JsonRecruitDexDataStorage
 JsonRecruitDexDataStorage ..> JsonSerializableRecruitDexData
 JsonSerializableRecruitDexData --> "*" JsonAdaptedApplicant
 JsonAdaptedApplicant --> "*" JsonAdaptedTag
+JsonSerializableRecruitDexData --> "1" JsonAdaptedComparisonList
+JsonAdaptedComparisonList --> "*" JsonAdaptedComparisonDecision
+JsonAdaptedComparisonList --> "0..1" JsonAdaptedComparisonPair
 
 @enduml

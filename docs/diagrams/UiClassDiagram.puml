@@ -13,6 +13,9 @@ Class HelpWindow
 Class ResultDisplay
 Class ApplicantListPanel
 Class ApplicantCard
+Class ComparisonPanel
+Class ComparisonCard
+Class RankingPanel
 Class StatusBarFooter
 Class CommandBox
 Class CommandHistoryList
@@ -34,11 +37,14 @@ UiManager -down-> "1" MainWindow
 MainWindow *-down->  "1" CommandBox
 MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" ApplicantListPanel
+MainWindow *-down-> "1" ComparisonPanel
+MainWindow *-down-> "1" RankingPanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
 CommandBox *-down-> "1" CommandHistoryList
 
 ApplicantListPanel -down-> "*" ApplicantCard
+ComparisonPanel --> "2" ComparisonCard
 
 MainWindow -left-|> UiPart
 
@@ -46,6 +52,9 @@ ResultDisplay --|> UiPart
 CommandBox --|> UiPart
 ApplicantListPanel --|> UiPart
 ApplicantCard --|> UiPart
+ComparisonPanel --|> UiPart
+ComparisonCard --|> UiPart
+RankingPanel --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 

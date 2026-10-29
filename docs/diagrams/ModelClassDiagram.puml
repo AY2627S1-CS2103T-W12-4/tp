@@ -3,55 +3,40 @@
 skinparam arrowThickness 1.1
 skinparam arrowColor MODEL_COLOR
 skinparam classBackgroundColor MODEL_COLOR
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam linetype ortho
 
-Package Model as ModelPackage <<Rectangle>>{
-Class "<<interface>>\nReadOnlyRecruitDexData" as ReadOnlyRecruitDexData
-Class "<<interface>>\nReadOnlyUserPrefs" as ReadOnlyUserPrefs
-Class "<<interface>>\nModel" as Model
-Class RecruitDexData
-Class ModelManager
-Class UserPrefs
+package Model as ModelPackage <<Rectangle>> {
+    class "<<interface>>\nModel" as Model
+    class ModelManager
+    class RecruitDexData
+    class UserPrefs
+    class ApplicantRegistry
+    class Applicant
+    class ComparisonList
+    class ComparisonState
+    class ComparisonPair
+    class ComparisonDecision
+    class PairSelector
+    class RankingEngine
+    class RankingEntry
 
-Class ApplicantRegistry
-Class UniqueApplicantList
-Class Applicant
-Class Address
-Class Email
-Class Name
-Class Phone
-Class Tag
+    ModelManager .up.|> Model
+    ModelManager -left-> "1" UserPrefs
+    ModelManager -down-> "1" RecruitDexData
+    ModelManager -right-> "1" RankingEngine
+    RankingEngine -down-> "0..*" RankingEntry
 
-Class I #FFFFFF
+    RecruitDexData *-left-> "1" ApplicantRegistry
+    ApplicantRegistry -down-> "0..*" Applicant
+    RecruitDexData *-down-> "1" ComparisonList
+    ComparisonList -left-> ApplicantRegistry
+    ComparisonList -right-> RankingEngine
+
+    ComparisonList *-down-> "1" ComparisonState
+    ComparisonState -down-> "0..1" ComparisonPair
+    ComparisonList *-right-> "0..*" ComparisonDecision
+    ComparisonList *-left-> "1" PairSelector
 }
-
-Class HiddenOutside #FFFFFF
-HiddenOutside ..> Model
-
-RecruitDexData .up.|> ReadOnlyRecruitDexData
-
-ModelManager .up.|> Model
-Model .right.> ReadOnlyUserPrefs
-Model .left.> ReadOnlyRecruitDexData
-ModelManager -left-> "1" RecruitDexData
-ModelManager -right-> "1" UserPrefs
-UserPrefs .up.|> ReadOnlyUserPrefs
-
-RecruitDexData *--> "1" UniqueApplicantList
-UniqueApplicantList --> "~* all" Applicant
-ApplicantRegistry -right-> "0..*" Applicant : registered by ApplicantId
-
-Applicant *--> Name
-Applicant *--> Phone
-Applicant *--> Email
-Applicant *--> Address
-Applicant *--> "*" Tag
-
-Applicant -[hidden]up--> I
-UniqueApplicantList -[hidden]right-> I
-
-Name -[hidden]right-> Phone
-Phone -[hidden]right-> Address
-Address -[hidden]right-> Email
-
-ModelManager --> "~* filtered" Applicant
 @enduml

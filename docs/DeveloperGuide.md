@@ -18,7 +18,7 @@ RecruitDex helps recruiters rank applicants through a series of side-by-side com
 The workflow has three distinct parts:
 
 1. **Manage applicant records.** Add applicants and maintain details such as names, contact information, and interview notes. Records can be edited or deleted.
-2. **Manage the active comparison list.** Add or remove applicants from the set to be ranked. Adding an applicant record and adding that applicant to the comparison list are separate operations in the system, even if the interface offers them together.
+2. **Manage the active comparison list.** Use `compare-add` or `compare-remove` to change the set to be ranked. Creating an applicant record with `add` is a separate operation.
 3. **Compare applicants.** Open the comparison view, review the two applicants RecruitDex presents, and choose the stronger one. The ranking updates immediately so the recruiter can see the effect of each decision.
 
 These parts can be revisited as recruitment progresses. An applicant must have a record before joining the comparison list and must join the list before being compared, but recruiters can compare existing applicants before adding more. RecruitDex is designed for command-line input, with a graphical interface primarily for displaying applicants, comparisons, and ranking changes.
@@ -27,7 +27,7 @@ These parts can be revisited as recruitment progresses. An applicant must have a
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+RecruitDex is adapted from [AddressBook Level 3](https://se-education.org/addressbook-level3/). It uses JavaFX for the desktop interface, Jackson for JSON persistence, and JUnit for tests. Dependency versions are declared in `build.gradle`.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ Refer to the guide [_Setting up and getting started_](SettingUp.md).
 
 ## **Design**
 
-Some diagrams still show legacy AB3 class names.
+This section describes the current implementation. Recruitment rules belong in Model; Logic parses commands and calls model operations. The diagrams show selected classes and interactions rather than every implementation detail.
 
 ### Architecture
 
@@ -66,7 +66,7 @@ The bulk of the app's work is done by the following four components:
 
 **How the architecture components interact with each other**
 
-The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues the command `delete 1`.
+The *Sequence Diagram* below shows a successful `delete 1`. Logic resolves the displayed index and asks the applicant registry to delete the record; Model also cleans up comparison references and refreshes the ranking. Logic then saves the application data before returning success.
 
 <puml src="diagrams/ArchitectureSequenceDiagram.puml" width="574" />
 
@@ -87,20 +87,22 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel`, `ComparisonPanel` (made of two `ComparisonCard`s), `RankingPanel`, `HelpWindow` and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
+The UI consists of a `MainWindow` and its parts, including `CommandBox`, `ResultDisplay`, `ApplicantListPanel` (with `ApplicantCard`s), `ComparisonPanel` (with two `ComparisonCard`s), `RankingPanel`, `HelpWindow` and `StatusBarFooter`. These parts inherit from `UiPart`, which captures common behavior among visible GUI parts.
 
 The main window has two tabs. The **Compare** tab shows the `ComparisonPanel` (applicants A and B) beside the `RankingPanel`, and the **Applicants** tab shows the `ApplicantListPanel`, whose index numbers are the `INDEX` that commands such as `edit` and `delete` use. `HelpWindow` is a separate window that lists every command in a table. It opens when the user types `help`, presses `F1` or clicks **Help** in the menu bar. See [Help window command table](#help-window-command-table) for how its rows are produced.
 
 The `sw` command switches between the two tabs. `SwitchTabCommand` does not change the model; it returns a `CommandResult` whose `isSwitchTab()` is true. `MainWindow` checks this flag after each command, in the same way as `isShowHelp()` and `isExit()`, selects the other tab and shows its name in the result display.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/java/seedu/recruitdex/ui/MainWindow.java).
+The `UI` component uses JavaFX, with layouts in `.fxml` files under `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-W12-4/tp/tree/master/src/main/java/seedu/recruitdex/ui/MainWindow.java). Some controls, such as help-table rows and comparison detail rows, are built in Java.
 
 The `UI` component,
 
 * executes user commands using the `Logic` component.
-* listens for changes to `Model` data so that the UI can be updated with the modified data.
+* observes model data exposed through `Logic`, including the filtered applicant list, full applicant list, ranking and current-pair property.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * displays model objects such as `Applicant` and `RankingEntry`. The leaderboard observes `Logic.getRanking()` and resolves current applicant names from `Logic.getApplicantList()`.
+
+The leaderboard always includes the full active comparison list. It resolves command indices from the filtered applicant list, separately from ranking positions. `ComparisonPanel` observes the pending pair, applicant records and ranking, resolving the A/B cards by stable applicant ID. Missing optional details are hidden. Card ranks count assessed active members, including those hidden by a search; applicants with no eligible comparisons show Unassessed instead of a rank. The leaderboard uses separate assessed and unassessed lists.
 
 ### Logic component
 
@@ -114,7 +116,7 @@ The sequence diagram below illustrates command parsing and deletion for a succes
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
-`LogicManager.execute` also keeps the data file and the screen in agreement. It copies the application data before running the command and, if the command changed that data, saves the result afterwards. If the save fails, it restores the copy and reports the error, so the user never sees a change that was not saved. See [Atomic saving](#atomic-saving).
+`LogicManager.execute` snapshots application data and the current filter before running a parsed command. It saves afterwards only if the application data differs from the snapshot. A save failure restores the saved-data snapshot and filter before reporting an error. Commands that leave saved data unchanged, including `find`, `list`, `help`, `sw` and `exit`, skip saving. See [Atomic saving](#atomic-saving).
 
 <box type="info" seamless>
 
@@ -138,6 +140,8 @@ How the parsing works:
 * When called upon to parse a user command, the `RecruitDexParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `RecruitDexParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
+Commands using an `INDEX` resolve it against `Model.getFilteredApplicantList()` and then operate on the applicant's stable ID. Comparison commands preserve the filter; successful `add` and `edit` reset it to show all applicants. `find` combines supplied attribute predicates with AND. It uses the same field parsers as `add` and `edit`, so, for example, non-empty email search values must be valid email addresses. Skill search terms are case-insensitive substrings and all terms must match some skill.
+
 For `add`, only `-nNAME` is required. `AddCommandParser` supplies empty defaults for omitted phone, email, address, interview notes, years of experience, and source, and an empty set for omitted skills. `Phone`, `Email`, and `Address` accept empty strings to represent missing details while retaining validation for non-empty values. Explicitly empty prefixes also produce empty values, except that `add` requires each supplied `-t` to contain a valid skill. Duplicate single-valued prefixes remain invalid.
 
 These empty values are stored in the existing JSON fields and restored on load. Applicant and comparison cards hide missing details. The shared value parsers also allow `edit` to clear contact details by supplying an empty prefix.
@@ -147,22 +151,22 @@ These empty values are stored in the existing JSON fields and restored on load. 
 
 <puml src="diagrams/ModelClassDiagram.puml" width="650" />
 
+This structural overview omits value objects, applicant-ID references, read-only data interfaces, the deletion callback and filtered-list relations. `ComparisonList` uses the same `RankingEngine` owned by `ModelManager`. The callback and filtering behavior are described below.
 
 The `Model` component,
 
-* stores applicant records in `RecruitDexData` through `ApplicantRegistry`, accessed through `Model.getApplicantRegistry()`. The registry is shared by commands, UI views, and JSON storage.
-* holds pending comparison state in `RecruitDexData` and a shared runtime `RankingEngine` in `ModelManager`.
-* stores the `Applicant` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Applicant>` that the UI can observe and bind to, so the UI updates when the list changes.
+* groups saved data in `RecruitDexData`: an `ApplicantRegistry` and a `ComparisonList`. Commands access these live domain objects through `Model` getters instead of forwarding every operation through `ModelManager`.
+* holds active member IDs, ordered decisions and `ComparisonState` (an optional pending pair) in `ComparisonList`. That object coordinates ranking recalculation and pair selection.
+* owns a runtime `RankingEngine` in `ModelManager`, shared with the data object's `ComparisonList`. Rankings and filters are derived runtime state, not persisted data.
+* maintains a `FilteredList<Applicant>` backed by the registry's observable list for search results. It exposes an unmodifiable observable view so the UI updates with changes to records or the filter.
 * stores GUI preferences in `UserPrefs`, accessed through `Model.getUserPrefs()` and saved separately.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
-<box type="info" seamless>
+`Applicant` is immutable and has an `ApplicantId` backed by a UUID. An edit replaces the record while retaining its ID and registration position. Membership, decisions and pending pairs reference IDs, so changing details does not break comparisons. `Applicant.equals` compares details without the ID; use `getId()` for identity. The registry rejects duplicate IDs and records with exactly equal, case-sensitive names.
 
-**Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `RecruitDexData`, and each `Applicant` references tags from that list. This lets `RecruitDexData` maintain one `Tag` object per unique tag instead of each `Applicant` holding its own `Tag` objects.<br>
+`RecruitDexData` connects registry deletion to `ComparisonList.deleteApplicantReferences`, so deleting through the registry also removes membership and decisions involving the applicant and replaces an affected pair. Removing membership alone retains the record and history; decisions count again if both participants become active later.
 
-<puml src="diagrams/BetterModelClassDiagram.puml" width="450" />
-</box>
-
+`RecruitDexData.resetData` validates replacement records and comparison references before restoring the existing components in place. Observable views and the current-pair property are retained, so UI bindings and the filtered list stay connected after clear or rollback. Collections exposed for observation are unmodifiable. The pending state is exposed as `ReadOnlyComparisonState`; its mutators are package-private.
 
 ### Storage component
 
@@ -172,9 +176,13 @@ The `Model` component,
 
 The `Storage` component,
 * saves applicant records, comparison membership, decision history, the pending pair and user preferences in JSON format. Rankings are derived from the decisions, so they are rebuilt after loading and not saved.
-* writes every file atomically: the JSON goes into a temporary file that then replaces the real file, so a crash part way through a save cannot leave a half-written data file. See [Atomic saving](#atomic-saving).
+* writes JSON through a temporary file and requests atomic replacement, falling back to ordinary replacement if atomic moves are unsupported. See [Atomic saving](#atomic-saving).
 * is implemented by `StorageManager`, which delegates JSON file access to `JsonRecruitDexDataStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+
+`MainApp` uses `data/recruitdex.json` for application data and `preferences.json` for GUI settings, relative to the process working directory. Preferences are written during initialization and shutdown. A missing data file supplies sample applicant records with no comparison members; an unreadable or invalid data file supplies empty application data and logs a warning. Startup attempts to save successfully loaded or sample data, including a newly selected pending pair. If loading fails, it leaves the invalid file untouched, attempts a timestamped backup and displays a recovery message. See [Atomic saving](#atomic-saving).
+
+JSON adapters validate field values, unique IDs, decision structure and references to existing records. A pending pair must contain two distinct active members. A valid saved pair retains its A/B order; if the pair is absent and at least two members are active, restoration selects one without recording a decision. Files without comparison data load with an empty comparison list. Legacy records without IDs receive new IDs; missing interview notes, experience and source default to empty strings. Name, phone, email and address JSON fields must still be present, with empty strings allowed for the optional contact fields.
 
 ### Common classes
 
@@ -194,28 +202,30 @@ This section describes some noteworthy details on how certain features are imple
 
 * All active applicants appear. Unassessed applicants have strength 1 and score 0.
 * Decisions contribute when both participants are active. Repeated decisions with distinct IDs have equal weight.
-* Scores are natural logarithms of strengths, rounded to six decimal places. Equal scores share positions such as `1, 1, 3`; applicant IDs order tied rows.
+* Scores are natural logarithms of strengths, rounded to six decimal places. Assessed applicants precede unassessed applicants. Within each group, equal scores share positions such as `1, 1, 3`; applicant IDs order tied rows. Unassessed positions and initial scores are internal values and are not displayed as assessments; use `RankingEntry.isAssessed()` before displaying a rank.
 * The engine publishes completed results through a live, unmodifiable observable list. Invalid input or fitting failure preserves the previous ranking.
 
 `ModelManager` owns the shared engine. `Logic.getRanking()` exposes its view to `RankingPanel`, which refreshes names from the full applicant list independently of search filtering. UI-bound observable updates must run on the JavaFX application thread.
 
-`ComparisonList` holds the active members, the decision history and the unanswered pair. When membership or decisions change (for example through `compare-add`, `compare-remove`, `choose`, `delete` or `clear`), it recalculates the ranking and, when a new pair is needed, asks `PairSelector` for one. `PairSelector` prefers applicants with fewer comparisons and partners with close scores. It discourages repeated pairs but never forbids them.
+`ComparisonList` recalculates rankings after membership or decision changes and asks `PairSelector` for a new pair when needed. Adding a member preserves a valid pending pair. Removing or deleting a participant replaces the affected pair, or clears it if fewer than two members remain. `recordDecision` validates the winner, recalculates the ranking with a new UUID-identified, timestamped decision, appends it to history, and selects the next pair.
+
+`PairSelector` uses weighted randomness, favouring applicants with fewer eligible comparisons and partners with close scores. It penalizes repeated pairings and excludes the most recently answered eligible pair when more than two applicants are active. With two members, it reuses that pair. A/B ordering balances previous side appearances, breaking ties randomly. Only decisions with both participants active affect selection statistics.
 
 Members, decisions and the unanswered pair are saved in `data/recruitdex.json` through `JsonAdaptedComparisonList`, and restored at launch, so the ranking is rebuilt from the saved decisions. `RecruitDexData#resetData` checks the incoming comparison data against the new applicant records before replacing the current data.
 
 ### Atomic saving
 
-A data file that is cut off part way through a save would lose the recruiter's work, so saving never writes to the data file directly.
+To avoid truncating existing data while writing JSON, saving serializes to a temporary file before replacing the destination. Storage creates the destination and parent directories first if they are missing.
 
 `FileUtil.writeToFileAtomically(file, content)` does the following:
 
 1. It writes `content` to a temporary file next to `file`, named after it with a `.tmp` ending.
-1. It moves the temporary file over `file` in one step, using an atomic move where the file system supports it. At every moment `file` holds either the old complete data or the new complete data.
-1. If either step fails, it deletes the temporary file and rethrows the error, so `file` keeps its previous content.
+1. It requests `Files.move` with `ATOMIC_MOVE`. If unsupported, it retries with `REPLACE_EXISTING`; this fallback does not guarantee atomicity.
+1. On a write or move failure it attempts to delete the temporary file and rethrows the error. Cleanup is best-effort, so a temporary file can remain.
 
 `JsonUtil.saveJsonFile` uses it, so both the data file and the preferences file are saved this way.
 
-A save can also fail after the command has already changed the model, for example when the disk is full. `LogicManager.execute` handles this by copying the application data before the command runs (`new RecruitDexData(model.getRecruitDexData())`). If saving throws an `IOException`, it puts the copy back with `Model#setRecruitDexData` and throws a `CommandException`, so the screen shows the data as it was.
+A save can also fail after the command has already changed the model, for example when the disk is full. `LogicManager.execute` copies the application data before the command runs (`new RecruitDexData(model.getRecruitDexData())`) and separately retains the filter predicate. If saving throws an `IOException`, it restores both and throws a `CommandException`. `AccessDeniedException` gets a specific permissions message. Commands that leave application data unchanged bypass saving, so viewing, searching, help, tab switching and exit remain available. This rollback is automatic error recovery, not a user-facing undo feature.
 
 `LogicManager.execute` saves only when the command changed the data, that is, when `model.getRecruitDexData()` no longer equals the copy. Commands such as `list`, `find`, `help`, `sw` and `exit` therefore never save. They keep working while saving fails, and they cannot overwrite a data file that failed to load. `RecruitDexData` equality covers every saved field except applicant IDs, which `Applicant#equals` ignores; no command changes only an ID.
 
@@ -229,7 +239,7 @@ At startup, `MainApp` treats the data file as follows:
 **Aspect: How to write the file.**
 
 * **Alternative 1 (current choice):** Write a temporary file, then replace the data file with it.
-  * Pros: The data file is never half-written. There is still only one human-editable data file.
+  * Pros: Avoids writing JSON directly over the data file and provides atomic replacement on supported file systems. There is still only one human-editable data file.
   * Cons: The data folder must be writable, not just the file. A stale `.tmp` file can be left behind after a crash, but the next save overwrites it.
 * **Alternative 2:** Overwrite the data file in place.
   * Pros: Simplest to write.
@@ -241,7 +251,7 @@ At startup, `MainApp` treats the data file as follows:
 **Aspect: What to do when a save fails.**
 
 * **Alternative 1 (current choice):** Restore the data from before the command.
-  * Pros: The screen and the file always agree.
+  * Pros: A failed save restores the previous application data and filter in memory.
   * Cons: Every command pays for one copy of the data, which is small for this application.
 * **Alternative 2:** Keep the change in memory and only show an error.
   * Pros: No copy needed.
@@ -263,7 +273,7 @@ At startup, `MainApp` treats the data file as follows:
 
 The help window shows every command with its format and an example, and must not drift out of date when a command changes. The rows are therefore built from the usage text that each command already has.
 
-* Each command class has a `MESSAGE_USAGE` written as `word: description. Parameters: ...` on one line, then `Example: ...` on the next. Commands that take no parameters leave out the `Parameters:` part.
+* Each command class has a `MESSAGE_USAGE` starting with `word: description`, followed by `Parameters: ...` where applicable and `Example: ...`. These sections can span lines. Commands that take no parameters leave out `Parameters:`.
 * `CommandInfo.fromUsage(usage)` splits that text into four parts: the command word, the description, the parameters and the example.
 * `CommandSummary` lists the usage text of all commands in three groups (Applicants, Comparison and General) and exposes them as `CommandInfo` rows.
 * `HelpWindow` creates a header row, then a heading and one row of four labels for each command, in a `GridPane` inside a `ScrollPane`.
@@ -281,99 +291,11 @@ The help window shows every command with its format and an example, and must not
   * Pros: Free-form layout.
   * Cons: It goes out of date every time a command changes.
 
-### \[Proposed\] Undo/redo feature
+### Command history and current scope
 
-#### Proposed Implementation
+`CommandBox` uses `CommandHistoryList` to keep submitted commands, including failed ones, for the current session. Up and Down browse the history and restore the draft when moving past the newest entry. Successful commands clear the input; failed commands remain editable. This history is not persisted and does not undo data changes.
 
-The proposed undo/redo mechanism is facilitated by `VersionedRecruitDexData`. It extends `RecruitDexData` with an undo/redo history, stored internally as a `recruitDexDataStateList` and `currentStatePointer`. Additionally, it implements the following operations:
-
-* `VersionedRecruitDexData#commit()` -- Saves the current RecruitDex state in its history.
-* `VersionedRecruitDexData#undo()` -- Restores the previous RecruitDex state from its history.
-* `VersionedRecruitDexData#redo()` -- Restores a previously undone RecruitDex state from its history.
-
-These operations are exposed in the `Model` interface as `Model#commitRecruitDexData()`, `Model#undoRecruitDexData()` and `Model#redoRecruitDexData()` respectively.
-
-Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
-
-Step 1. The user launches the application for the first time. The `VersionedRecruitDexData` will be initialized with the initial RecruitDex state, and the `currentStatePointer` pointing to that single RecruitDex state.
-
-<puml src="diagrams/UndoRedoState0.puml" alt="UndoRedoState0" />
-
-Step 2. The user executes `delete 5` command to delete the 5th applicant in RecruitDex. The `delete` command calls `Model#commitRecruitDexData()`, causing the modified state of RecruitDex after the `delete 5` command executes to be saved in the `recruitDexDataStateList`, and the `currentStatePointer` is shifted to the newly inserted RecruitDex state.
-
-<puml src="diagrams/UndoRedoState1.puml" alt="UndoRedoState1" />
-
-Step 3. The user executes `add n/David …​` to add a new applicant. The `add` command also calls `Model#commitRecruitDexData()`, causing another modified RecruitDex state to be saved into the `recruitDexDataStateList`.
-
-<puml src="diagrams/UndoRedoState2.puml" alt="UndoRedoState2" />
-
-<box type="info" seamless>
-
-**Note:** If a command fails its execution, it will not call `Model#commitRecruitDexData()`, so RecruitDex state will not be saved into the `recruitDexDataStateList`.
-</box>
-
-Step 4. The user now decides that adding the applicant was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoRecruitDexData()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous RecruitDex state, and restores RecruitDex to that state.
-
-<puml src="diagrams/UndoRedoState3.puml" alt="UndoRedoState3" />
-
-
-<box type="info" seamless>
-
-**Note:** If the `currentStatePointer` is at index 0, pointing to the initial RecruitDexData state, then there are no previous RecruitDexData states to restore. The `undo` command uses `Model#canUndoRecruitDexData()` to check if this is the case. If so, it will return an error to the user rather
-than attempting to perform the undo.
-</box>
-
-The following sequence diagram shows how an undo operation goes through the `Logic` component:
-
-<puml src="diagrams/UndoSequenceDiagram-Logic.puml" alt="UndoSequenceDiagram-Logic" />
-
-<box type="info" seamless>
-
-**Note:** The lifeline for `UndoCommand` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-</box>
-
-Similarly, how an undo operation goes through the `Model` component is shown below:
-
-<puml src="diagrams/UndoSequenceDiagram-Model.puml" alt="UndoSequenceDiagram-Model" />
-
-The `redo` command does the opposite — it calls `Model#redoRecruitDexData()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores RecruitDex to that state.
-
-<box type="info" seamless>
-
-**Note:** If the `currentStatePointer` is at index `recruitDexDataStateList.size() - 1`, pointing to the latest RecruitDex state, then there are no undone RecruitDexData states to restore. The `redo` command uses `Model#canRedoRecruitDexData()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
-</box>
-
-Step 5. The user then decides to execute the command `list`. Commands that do not modify RecruitDex, such as `list`, will usually not call `Model#commitRecruitDexData()`, `Model#undoRecruitDexData()` or `Model#redoRecruitDexData()`. Thus, the `recruitDexDataStateList` remains unchanged.
-
-<puml src="diagrams/UndoRedoState4.puml" alt="UndoRedoState4" />
-
-Step 6. The user executes `clear`, which calls `Model#commitRecruitDexData()`. Since the `currentStatePointer` is not pointing at the end of the `recruitDexDataStateList`, all RecruitDex states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
-
-<puml src="diagrams/UndoRedoState5.puml" alt="UndoRedoState5" />
-
-The following activity diagram summarizes what happens when a user executes a new command:
-
-<puml src="diagrams/CommitActivityDiagram.puml" width="250" />
-
-#### Design considerations:
-
-**Aspect: How undo & redo execute:**
-
-* **Alternative 1 (current choice):** Saves all RecruitDex data.
-  * Pros: Easy to implement.
-  * Cons: May have performance issues in terms of memory usage.
-
-* **Alternative 2:** Individual command knows how to undo/redo by
-  itself.
-  * Pros: Will use less memory (e.g. for `delete`, just save the applicant being deleted).
-  * Cons: We must ensure that the implementation of each individual command is correct.
-
-_{more aspects and alternatives to be added}_
-
-### \[Proposed\] Data archiving
-
-_{Explain here how the data archiving feature will be implemented}_
-
+There are no undo, redo, import, export, or archive commands. The requirements backlog below includes future ideas; see the [User Guide command summary](UserGuide.md#command-summary) for the supported commands.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -405,7 +327,7 @@ RecruitDex helps recruiters make more systematic, reviewable hiring decisions by
 
 * **Easier decisions:** Choosing between two applicants at a time is simpler than ordering the entire applicant pool in one sitting. Recruiters can make progress over multiple sessions and see the ranking evolve.
 * **Less impact from a mistaken judgment:** One comparison need not permanently fix an applicant's position; further comparisons can provide more evidence and change the ranking.
-* **Clearer oversight:** Recruitment managers can inspect the comparisons behind a ranking, require a minimum number of comparisons, and compare recruiters' decisions to identify possible anomalies.
+* **Visible assessment progress:** Recruiters can see each active applicant's score and comparison count. Inspecting individual decisions, enforcing minimum counts and comparing different recruiters' judgments remain backlog ideas.
 
 
 ### User stories
@@ -456,7 +378,7 @@ An applicant record stores an applicant's details. The active comparison list is
 
 ### Use cases
 
-For all use cases below, the **System** is RecruitDex and the **Actor** is a recruiter. **MSS** means Main Success Scenario. These use cases describe intended product behaviour rather than the current implementation. Requests are entered as commands.
+For all use cases below, the **System** is RecruitDex and the **Actor** is a recruiter. **MSS** means Main Success Scenario. These use cases describe the implemented workflow. Indices always refer to the displayed applicant list, including after a search.
 
 <puml src="diagrams/UseCaseDiagram.puml" alt="UseCaseDiagram" />
 
@@ -466,7 +388,7 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 **MSS**
 
-1. Recruiter requests to add an applicant, providing their name and contact information.
+1. Recruiter enters `add`, providing a name and any optional details.
 2. RecruitDex validates the supplied details.
 3. RecruitDex stores the applicant record and displays a success message with the added details.
 
@@ -479,7 +401,7 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
       Use case resumes at step 1.
 
-* 2b. The supplied details match an existing applicant record.
+* 2b. The supplied name exactly matches an existing applicant record's name.
     * 2b1. RecruitDex warns the recruiter about the duplicate without adding another record.
 
       Use case ends.
@@ -516,12 +438,12 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 **MSS**
 
-1. Recruiter requests to view the active comparison list.
-2. RecruitDex displays the applicants in the list.
-3. Recruiter requests to remove a selected applicant from the list.
+1. Recruiter enters `list` to obtain applicant indices and reviews the ranking in the Compare tab.
+2. RecruitDex displays the applicant records and the active ranking.
+3. Recruiter enters `compare-remove INDEX` using the applicant index, not their rank.
 4. RecruitDex removes the applicant from the active comparison list and displays the ranking of the remaining applicants.
 
-   Use case ends. The applicant's record remains available.
+   Use case ends. The applicant's record and comparison history remain available. Decisions involving an inactive applicant are excluded from the current ranking.
 
 **Extensions**
 
@@ -562,10 +484,9 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 **MSS**
 
-1. Recruiter requests to view the applicant ranking.
+1. Recruiter views the Compare tab, using `sw` to switch tabs if needed.
 2. RecruitDex displays all applicants in the active comparison list in ranking order, starting with the highest-ranked applicant.
-3. Recruiter selects an applicant from the displayed ranking to view their details.
-4. RecruitDex displays the selected applicant's details and interview notes.
+3. Recruiter reviews positions, scores and comparison counts. To inspect a particular record, the recruiter uses `find` and views the Applicants tab.
 
    Use case ends.
 
@@ -575,11 +496,6 @@ The diagram above summarizes the six recruiter use cases described below. Their 
     * 2a1. RecruitDex indicates that there are no applicants to rank.
 
       Use case ends.
-
-* 3a. The selection does not identify an applicant in the displayed ranking.
-    * 3a1. RecruitDex explains the error and retains the displayed ranking.
-
-      Use case resumes at step 3.
 
 **UC06: Delete an applicant record**
 
@@ -611,6 +527,8 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 ### Non-Functional Requirements
 
+These are quality targets, not a record of completed performance, compatibility or usability testing. In particular, the reference machine and benchmark results have not been specified here.
+
 **Performance**
 
 1. On the project’s reference test machine, adding, editing, deleting, or searching applicant records must complete within 2 seconds when the data file contains up to 1,000 applicant records.
@@ -640,11 +558,6 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 1. Applicant management, comparison, and ranking features must work without an internet connection.
 2. RecruitDex is a single-user desktop application. Concurrent use of the same data file by multiple running instances is not supported.
-
-**Undo and redo** *(only include this requirement if undo and redo are part of the release scope)*
-
-1. A user must be able to undo or redo a supported data-changing operation within 10 seconds of requesting it.
-2. Undoing or redoing an operation must restore applicant records and all affected comparison membership, decision history, pending-pair, and ranking state.
 
 ### Glossary
 
@@ -694,112 +607,41 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 
 - **User Preferences:** Settings associated with the user, such as GUI-related settings, that are stored separately from applicant data.
 
-- **Versioned RecruitDex:** The mechanism described in the proposed undo/redo implementation for maintaining previous states of the application's data so that earlier states can be restored.
-
-- **Undo/Redo:** Functionality that allows a user to reverse a previous change or restore a change that was previously undone.
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Appendix: Instructions for manual testing**
 
-Given below are instructions to test the app manually.
-
-<box type="info" seamless>
-
-**Note:** These instructions only provide a starting point for testers to work on;
-testers are expected to do more *exploratory* testing.
-</box>
+Use a separate writable folder and a copy of the JAR so that testing does not affect real applicant data. Run commands from that folder using `java -jar recruitdex.jar` with Java 25. These checks are starting points for exploratory testing.
 
 ### Launch and shutdown
 
-1. Initial launch
+1. Launch in a folder without `data/recruitdex.json`. Expect sample applicants, the Compare tab, and `0 applicants in comparison list`. Startup creates the data file with sample records when saving succeeds.
+2. Resize and move the window, close it, and relaunch from the same folder. Expect the saved window size and position.
+3. Enter `help` or press `F1`. Expect all commands grouped under Applicants, Comparison and General, with formats and examples. Copy an example and check the clipboard. Press `Esc` to close Help.
+4. Enter `sw` twice. Expect Applicants then Compare, with feedback naming the visible tab. Enter `sw 1`; expect an invalid-format error and no tab change.
 
-   1. Download the JAR file and copy it into an empty folder.
+### Applicant records and search
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with sample applicants, and the ranking panel's heading shows `0 applicants in comparison list`. The window size may not be optimal.
+1. Enter `add -n Test One`. Expect a record with only a name, all applicants displayed and comparison membership unchanged. Repeat the command; expect a duplicate error and no extra record.
+2. Enter `find -n Test One`. Expect the matching applicant as index 1. Enter `edit 1 -p 91234567 -y 5 -t Java -t Kafka`. Expect updated details and all applicants displayed.
+3. Enter `find -t java kaf -y 5`. Expect Test One among the results. Enter `find -e example.com`; expect email validation to reject it. Enter `find -e t1@example.com`; expect only records whose email contains that valid address.
+4. Find Test One again and enter `edit 1 -p -y -t`. Expect the phone, experience and skills cleared. Name remains required: `edit 1 -n` is rejected.
+5. Enter `delete 0`, `delete`, and an index larger than the displayed list. Expect errors with no deletion. Failed commands remain editable in the command box. Up and Down should recall submitted commands; history should reset on restart.
 
-1. Saving window preferences
+### Comparisons, ranking and persistence
 
-   1. Resize the window to an optimal size. Move the window to a different location. Close the window.
+1. Start with at least three records and enter `list`. Enter `compare-add 1` and `compare-add 2`. Expect two applicants in the Unassessed group and an A/B pair. Enter `compare-add 1` again; expect a duplicate-membership error.
+2. Enter `compare-add 3`. Expect a third unassessed applicant and the same pending pair. Enter `choose a`. Expect the displayed A applicant to win, both participants to move into the assessed ranking with updated comparison counts, and a new pair. The remaining applicant stays unassessed without a displayed rank or score. With three active applicants the immediately preceding pair should not repeat.
+3. Enter `choose c` and `choose a extra`. Expect errors without a new decision or pair change. Enter `find -n Test One`; expect the ranking and pending pair to remain unchanged while command indices reflect the filtered list.
+4. Close and reopen the app. Expect the same membership, decisions, ranking and pending A/B sides; the search filter resets. Further choices may change the A/B sides.
+5. Enter `list`, identify a member's applicant index and enter `compare-remove INDEX`. Expect the record to remain, its ranking entry to disappear, and an affected pair to be replaced or cleared. Remove it again; expect an error. Add it back; expect retained decisions to count again when both participants are active.
+6. Delete a member using its displayed applicant index. Expect its record, membership and decisions involving it to be removed. An affected pair is replaced or cleared. Enter `clear`; expect no records, members, decisions, pair or ranking, including after restart.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
-       Expected: The most recent window size and location are retained.
+### Saving and recovery
 
-1. _{ more test cases … }_
-
-### Deleting an applicant
-
-1. Deleting an applicant while all applicants are being shown
-
-   1. Prerequisites: List all applicants using the `list` command, with multiple applicants in the list.
-
-   1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
-
-   1. Test case: `delete 0`<br>
-      Expected: No applicant is deleted. The status message shows error details.
-
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
-
-1. _{ more test cases … }_
-
-### Switching tabs
-
-1. Switching between the two tabs
-
-   1. Prerequisites: Launch RecruitDex. The **Compare** tab is showing.
-
-   1. Test case: `sw`<br>
-      Expected: The **Applicants** tab is shown. The status message shows `Showing the Applicants tab.`
-
-   1. Test case: `sw` again<br>
-      Expected: The **Compare** tab is shown again. The status message shows `Showing the Compare tab.` The applicant list, comparison list and ranking are unchanged.
-
-   1. Test case: `sw 1`<br>
-      Expected: The tab does not change. The status message shows an invalid command format error with the `sw` usage.
-
-### Saving data
-
-1. Dealing with a missing data file
-
-   1. Close RecruitDex, then delete `data/recruitdex.json`.
-
-   1. Launch RecruitDex again.<br>
-      Expected: The GUI opens with the sample applicants, and a new data file is created.
-
-1. Dealing with a corrupted data file
-
-   1. Close RecruitDex, open `data/recruitdex.json` in a text editor, delete its last `}` and save the file.
-
-   1. Launch RecruitDex again.<br>
-      Expected: The GUI opens with an empty applicant list. The result box says the file could not be loaded and names a copy, `data/recruitdex.invalid-DATE-TIME.json`, which matches the corrupted file.
-
-   1. Enter `list`, `find -n Alex` and `help`, then close RecruitDex.<br>
-      Expected: `data/recruitdex.json` is unchanged.
-
-   1. Launch RecruitDex again and enter `add -nTest Zero`.<br>
-      Expected: `data/recruitdex.json` now contains only `Test Zero`, and the earlier copy is still in the `data` folder.
-
-1. Checking that saving is atomic
-
-   1. Launch RecruitDex, add an applicant, for example `add -nTest One -p91234567 -et1@example.com -aBlk 1`, and close the app.
-
-   1. List the `data` folder.<br>
-      Expected: It contains `recruitdex.json` and no `.tmp` file, and `recruitdex.json` contains `Test One`.
-
-1. Dealing with a failed save
-
-   1. Close RecruitDex and make the `data` folder read-only. On macOS and Linux, run `chmod a-w data`.
-
-   1. Launch RecruitDex and enter `add -nTest Two -p92345678 -et2@example.com -aBlk 2`.<br>
-      Expected: The result box shows a "Could not save data" error, and `Test Two` is **not** in the applicant list.
-
-   1. Enter `find -n Alex`, then `list`.<br>
-      Expected: Both commands work as usual, without a save error.
-
-   1. Close RecruitDex, make the folder writable again (`chmod u+w data`) and check `recruitdex.json`.<br>
-      Expected: The file does not contain `Test Two`.
-
-1. _{ more test cases … }_
+1. Close the app and move the test data file aside. Relaunch; expect sample applicants, empty membership and a new `data/recruitdex.json` created at startup.
+2. Close the app, back up the test file, remove its last `}` and relaunch. Expect an empty applicant list and a recovery message naming a timestamped `recruitdex.invalid-DATE-TIME.json` backup (or requesting a manual copy if backup fails). Verify that a successful backup matches the invalid file. Enter `list`, `find -n Alex` and `help`; expect the invalid file to remain unchanged. A successful `add` replaces it while retaining the backup. Close the app and restore the valid test backup before continuing.
+3. Enter `add -n Test Saved -e saved@example.com`, then inspect the data folder. Expect valid JSON containing the applicant and no `.tmp` file after a successful save.
+4. To test save failure, first save valid test data, close the app and deny write access to the test data folder using the operating system's permission controls. On macOS/Linux, `chmod a-w data` can be used when running as a non-privileged user; the Windows folder read-only checkbox does not reliably deny writes.
+5. Relaunch, note the displayed records and pending pair, then enter `add -n Test Unsaved`. Expect a save error, no added record and restoration of the prior data and filter. `list`, `find -n Test`, `help`, `sw` and `exit` should still work without a save error.
+6. Restore write permissions (for example `chmod u+w data` on macOS/Linux) and verify that the file lacks Test Unsaved. Repeat with `choose a` to check that a failed save restores the decision history, ranking and pending pair. Restore permissions after testing.
