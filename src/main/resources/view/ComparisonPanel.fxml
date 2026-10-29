@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" spacing="8">
-  <StackPane fx:id="slotA" VBox.vgrow="ALWAYS" />
-  <StackPane fx:id="slotB" VBox.vgrow="ALWAYS" />
-</VBox>
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="comparison-scroll-pane">
+  <!-- The preferred-height minimum prevents fitToHeight from squeezing the cards; overflow scrolls vertically. -->
+  <VBox spacing="8" minHeight="-Infinity">
+    <StackPane fx:id="slotA" VBox.vgrow="ALWAYS" />
+    <StackPane fx:id="slotB" VBox.vgrow="ALWAYS" />
+  </VBox>
+</ScrollPane>

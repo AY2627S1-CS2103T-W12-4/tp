@@ -6,17 +6,19 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.VBox?>
 
+<!-- -Infinity means Region.USE_PREF_SIZE: keep the height needed by the card and its wrapped content. -->
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" styleClass="comparison-card"
-      spacing="4">
+      spacing="4" minHeight="-Infinity">
   <HBox alignment="CENTER_LEFT">
-    <Label fx:id="name" styleClass="comparison-name" wrapText="true" maxWidth="Infinity">
+    <Label fx:id="name" styleClass="comparison-name" wrapText="true" maxWidth="Infinity"
+           minWidth="0" minHeight="-Infinity">
       <HBox.hgrow>
         <Priority fx:constant="ALWAYS" />
       </HBox.hgrow>
     </Label>
     <Label fx:id="badge" styleClass="comparison-badge" />
   </HBox>
-  <FlowPane fx:id="skills" hgap="5" vgap="3" />
-  <Label fx:id="contact" styleClass="comparison-contact" />
-  <VBox fx:id="details" spacing="2" styleClass="comparison-details" />
+  <FlowPane fx:id="skills" hgap="5" vgap="3" minHeight="-Infinity" />
+  <Label fx:id="contact" styleClass="comparison-contact" wrapText="true" minHeight="-Infinity" />
+  <VBox fx:id="details" spacing="2" styleClass="comparison-details" minHeight="-Infinity" />
 </VBox>

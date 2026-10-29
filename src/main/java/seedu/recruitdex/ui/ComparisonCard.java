@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import seedu.recruitdex.model.applicant.Applicant;
@@ -98,6 +99,10 @@ public class ComparisonCard extends UiPart<Region> {
         Label valueLabel = new Label(value);
         valueLabel.getStyleClass().add("comparison-value");
         valueLabel.setWrapText(true);
+        // Fit the remaining row width while keeping enough height for every wrapped line.
+        valueLabel.setMinWidth(0);
+        valueLabel.setMinHeight(Region.USE_PREF_SIZE);
+        HBox.setHgrow(valueLabel, Priority.ALWAYS);
 
         details.getChildren().add(new HBox(8, keyLabel, valueLabel));
     }

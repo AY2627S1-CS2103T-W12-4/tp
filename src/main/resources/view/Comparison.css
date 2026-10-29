@@ -1,5 +1,14 @@
 /* Comparison view: applicants A and B side by side, with the ranking alongside. */
 
+.comparison-scroll-pane,
+.comparison-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.comparison-scroll-pane {
+    -fx-padding: 0;
+}
+
 .comparison-card {
     -fx-padding: 10 14 10 14;
     -fx-border-color: #25324f;
