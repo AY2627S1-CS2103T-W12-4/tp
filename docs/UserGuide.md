@@ -113,6 +113,11 @@ The **RANKING** panel displays applicants in the active comparison list.
 Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
 Commands such as `edit` and `delete` use indices from the **All applicants** list.
 
+Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
+their standing without searching the leaderboard. The total includes everyone in the active comparison list,
+even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons are marked
+**Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
+
 **Current iteration:** The leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.
 Adding applicant records alone leaves the leaderboard empty. Use `choose a` or `choose b` to record a comparison.
