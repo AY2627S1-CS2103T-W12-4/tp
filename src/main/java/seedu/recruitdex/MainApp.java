@@ -32,7 +32,7 @@ import seedu.recruitdex.ui.UiManager;
  */
 public class MainApp extends Application {
 
-    public static final String VERSION = "V1.3";
+    public static final String VERSION = "V1.5";
 
     // One sentence per line, because the result display does not wrap long lines.
     public static final String MESSAGE_DATA_FILE_BACKED_UP = "Could not load %s, so RecruitDex started with no"
