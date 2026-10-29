@@ -58,7 +58,7 @@ RecruitDex is a desktop application for managing applicant records through comma
 * **Result box (below it):** shows what the last command did, or why it failed.
 * **Compare tab:** shows two applicants side by side, labelled **A** and **B**, with their details and interview notes. Next to them, the **RANKING** panel lists the applicants in the comparison list from highest to lowest. Each row labels the rank and the **Applicant index** separately. Use the applicant index for `compare-remove`, rather than the rank. Indices follow the current results in **Applicants**; if an applicant is hidden by a search, use `list` to show all applicants and restore their indices. Use `choose a` or `choose b` to pick the stronger applicant. See [Choosing the stronger applicant](#choosing-the-stronger-applicant-choose).
 * **Applicants tab:** shows the current applicant list, numbered. After a search, it shows only matching applicants. Commands such as `edit`, `delete`, `compare-add` and `compare-remove` use these numbers as `INDEX`.
-* **Switching tabs:** type `sw` to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
+* **Switching tabs:** type `sw` or press the up/down or left/right arrow keys when the command bar is not selected to jump between the **Compare** tab and the **Applicants** tab without using the mouse. See [Switching tabs](#switching-tabs-sw).
 * **Help:** click **Help** in the menu bar, press `F1`, or type `help` to see all commands. See [Viewing help](#viewing-help-help).
 
 --------------------------------------------------------------------------------------------------------------------
@@ -73,16 +73,16 @@ RecruitDex is a desktop application for managing applicant records through comma
   For example, in `add -n NAME`, replace `NAME` with a value such as `John Doe`.
 
 * A space between a prefix and its value is optional.<br>
-  For example, `-nJohn Doe` and `-n John Doe` mean the same thing.
+  The command formats and examples in this guide consistently include a space for readability.
 
 * Items in square brackets are optional.<br>
-  For example, `-nNAME [-tSKILL]` can be used as `-nJohn Doe -tJava` or as `-nJohn Doe`.
+  For example, `-n NAME [-t SKILL]` can be used as `-n John Doe -t Java` or as `-n John Doe`.
 
 * Items followed by `...` can appear zero or more times.<br>
-  For example, `[-tSKILL]...` may be omitted, or written as `-tJava` or `-tJava -tKafka`.
+  For example, `[-t SKILL]...` may be omitted, or written as `-t Java` or `-t Java -t Kafka`.
 
 * Parameters can be in any order.<br>
-  For example, if the command specifies `-nNAME -pPHONE_NUMBER`, `-pPHONE_NUMBER -nNAME` is also acceptable.
+  For example, if the command specifies `-n NAME -p PHONE_NUMBER`, `-p PHONE_NUMBER -n NAME` is also acceptable.
 
 * Command words and prefixes are case-sensitive. Use lowercase, for example `add -n Alex Tan`. The sides in `choose a` and `choose b` also accept uppercase `A` and `B`.
 
@@ -244,6 +244,7 @@ Format: `sw`
 * The result box tells you which tab is now showing, for example `Showing the Applicants tab.`
 * Only the display changes. Applicant records, the comparison list and the search filter stay the same.
 * Unlike `help` or `list`, `sw` does not accept extra text after it. Typing `sw 1` shows an error with the correct format.
+* Alternatively, pressing the up/down or right/left arrow keys when the command bar is not selected also allows you to switch tabs.
 
 ### Listing all applicants: `list`
 
@@ -255,7 +256,7 @@ Format: `list`
 
 Edits an existing applicant record.
 
-Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`
+Format: `edit INDEX [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...`
 
 * Edits the applicant at the specified `INDEX`. The index refers to the index number shown in the displayed applicant list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
@@ -268,9 +269,9 @@ Format: `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES]
 
 Examples:
 
-* `edit 1 -p91234567 -ejohndoe@example.com` edits the phone number and email address of the 1st applicant.
-* `edit 2 -nBetsy Crower -t` edits the name of the 2nd applicant and clears all existing skills.
-* `edit 1 -y7 -sReferral` sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
+* `edit 1 -p 91234567 -e johndoe@example.com` edits the phone number and email address of the 1st applicant.
+* `edit 2 -n Betsy Crower -t` edits the name of the 2nd applicant and clears all existing skills.
+* `edit 1 -y 7 -s Referral` sets the years of experience of the 1st applicant to `7` and the source to `Referral`.
 * `edit 3 -i` clears the interview notes of the 3rd applicant.
 
 ### Finding applicants: `find`
@@ -375,7 +376,7 @@ Certain edits can cause RecruitDex to behave in unexpected ways (e.g., if a valu
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add -n NAME [-p PHONE_NUMBER] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...` <br> e.g., `add -n James Ho` or `add -n James Ho -p 22224444 -e jamesho@example.com -a 123, Clementi Rd -y 5 -s LinkedIn -t Java -t Kafka`
-**Edit**   | `edit INDEX [-nNAME] [-pPHONE] [-eEMAIL] [-aADDRESS] [-iINTERVIEW_NOTES] [-yYEARS_OF_EXPERIENCE] [-sSOURCE] [-tSKILL]...`<br> e.g., `edit 2 -nJames Lee -ejameslee@example.com`
+**Edit**   | `edit INDEX [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL]...`<br> e.g., `edit 2 -n James Lee -e jameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
 **Find**   | `find [-n NAME] [-p PHONE] [-e EMAIL] [-a ADDRESS] [-i INTERVIEW_NOTES] [-y YEARS_OF_EXPERIENCE] [-s SOURCE] [-t SKILL_TERMS]`<br> e.g., `find -n Alice -t java kaf`
