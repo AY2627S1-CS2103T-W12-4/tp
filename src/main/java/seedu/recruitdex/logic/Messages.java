@@ -46,8 +46,17 @@ public class Messages {
         if (!applicant.getAddress().value.isEmpty()) {
             builder.append("; Address: ").append(applicant.getAddress());
         }
+        if (!applicant.getYearsOfExperience().value.isEmpty()) {
+            builder.append("; Experience: ").append(applicant.getYearsOfExperience()).append(" years");
+        }
+        if (!applicant.getSource().value.isEmpty()) {
+            builder.append("; Source: ").append(applicant.getSource());
+        }
+        if (!applicant.getInterviewNotes().value.isEmpty()) {
+            builder.append("; Notes: ").append(applicant.getInterviewNotes());
+        }
         if (!applicant.getTags().isEmpty()) {
-            builder.append("; Tags: ");
+            builder.append("; Skills: ");
             applicant.getTags().forEach(builder::append);
         }
         return builder.toString();
