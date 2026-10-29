@@ -322,7 +322,10 @@ RecruitDex writes the data to a temporary file first and only then replaces the 
 Applicant records and comparison data are saved automatically as a JSON file
 `[JAR file location]/data/recruitdex.json`. Advanced users are welcome to update records directly by editing that
 data file. Comparison membership and decisions refer to applicant IDs; an unanswered pair must refer to two active
-comparison-list members. Existing files without comparison data load with an empty comparison list.
+comparison-list members. If the file has no unanswered pair but has at least two active comparison-list members,
+RecruitDex selects a pair on loading without adding a decision or changing the existing history.
+A saved valid pair keeps its original A/B sides. Existing files without comparison data load with an empty
+comparison list.
 
 <box type="warning" seamless>
 
