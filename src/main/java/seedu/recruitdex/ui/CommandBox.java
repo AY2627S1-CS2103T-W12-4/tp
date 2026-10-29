@@ -3,6 +3,8 @@ package seedu.recruitdex.ui;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import seedu.recruitdex.logic.commands.CommandResult;
 import seedu.recruitdex.logic.commands.exceptions.CommandException;
@@ -17,6 +19,9 @@ public class CommandBox extends UiPart<Region> {
     private static final String FXML = "CommandBox.fxml";
 
     private final CommandExecutor commandExecutor;
+    private final CommandHistoryList commandHistoryList = new CommandHistoryList();
+
+    private boolean isUpdatingTextFromHistory;
 
     @FXML
     private TextField commandTextField;
@@ -27,8 +32,45 @@ public class CommandBox extends UiPart<Region> {
     public CommandBox(CommandExecutor commandExecutor) {
         super(FXML);
         this.commandExecutor = commandExecutor;
-        // calls #setStyleToDefault() whenever there is a change to the text of the command box.
-        commandTextField.textProperty().addListener((unused1, unused2, unused3) -> setStyleToDefault());
+
+        commandTextField.textProperty().addListener((unused1, unused2, unused3) -> {
+            setStyleToDefault();
+            if (!isUpdatingTextFromHistory) {
+                commandHistoryList.resetNavigation();
+            }
+        });
+        commandTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::handleHistoryNavigation);
+    }
+
+    private void setTextFromHistory(String text) {
+        isUpdatingTextFromHistory = true;
+        try {
+            commandTextField.setText(text);
+            commandTextField.positionCaret(text.length());
+        } finally {
+            isUpdatingTextFromHistory = false;
+        }
+    }
+
+    /**
+     * Handles Up and Down key presses for command history navigation.
+     */
+    private void handleHistoryNavigation(KeyEvent event) {
+        if (event.getCode() == KeyCode.UP) {
+            setStyleToDefault();
+            String previousCommand = commandHistoryList.previous(commandTextField.getText());
+            if (previousCommand != null) {
+                this.setTextFromHistory(previousCommand);
+                event.consume();
+            }
+        } else if (event.getCode() == KeyCode.DOWN) {
+            setStyleToDefault();
+            String nextCommand = commandHistoryList.next();
+            if (nextCommand != null) {
+                this.setTextFromHistory(nextCommand);
+                event.consume();
+            }
+        }
     }
 
     /**
@@ -37,9 +79,11 @@ public class CommandBox extends UiPart<Region> {
     @FXML
     private void handleCommandEntered() {
         String commandText = commandTextField.getText();
-        if (commandText.equals("")) {
+        if (commandText.trim().isEmpty()) {
             return;
         }
+
+        commandHistoryList.add(commandText);
 
         try {
             commandExecutor.execute(commandText);
@@ -81,5 +125,4 @@ public class CommandBox extends UiPart<Region> {
          */
         CommandResult execute(String commandText) throws CommandException, ParseException;
     }
-
 }

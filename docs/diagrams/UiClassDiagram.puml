@@ -15,6 +15,7 @@ Class ApplicantListPanel
 Class ApplicantCard
 Class StatusBarFooter
 Class CommandBox
+Class CommandHistoryList
 }
 
 package Model <<Rectangle>> {
@@ -35,6 +36,7 @@ MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" ApplicantListPanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
+CommandBox *-down-> "1" CommandHistoryList
 
 ApplicantListPanel -down-> "*" ApplicantCard
 
