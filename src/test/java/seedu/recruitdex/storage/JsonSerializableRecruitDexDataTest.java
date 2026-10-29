@@ -5,6 +5,7 @@ import static seedu.recruitdex.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,17 @@ public class JsonSerializableRecruitDexDataTest {
     private static final Path INVALID_APPLICANT_FILE = TEST_DATA_FOLDER.resolve("invalidApplicantRecruitDexData.json");
     private static final Path DUPLICATE_APPLICANT_FILE =
             TEST_DATA_FOLDER.resolve("duplicateApplicantRecruitDexData.json");
+
+    @Test
+    public void toModelType_nullApplicant_throwsIllegalValueException() {
+        for (List<JsonAdaptedApplicant> applicants : List.of(
+                Arrays.asList((JsonAdaptedApplicant) null),
+                Arrays.asList(new JsonAdaptedApplicant(TypicalApplicants.ALICE), null))) {
+            JsonSerializableRecruitDexData data = new JsonSerializableRecruitDexData(applicants);
+
+            assertThrows(IllegalValueException.class, "Applicants list contains a null applicant.", data::toModelType);
+        }
+    }
 
     @Test
     public void toModelType_duplicateIdsWithDifferentNames_throwsIllegalValueException() {

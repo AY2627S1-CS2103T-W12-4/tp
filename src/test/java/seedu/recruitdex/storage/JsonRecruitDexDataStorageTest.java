@@ -12,6 +12,7 @@ import static seedu.recruitdex.testutil.TypicalApplicants.IDA;
 import static seedu.recruitdex.testutil.TypicalApplicants.getTypicalRecruitDexData;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -96,6 +97,18 @@ public class JsonRecruitDexDataStorageTest {
         assertEquals(edited, restored.getApplicantRegistry().get(ALICE.getId()));
         assertEquals(original.getApplicantList().stream().map(Applicant::getId).toList(),
                 restored.getApplicantList().stream().map(Applicant::getId).toList());
+    }
+
+    @Test
+    public void readRecruitDexData_nullApplicant_throwsDataLoadingExceptionWithoutChangingFile() throws Exception {
+        Path filePath = testFolder.resolve("nullApplicant.json");
+        String invalidJson = "{\"applicants\":[null]}";
+        Files.writeString(filePath, invalidJson);
+        JsonRecruitDexDataStorage storage = new JsonRecruitDexDataStorage(filePath);
+
+        assertThrows(DataLoadingException.class, storage::readRecruitDexData);
+
+        assertEquals(invalidJson, Files.readString(filePath));
     }
 
     @Test
