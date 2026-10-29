@@ -7,7 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.layout.Region;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import seedu.recruitdex.model.applicant.Applicant;
 import seedu.recruitdex.model.comparison.ComparisonPair;
@@ -16,12 +16,13 @@ import seedu.recruitdex.model.comparison.ComparisonPair;
  * Panel showing the two applicants of the current comparison pair side by side, labelled A and B.
  * The applicants are looked up by ID, so edits to their records appear without choosing a new pair.
  */
-public class ComparisonPanel extends UiPart<Region> {
+public class ComparisonPanel extends UiPart<ScrollPane> {
 
     private static final String FXML = "ComparisonPanel.fxml";
 
     private final ObservableValue<Optional<ComparisonPair>> currentPair;
     private final ObservableList<Applicant> applicants;
+    private ComparisonPair displayedPair;
 
     @FXML
     private StackPane slotA;
@@ -37,15 +38,22 @@ public class ComparisonPanel extends UiPart<Region> {
         super(FXML);
         this.currentPair = currentPair;
         this.applicants = applicants;
-        currentPair.addListener((observable, oldValue, newValue) -> refresh());
+        // Invalidation also reports replacement pairs with the same applicant IDs and sides.
+        currentPair.addListener(observable -> refresh());
         applicants.addListener((ListChangeListener<Applicant>) change -> refresh());
         refresh();
     }
 
     private void refresh() {
-        List<Optional<Applicant>> sides = ComparisonPairResolver.resolve(currentPair.getValue(), applicants);
+        Optional<ComparisonPair> pair = currentPair.getValue();
+        List<Optional<Applicant>> sides = ComparisonPairResolver.resolve(pair, applicants);
         show(slotA, "A", sides.get(0));
         show(slotB, "B", sides.get(1));
+        // Repeated selections have a new pair instance; refreshing its details keeps the existing instance.
+        if (pair.orElse(null) != displayedPair) {
+            getRoot().setVvalue(0);
+        }
+        displayedPair = pair.orElse(null);
     }
 
     private void show(StackPane slot, String slotLabel, Optional<Applicant> applicant) {
