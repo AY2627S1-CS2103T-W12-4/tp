@@ -18,7 +18,7 @@ import seedu.recruitdex.model.comparison.ComparisonList;
  * Removing a non-member is reported as a command error without changing model state.
  */
 public class RemoveFromComparisonCommand extends Command {
-    public static final String COMMAND_WORD = "compare-remove";
+    public static final String COMMAND_WORD = "cremove";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Removes an applicant from the comparison list, keeping the applicant record.\n"

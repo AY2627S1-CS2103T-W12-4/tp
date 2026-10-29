@@ -50,13 +50,13 @@ public class ComparisonCommandRankingFailureTest {
 
     @TestFactory
     public Stream<DynamicTest> execute_rankingFailure_preservesModelAndSavedData() {
-        return Stream.of("compare-add", "compare-remove", "delete")
+        return Stream.of("cadd", "cremove", "delete")
                 .map(command -> DynamicTest.dynamicTest(command, () -> assertRejectedWithoutChanges(command)));
     }
 
     private void assertRejectedWithoutChanges(String command) throws Exception {
         ModelManager model = createModel(command);
-        Applicant target = command.equals("compare-add") ? DANIEL : ELLE;
+        Applicant target = command.equals("cadd") ? DANIEL : ELLE;
         model.updateFilteredApplicantList(applicant -> applicant.getId().equals(target.getId()));
         RecruitDexData dataBefore = new RecruitDexData(model.getRecruitDexData());
         List<RankingEntry> rankingBefore = List.copyOf(model.getRankingEngine().getRanking());
@@ -117,7 +117,7 @@ public class ComparisonCommandRankingFailureTest {
             model.getApplicantRegistry().add(applicant);
         }
         List<ComparisonDecision> decisions = createHistory();
-        if (command.equals("compare-add")) {
+        if (command.equals("cadd")) {
             // Daniel's retained decisions become eligible when he rejoins the pool.
             model.getComparisonList().resetData(Set.of(ALICE.getId(), BENSON.getId(), CARL.getId()), decisions,
                     Optional.of(new ComparisonPair(ALICE.getId(), BENSON.getId())));
