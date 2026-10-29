@@ -108,7 +108,7 @@ The **RANKING** panel displays applicants in the active comparison list.
 
 * **Position:** Tied applicants share a position, for example `1, 1, 3`.
 * **Score:** Higher scores rank earlier. Scores are shown to six decimal places; an unavailable score appears as `—`.
-* **Comparisons:** The number of comparisons used for that applicant's ranking. Zero comparisons is marked **Unassessed**.
+* **Comparisons:** The number of comparisons used for that applicant's ranking. Applicants with zero comparisons appear in a separate **Unassessed** group, without a rank or score. They join the ranking after their first relevant comparison.
 
 Searching filters the applicant list and leaves the leaderboard unchanged. Applicant names update after edits.
 Commands such as `edit` and `delete` use indices from the **Applicants** list.
@@ -119,9 +119,9 @@ even when the applicant list is filtered. Ties share a rank, and applicants with
 **Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
 
 Each comparison card also shows the applicant's current position, for example **Rank 4 of 30**, so you can see
-their standing without searching the leaderboard. The total includes everyone in the active comparison list,
-even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons are marked
-**Unassessed**. These positions update with the leaderboard and are not the indices used by applicant commands.
+their standing without searching the leaderboard. The total includes assessed applicants in the active comparison list,
+even when the applicant list is filtered. Ties share a rank, and applicants with no comparisons show
+**Unassessed** instead of a rank. These positions update with the leaderboard and are not the indices used by applicant commands.
 
 **Current iteration:** The leaderboard starts empty. Its heading shows `0 applicants in comparison list`.
 Use `compare-add INDEX` to include an existing applicant in the leaderboard.

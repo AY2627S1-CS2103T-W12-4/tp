@@ -15,4 +15,10 @@
       <Label text="No applicants in the comparison list." styleClass="ranking-empty-message" wrapText="true" />
     </placeholder>
   </ListView>
+  <VBox fx:id="unassessedSection" spacing="4" VBox.vgrow="ALWAYS">
+    <Label text="UNASSESSED" styleClass="ranking-title" />
+    <Label text="Compare these applicants to include them in the ranking."
+           styleClass="ranking-note" wrapText="true" minHeight="-Infinity" />
+    <ListView fx:id="unassessedListView" styleClass="ranking-list-view" VBox.vgrow="ALWAYS" />
+  </VBox>
 </VBox>

@@ -5,8 +5,10 @@ import static seedu.recruitdex.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.HashMap;
 import java.util.Map;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -22,7 +24,7 @@ import seedu.recruitdex.model.ranking.RankingEntry;
 
 /**
  * Panel displaying the engine's complete ranking with current applicant names resolved by ID.
- * Shows the complete ranking, with command indices from the current applicant search results.
+ * Groups unassessed applicants separately, with command indices from the current applicant search results.
  * Observable updates are supplied on the JavaFX application thread.
  */
 public class RankingPanel extends UiPart<Region> {
@@ -37,6 +39,10 @@ public class RankingPanel extends UiPart<Region> {
     private Label subtitle;
     @FXML
     private ListView<RankingEntry> rankingListView;
+    @FXML
+    private ListView<RankingEntry> unassessedListView;
+    @FXML
+    private VBox unassessedSection;
 
     /**
      * Creates a leaderboard observing {@code rankingEntries} and the complete applicant registry view.
@@ -51,14 +57,27 @@ public class RankingPanel extends UiPart<Region> {
         this.rankingEntries = rankingEntries;
         this.applicants = applicants;
         rebuildApplicantIndex();
+        FilteredList<RankingEntry> assessedEntries = new FilteredList<>(rankingEntries, RankingEntry::isAssessed);
+        FilteredList<RankingEntry> unassessedEntries = new FilteredList<>(rankingEntries, entry -> !entry.isAssessed());
         rankingListView.setCellFactory(listView -> new RankingCell(applicantsById, displayedApplicants));
-        rankingListView.setItems(rankingEntries);
+        rankingListView.setItems(assessedEntries);
+        unassessedListView.setCellFactory(listView -> new RankingCell(applicantsById, displayedApplicants));
+        unassessedListView.setItems(unassessedEntries);
+        rankingListView.visibleProperty().bind(Bindings.isNotEmpty(assessedEntries)
+                .or(Bindings.isEmpty(rankingEntries)));
+        rankingListView.managedProperty().bind(rankingListView.visibleProperty());
+        unassessedSection.visibleProperty().bind(Bindings.isNotEmpty(unassessedEntries));
+        unassessedSection.managedProperty().bind(unassessedSection.visibleProperty());
         rankingEntries.addListener((ListChangeListener<RankingEntry>) change -> updateSubtitle());
         applicants.addListener((ListChangeListener<Applicant>) change -> {
             rebuildApplicantIndex();
             rankingListView.refresh();
+            unassessedListView.refresh();
         });
-        displayedApplicants.addListener((ListChangeListener<Applicant>) change -> rankingListView.refresh());
+        displayedApplicants.addListener((ListChangeListener<Applicant>) change -> {
+            rankingListView.refresh();
+            unassessedListView.refresh();
+        });
         updateSubtitle();
     }
 

@@ -33,13 +33,10 @@ record RankingEntryDisplay(String positionText, String nameText, String metadata
         String scoreText = score.isPresent() ? String.format(Locale.ROOT, "%.6f", score.getAsDouble()) : "—";
         int comparisonCount = entry.getComparisonCount();
         String comparisonText = comparisonCount + (comparisonCount == 1 ? " comparison" : " comparisons");
-        if (comparisonCount == 0) {
-            comparisonText += " · Unassessed";
-        }
-
-        return new RankingEntryDisplay("Rank " + entry.getPosition(), nameText,
-                "Score: " + scoreText + " · " + comparisonText,
-                getApplicantIndexText(entry.getApplicantId(), displayedApplicants), entry.getPosition() == 1);
+        return new RankingEntryDisplay(entry.isAssessed() ? "Rank " + entry.getPosition() : "", nameText,
+                entry.isAssessed() ? "Score: " + scoreText + " · " + comparisonText : "Unassessed · 0 comparisons",
+                getApplicantIndexText(entry.getApplicantId(), displayedApplicants),
+                entry.isAssessed() && entry.getPosition() == 1);
     }
 
     /** Returns the command index from the current applicant results, independently of rank. */
