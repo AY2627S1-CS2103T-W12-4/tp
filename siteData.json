@@ -141,7 +141,11 @@
       "src": "index.md",
       "title": "",
       "headings": {
-        "recruitdex": "RecruitDex"
+        "recruitdex": "RecruitDex",
+        "who-is-recruitdex-for": "Who is RecruitDex for?",
+        "how-does-recruitdex-help": "How does RecruitDex help?",
+        "scope": "Scope",
+        "getting-started": "Getting started"
       },
       "headingKeywords": {}
     },
