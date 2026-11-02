@@ -29,6 +29,15 @@ These parts can be revisited as recruitment progresses. An applicant must have a
 
 RecruitDex is adapted from [AddressBook Level 3](https://se-education.org/addressbook-level3/). It uses JavaFX for the desktop interface, Jackson for JSON persistence, and JUnit for tests. Dependency versions are declared in `build.gradle`.
 
+**Use of AI tools**
+
+Team members used OpenAI Codex and Claude throughout the project to assist with:
+
+* Exploring design approaches and understanding existing code.
+* Drafting and refining code, tests, and documentation.
+* Investigating bugs, interpreting test failures, and suggesting fixes.
+* Reviewing changes for correctness, clarity, and consistency.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
@@ -506,7 +515,7 @@ The diagram above summarizes the six recruiter use cases described below. Their 
 1. Recruiter requests to list applicant records.
 2. RecruitDex displays the applicant records.
 3. Recruiter requests to delete a selected applicant record.
-4. RecruitDex deletes the record and displays a success message identifying the deleted applicant.
+4. RecruitDex deletes the record and all comparison decisions involving the applicant, even if the applicant was previously removed from the active comparison list, and displays a success message identifying the deleted applicant.
 
    Use case ends.
 
@@ -632,7 +641,7 @@ Use a separate writable folder and a copy of the JAR so that testing does not af
 
 ### Comparisons, ranking and persistence
 
-1. Start with at least three records and enter `list`. Enter `cadd 1` and `cadd 2`. Expect two applicants in the Unassessed group and an A/B pair. Enter `cadd 1` again; expect a duplicate-membership error.
+1. Start with at least three records, an empty comparison list and no decision history, then enter `list`. Enter `cadd 1` and `cadd 2`. Expect two applicants in the Unassessed group and an A/B pair. Enter `cadd 1` again; expect a duplicate-membership error.
 2. Enter `cadd 3`. Expect a third unassessed applicant and the same pending pair. Enter `choose a`. Expect the displayed A applicant to win, both participants to move into the assessed ranking with updated comparison counts, and a new pair. The remaining applicant stays unassessed without a displayed rank or score. With three active applicants the immediately preceding pair should not repeat.
 3. Enter `choose c` and `choose a extra`. Expect errors without a new decision or pair change. Enter `find -n Test One`; expect the ranking and pending pair to remain unchanged while command indices reflect the filtered list.
 4. Close and reopen the app. Expect the same membership, decisions, ranking and pending A/B sides; the search filter resets. Further choices may change the A/B sides.
